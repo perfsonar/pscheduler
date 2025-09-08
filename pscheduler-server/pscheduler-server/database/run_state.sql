@@ -72,6 +72,39 @@ BEGIN
     END IF;
 
 
+    -- Version 3 to version 4
+    IF t_version = 3
+    THEN
+
+        -- Indicates whether upper(times) of a run should be updated
+        -- upon reaching a finished state.
+
+	ALTER TABLE run_state ADD COLUMN
+        update_times BOOLEAN DEFAULT NULL
+
+	-- In this upgrade (released with 5.2.1), adding this
+	-- constraint caused a fatal failure in the the upgrade (and a
+	-- non-functioning system) because the DEFAULT NULL added to
+	-- each row caused some to not meet the constraint.  No
+	-- upgrade to 5.2.1 will have succeeded because the entire
+	-- database will have been rolled back to its 5.2.0 state
+	-- (with this table still at version 3).  Any post-5.2.1
+	-- package will do the 3-to-4 upgrade, hopefully correctly.
+	--
+	-- This commented-out code is being left here as a cautionary
+	-- tale.
+	--
+	-- CONSTRAINT update_times_nullness CHECK (
+	--    (NOT finished AND update_times IS NULL)
+	--    OR 	(finished AND update_times IS NOT NULL)
+	-- )
+
+	;
+
+        t_version := t_version + 1;
+    END IF;
+
+
     --
     -- Cleanup
     --
@@ -282,26 +315,27 @@ ON run_state
 -- the table was previously populated.
 
 ALTER TABLE run_state DISABLE TRIGGER run_state_alter;
-INSERT INTO run_state (id, display, enum, finished, success)
+INSERT INTO run_state (id, display, enum, finished, success, update_times)
 VALUES
-    (run_state_scheduling(),'Scheduling',  'scheduling',FALSE, NULL),
-    (run_state_pending(),   'Pending',     'pending',   FALSE, NULL),
-    (run_state_on_deck(),   'On Deck',     'on-deck',   FALSE, NULL),
-    (run_state_running(),   'Running',     'running',   FALSE, NULL),
-    (run_state_cleanup(),   'Cleanup',     'cleanup',   TRUE,  NULL),
-    (run_state_finished(),  'Finished',    'finished',  TRUE,  TRUE),
-    (run_state_overdue(),   'Overdue',     'overdue',   TRUE,  FALSE),
-    (run_state_missed(),    'Missed',      'missed',    TRUE,  FALSE),
-    (run_state_failed(),    'Failed',      'failed',    TRUE,  FALSE),
-    (run_state_preempted(), 'Preempted',   'preempted', TRUE,  FALSE),
-    (run_state_nonstart(),  'Non-Starter', 'nonstart',  TRUE,  FALSE),
-    (run_state_canceled(),  'Canceled',    'canceled',  TRUE,  NULL)
+    (run_state_scheduling(),'Scheduling',  'scheduling',FALSE, NULL,  NULL),
+    (run_state_pending(),   'Pending',     'pending',   FALSE, NULL,  NULL),
+    (run_state_on_deck(),   'On Deck',     'on-deck',   FALSE, NULL,  NULL),
+    (run_state_running(),   'Running',     'running',   FALSE, NULL,  NULL),
+    (run_state_cleanup(),   'Cleanup',     'cleanup',   TRUE,  NULL,  FALSE),
+    (run_state_finished(),  'Finished',    'finished',  TRUE,  TRUE,  TRUE),
+    (run_state_overdue(),   'Overdue',     'overdue',   TRUE,  FALSE, FALSE),
+    (run_state_missed(),    'Missed',      'missed',    TRUE,  FALSE, FALSE),
+    (run_state_failed(),    'Failed',      'failed',    TRUE,  FALSE, TRUE),
+    (run_state_preempted(), 'Preempted',   'preempted', TRUE,  FALSE, FALSE),
+    (run_state_nonstart(),  'Non-Starter', 'nonstart',  TRUE,  FALSE, FALSE),
+    (run_state_canceled(),  'Canceled',    'canceled',  TRUE,  NULL,  FALSE)
 ON CONFLICT (id) DO UPDATE
 SET
     display = EXCLUDED.display,
     enum = EXCLUDED.enum,
     finished = EXCLUDED.finished,
-    success = EXCLUDED.success;
+    success = EXCLUDED.success,
+    update_times = EXCLUDED.update_times;
 ALTER TABLE run_state ENABLE TRIGGER run_state_alter;
 
 
@@ -379,6 +413,22 @@ RETURNS BOOLEAN
 AS $$
 BEGIN
     RETURN EXISTS (SELECT * FROM run_state WHERE id = state AND finished);
+END;
+$$ LANGUAGE plpgsql
+IMMUTABLE;
+
+
+-- Determine if a run's end time should be updated for a given state
+
+DO $$ BEGIN PERFORM drop_function_all('run_state_update_times'); END $$;
+
+CREATE OR REPLACE FUNCTION run_state_update_times(
+    state INTEGER
+)
+RETURNS BOOLEAN
+AS $$
+BEGIN
+    RETURN EXISTS (SELECT * FROM run_state WHERE id = state AND update_times);
 END;
 $$ LANGUAGE plpgsql
 IMMUTABLE;

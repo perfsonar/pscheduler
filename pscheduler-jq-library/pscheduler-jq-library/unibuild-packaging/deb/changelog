@@ -1,9 +1,21 @@
-pscheduler-jq-library (5.2.0~b1.2-1) perfsonar-5.2; urgency=low
+pscheduler-jq-library (5.2.2-1) perfsonar-5.2; urgency=low
+
+  * New upstream version.
+
+ -- perfSONAR developers <debian@perfsonar.net>  Thu, 04 Sep 2025 10:34:04 -0400
+
+pscheduler-jq-library (5.2.1-1) perfsonar-5.2; urgency=low
+
+  * New upstream version.
+
+ -- perfSONAR developers <debian@perfsonar.net>  Tue, 01 Jul 2025 14:53:15 -0400
+
+pscheduler-jq-library (5.2.0-1) perfsonar-5.2; urgency=low
 
   * New upstream version.
   * Forcing jq version 1.6.something only.
 
- -- perfSONAR developers <debian@perfsonar.net>  Wed, 14 May 2025 10:50:48 -0400
+ -- perfSONAR developers <debian@perfsonar.net>  Wed, 28 May 2025 12:55:50 -0400
 
 pscheduler-jq-library (5.1.4-2) perfsonar-5.1; urgency=low
 

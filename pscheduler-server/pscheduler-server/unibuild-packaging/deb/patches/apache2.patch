@@ -1,7 +1,7 @@
 Index: b/api-server/pscheduler-api-server.conf.raw
 ===================================================================
---- a/api-server/pscheduler-api-server.conf.raw	2025-05-14 10:50:45.746941342 -0400
-+++ b/api-server/pscheduler-api-server.conf.raw	2025-05-14 10:50:48.856499987 -0400
+--- a/api-server/pscheduler-api-server.conf.raw	2025-09-04 10:34:02.055739982 -0400
++++ b/api-server/pscheduler-api-server.conf.raw	2025-09-04 10:34:05.968998142 -0400
 @@ -28,7 +28,13 @@
      WSGIProcessGroup __USER_NAME__
      WSGIApplicationGroup __USER_NAME__

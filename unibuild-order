@@ -250,6 +250,7 @@ pscheduler-tool-simplestreamer
 tcpping
 pscheduler-tool-tcpping
 
+pscheduler-tool-tracemtu
 pscheduler-tool-tracepath
 pscheduler-tool-traceroute
 pscheduler-tool-umichwpa		--bundle extras

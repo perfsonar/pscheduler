@@ -2,6 +2,18 @@
 #
 # Do a full reset on pScheduler
 #
+#BEGIN-HELP
+#
+# Usage: reset [ --force ]
+#
+#END-HELP
+
+self_help()
+{
+    sed -n -e '/^#BEGIN-HELP/,/^#END-HELP/{//!p}' $0 \
+	| sed -e 's/^#\s*//'
+}
+
 
 if [ "$(id -u)" != "0" ]
 then
@@ -9,11 +21,44 @@ then
     exit 1
 fi
 
-INTERACTIVE=false
+#
+# Gargle the arguments
+#
 
-if [ -t 0 -a -t 1 -a -t 2 ]
+[ -t 0 -a -t 1 -a -t 2 ] \
+    && INTERACTIVE=true \
+    || INTERACTIVE=false
+
+FORCE=false
+
+while echo "$1" | grep -q -E '^--'
+do
+    case "$1" in
+	--force)
+	    FORCE=true
+	    INTERACTIVE=false
+	    shift
+	    ;;
+	--help)
+	    self_help
+	    exit 0
+	    ;;
+	*)
+	    self_help 1>&2
+	    exit 1
+	    ;;
+    esac
+done
+
+if [ $# -gt 0 ]
 then
-    INTERACTIVE=true
+    self_help 1>&2
+    exit 1
+fi
+
+
+if $INTERACTIVE
+then
     cat <<EOF
 
 WARNING

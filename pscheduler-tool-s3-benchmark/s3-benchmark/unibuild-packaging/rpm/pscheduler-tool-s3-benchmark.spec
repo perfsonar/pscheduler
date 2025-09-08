@@ -9,8 +9,8 @@
 # If additional libraries or parts of pScheduler are required,
 # they should be added here (line 25).
 %define short	s3-benchmark
-%define perfsonar_auto_version 5.2.0
-%define perfsonar_auto_relnum 0.b1.2
+%define perfsonar_auto_version 5.2.2
+%define perfsonar_auto_relnum 1
 
 Name:		pscheduler-tool-%{short}
 Version:	%{perfsonar_auto_version}

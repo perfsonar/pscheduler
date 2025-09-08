@@ -2,8 +2,8 @@
 # RPM Spec for Python pScheduler Module
 #
 
-%define perfsonar_auto_version 5.2.0
-%define perfsonar_auto_relnum 0.b1.2
+%define perfsonar_auto_version 5.2.2
+%define perfsonar_auto_relnum 1
 
 %define short	pscheduler
 Name:		%{_pscheduler_python}-%{short}
@@ -48,6 +48,7 @@ Requires:	%{_pscheduler_python}-pytz
 Requires:	rsyslog
 Requires:	logrotate
 Requires:       numactl
+Requires:	traceroute
 Requires:	rpm-post-wrapper
 
 BuildRequires:	pscheduler-rpm
@@ -75,11 +76,13 @@ BuildRequires:	%{_pscheduler_python}-pyjq >= 2.2.0
 BuildRequires:	%{_pscheduler_python}-tzlocal
 BuildRequires:	%{_pscheduler_python}-pytz
 BuildRequires:  numactl
+BuildRequires:  traceroute
 
 %define limit_config %{_pscheduler_sysconfdir}/limits.conf
 %define logdir %{_var}/log/pscheduler
 %define logfile pscheduler.log
 %define logrotate_d %{_sysconfdir}/logrotate.d
+%define logrotate_d_file %{logrotate_d}/%{name}
 %define syslog_d %{_sysconfdir}/rsyslog.d
 
 %define macros %{_pscheduler_rpmmacroprefix}%{name}
@@ -106,7 +109,7 @@ make CLASSES="%{_pscheduler_classes}"
 %{_pscheduler_python} setup.py install --root=$RPM_BUILD_ROOT -O1  --record=INSTALLED_FILES
 
 mkdir -p $RPM_BUILD_ROOT/%{logrotate_d}
-cat > $RPM_BUILD_ROOT/%{logrotate_d}/%{name} <<EOF
+cat > $RPM_BUILD_ROOT/%{logrotate_d_file} <<EOF
 # Rotation for logs produced by pScheduler
 
 %{logdir}/%{logfile}
@@ -139,29 +142,33 @@ cat > $RPM_BUILD_ROOT/%{macros} <<EOF
 EOF
 
 
-
 %clean
 rm -rf $RPM_BUILD_ROOT
 
-%post
-rpm-post-wrapper '%{name}' "$@" <<'POST-WRAPPER-EOF'
 
-# This removes a duplicate entry leftover from the Python 2 version.
-# TODO: Remove this after we stop supporting 4.2.x.
-OLD_LOGROTATE="%{logrotate_d}/python-pscheduler"
-if [ -e "${OLD_LOGROTATE}" ]
+%pretrans
+# This removes a file that was installed as a result of #1083 and
+# needs to be replaced with the correct one.
+
+# Note that this *must* be %pretrans because %pre doesn't catch it
+# properly.  The warning in the docs about using Lua
+# (https://docs.fedoraproject.org/en-US/packaging-guidelines/Scriptlets/#pretrans)
+# does not apply here because there will already be a shell.
+
+# TODO: This can go in 5.4.0
+
+if [ -f "%{logrotate_d_file}" ]
 then
-    cat > "${OLD_LOGROTATE}" <<EOF
-# Rotation for logs produced by pScheduler
-
-### Removed forcibly by %{name} %{version} to avoid duplicate
-### log file names.
-EOF
+    if grep -F -q '### Removed forcibly by ' "%{logrotate_d_file}"
+    then
+	echo "Removing old 4.x %{logrotate_d_file} for replacement"
+	rm -f "%{logrotate_d_file}"
+    fi
 fi
 
-systemctl enable rsyslog
+
+%post
 systemctl reload-or-restart rsyslog
-POST-WRAPPER-EOF
 
 
 %postun

@@ -1,13 +1,12 @@
-Index: b/configure.ac
-===================================================================
---- a/configure.ac	2024-05-13 20:40:55.000000000 +0200
-+++ b/configure.ac	2024-05-21 11:09:13.096431523 +0200
+diff -rupN iperf-3.19.1-orig/configure.ac iperf-3.19.1/configure.ac
+--- iperf-3.19.1-orig/configure.ac	2025-07-25 19:50:36.000000000 +0000
++++ iperf-3.19.1/configure.ac	2025-07-28 15:12:29.729956063 +0000
 @@ -24,7 +24,7 @@
  # file for complete information.
  
  # Initialize the autoconf system for the specified tool, version and mailing list
 -AC_PREREQ([2.71])
 +AC_PREREQ([2.69])
- AC_INIT([iperf],[3.18],[https://github.com/esnet/iperf],[iperf],[https://software.es.net/iperf/])
+ AC_INIT([iperf],[3.19.1],[https://github.com/esnet/iperf],[iperf],[https://software.es.net/iperf/])
  m4_include([config/ax_check_openssl.m4])
  m4_include([config/ax_pthread.m4])

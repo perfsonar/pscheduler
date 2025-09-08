@@ -151,29 +151,19 @@ def get_status():
     response["services"] = services
         
     runs = {}
-    # query database for last run information
-    try:
-        cursor = dbcursor_query("SELECT times_actual FROM run WHERE state=run_state_finished()")
-        times = cursor.fetchall()
-        formatted = []
-        for val in times:
-            formatted.append(val[0].upper)
-        runs["last-finished"] = str(pscheduler.datetime_as_iso8601(max(formatted)))
-    except Exception:
-        # handles empty result and faulty query
-        runs["last-finished"] = None
 
+    # query database for last run information
+    cursor = dbcursor_query(
+        '''SELECT max(upper(times)) FROM run
+           WHERE state IN (SELECT id FROM run_state WHERE finished)'''
+        )
+    result = cursor.fetchone()[0]
+    runs["last-finished"] = str(pscheduler.datetime_as_iso8601(result)) if result is not None else None
+    
     # query database for last scheduled information
-    try:
-        cursor = dbcursor_query("SELECT added FROM run")
-        times = cursor.fetchall()
-        formatted = []
-        for val in times:
-            formatted.append(val[0])
-        runs["last-scheduled"] = str(pscheduler.datetime_as_iso8601(max(formatted)))
-    except Exception:
-        # handles empty result and faulty query
-        runs["last-scheduled"] = None    
+    cursor = dbcursor_query("SELECT max(added) FROM run")
+    result = cursor.fetchone()[0]
+    runs["last-scheduled"] = str(pscheduler.datetime_as_iso8601(result)) if result is not None else None
 
     response["runs"] = runs
 
