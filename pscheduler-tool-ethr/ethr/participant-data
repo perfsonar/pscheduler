@@ -3,39 +3,43 @@
 # Return participant-specific data for a run
 #
 
-import multiprocessing
+import packaging.version
 import pscheduler
 import sys
+import ethr_utils
+
+from ethr_defaults import *
 
 json = pscheduler.json_load(exit_on_error=True)
-result = {}
+result = {
+    'schema': 4,
+
+    # TODO: Ethr doesn't have a way to get its version number, so this
+    # is hard-wired for now.  They'll probably be on this version for
+    # a long time.
+    'ethr_major_version': 1
+}
+
 
 try:
     participant = json['participant']
 except KeyError:
-    pscheduler.fail("Missing participant")
+    pscheduler.fail('Missing participant')
 
+config = ethr_utils.get_config()
 
-# All participants record this.
-result["cores"] = multiprocessing.cpu_count()
+if participant == 0:    
 
-
-if participant == 0:
-
-    # Nothing else interesting for sender
     pass
 
 elif participant == 1:
 
-    # Server has to figure out what port it's going
-    # to listen on, client will need this to figure out
-    # where to connect
-    result["server_port"] = 5201
+    # Server's listening port
+    result['server_port'] = config['server_port']
 
 else:
 
-    pscheduler.fail("Invalid participant number for this test")
-
+    pscheduler.fail('Invalid participant number for this test')
 
 
 pscheduler.succeed_json(result)

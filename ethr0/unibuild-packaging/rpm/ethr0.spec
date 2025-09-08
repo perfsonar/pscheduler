@@ -4,8 +4,10 @@
 #
 
 %define short ethr
-Name:		%{short}
-Version:	1.0.0
+%define binary %{short}0
+
+Name:		%{short}0
+Version:	0.2.1
 Release:	1%{?dist}
 Summary:	A cross-platform network performance measurement tool
 BuildArch:	%(uname -m)
@@ -20,7 +22,7 @@ URL:		https://github.com/microsoft/ethr
 
 Source:		%{short}-%{version}.tar.gz
 
-Patch0:		00-ipv6.patch
+Patch3:         common-golang-sys.patch
 
 BuildRequires:  golang
 
@@ -42,8 +44,8 @@ such as Windows, Linux and other Unix systems.
 %define gocache %{godir}/.cache
 
 %prep
-%setup -q
-%patch0 -p1
+%setup -q -n %{short}-%{version}
+%patch3 -p1
 
 
 %build
@@ -77,7 +79,7 @@ go build
 
 %install
 %{__mkdir_p} %{buildroot}/%{_bindir}
-install %{name} %{buildroot}/%{_bindir}/%{name}
+install %{short} %{buildroot}/%{_bindir}/%{name}
 
 
 
