@@ -3,8 +3,8 @@
 #
 
 %define short	postgresql
-%define perfsonar_auto_version 5.2.2
-%define perfsonar_auto_relnum 1
+%define perfsonar_auto_version 5.2.3
+%define perfsonar_auto_relnum 0.a1.0
 
 Name:		pscheduler-archiver-%{short}
 Version:	%{perfsonar_auto_version}
