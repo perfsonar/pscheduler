@@ -3,7 +3,7 @@
 #
 
 %define short	http
-%define perfsonar_auto_version 5.2.2
+%define perfsonar_auto_version 5.2.3
 %define perfsonar_auto_relnum 1
 
 Name:		pscheduler-test-%{short}

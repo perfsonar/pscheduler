@@ -1,0 +1,24 @@
+{"Time":"2025-05-29T21:53:32Z","Title":"","Type":"INFO","Message":"Using destination: ::1, ip: ::1, port: 8888"}
+{"Time":"2025-05-29T21:53:34Z","Title":"","Type":"INFO","Message":"[  6] local ::1 port 57699 connected to ::1 port 8888"}
+{"Time":"2025-05-29T21:53:35Z","Title":"","Type":"INFO","Message":"- - - - - - - - - - - - - - - - - - - - - - -"}
+{"Time":"2025-05-29T21:53:35Z","Title":"","Type":"INFO","Message":"[  ID ]   Protocol    Interval      Bits/s"}
+{"Time":"2025-05-29T21:53:35Z","Title":"","Type":"INFO","Message":"[    6]     TCP      000-001 sec     8.58G"}
+{"Time":"2025-05-29T21:53:35Z","Title":"","Type":"TestResult","RemoteAddr":"::1","Protocol":"TCP","BitsPerSecond":"8.58G","ConnectionsPerSecond":"","PacketsPerSecond":"0","AverageLatency":""}
+{"Time":"2025-05-29T21:53:36Z","Title":"","Type":"INFO","Message":"[    6]     TCP      001-002 sec     8.40G"}
+{"Time":"2025-05-29T21:53:36Z","Title":"","Type":"TestResult","RemoteAddr":"::1","Protocol":"TCP","BitsPerSecond":"8.40G","ConnectionsPerSecond":"","PacketsPerSecond":"0","AverageLatency":""}
+{"Time":"2025-05-29T21:53:37Z","Title":"","Type":"INFO","Message":"[    6]     TCP      002-003 sec     8.37G"}
+{"Time":"2025-05-29T21:53:37Z","Title":"","Type":"TestResult","RemoteAddr":"::1","Protocol":"TCP","BitsPerSecond":"8.37G","ConnectionsPerSecond":"","PacketsPerSecond":"0","AverageLatency":""}
+{"Time":"2025-05-29T21:53:38Z","Title":"","Type":"INFO","Message":"[    6]     TCP      003-004 sec     8.83G"}
+{"Time":"2025-05-29T21:53:38Z","Title":"","Type":"TestResult","RemoteAddr":"::1","Protocol":"TCP","BitsPerSecond":"8.83G","ConnectionsPerSecond":"","PacketsPerSecond":"0","AverageLatency":""}
+{"Time":"2025-05-29T21:53:39Z","Title":"","Type":"INFO","Message":"[    6]     TCP      004-005 sec     9.33G"}
+{"Time":"2025-05-29T21:53:39Z","Title":"","Type":"TestResult","RemoteAddr":"::1","Protocol":"TCP","BitsPerSecond":"9.33G","ConnectionsPerSecond":"","PacketsPerSecond":"0","AverageLatency":""}
+{"Time":"2025-05-29T21:53:40Z","Title":"","Type":"INFO","Message":"[    6]     TCP      005-006 sec     9.07G"}
+{"Time":"2025-05-29T21:53:40Z","Title":"","Type":"TestResult","RemoteAddr":"::1","Protocol":"TCP","BitsPerSecond":"9.07G","ConnectionsPerSecond":"","PacketsPerSecond":"0","AverageLatency":""}
+{"Time":"2025-05-29T21:53:41Z","Title":"","Type":"INFO","Message":"[    6]     TCP      006-007 sec     9.20G"}
+{"Time":"2025-05-29T21:53:41Z","Title":"","Type":"TestResult","RemoteAddr":"::1","Protocol":"TCP","BitsPerSecond":"9.20G","ConnectionsPerSecond":"","PacketsPerSecond":"0","AverageLatency":""}
+{"Time":"2025-05-29T21:53:42Z","Title":"","Type":"INFO","Message":"[    6]     TCP      007-008 sec     8.70G"}
+{"Time":"2025-05-29T21:53:42Z","Title":"","Type":"TestResult","RemoteAddr":"::1","Protocol":"TCP","BitsPerSecond":"8.70G","ConnectionsPerSecond":"","PacketsPerSecond":"0","AverageLatency":""}
+{"Time":"2025-05-29T21:53:43Z","Title":"","Type":"INFO","Message":"[    6]     TCP      008-009 sec     8.05G"}
+{"Time":"2025-05-29T21:53:43Z","Title":"","Type":"TestResult","RemoteAddr":"::1","Protocol":"TCP","BitsPerSecond":"8.05G","ConnectionsPerSecond":"","PacketsPerSecond":"0","AverageLatency":""}
+{"Time":"2025-05-29T21:53:44Z","Title":"","Type":"INFO","Message":"[    6]     TCP      009-010 sec     8.70G"}
+{"Time":"2025-05-29T21:53:44Z","Title":"","Type":"TestResult","RemoteAddr":"::1","Protocol":"TCP","BitsPerSecond":"8.70G","ConnectionsPerSecond":"","PacketsPerSecond":"0","AverageLatency":""}

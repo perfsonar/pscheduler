@@ -9,7 +9,7 @@
 # If additional libraries or parts of pScheduler are required,
 # they should be added here (line 25).
 %define short	ethr
-%define perfsonar_auto_version 5.2.2
+%define perfsonar_auto_version 5.2.3
 %define perfsonar_auto_relnum 1
 
 Name:		pscheduler-tool-%{short}
@@ -28,7 +28,9 @@ Provides:	%{name} = %{version}-%{release}
 # Include all required libraries here
 Requires:	pscheduler-server
 Requires:	%{_pscheduler_python}-pscheduler
-Requires:	ethr >= 0.2.1
+Requires:	ethr >= 1.0.0
+# TODO: For backward compatibility; to be removed in 5.3.
+Requires:	ethr0
 Requires:	rpm-post-wrapper
 
 BuildRequires:	pscheduler-rpm
