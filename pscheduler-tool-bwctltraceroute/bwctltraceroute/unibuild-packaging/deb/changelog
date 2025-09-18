@@ -4,6 +4,12 @@ pscheduler-tool-bwctltraceroute (5.3.0~a1.0-1) perfsonar-5.3-snapshot; urgency=l
 
  -- perfSONAR developers <debian@perfsonar.net>  Fri, 30 May 2025 10:11:46 -0400
 
+pscheduler-tool-bwctltraceroute (5.2.3-1) perfsonar-5.2; urgency=low
+
+  * New upstream version.
+
+ -- perfSONAR developers <debian@perfsonar.net>  Thu, 18 Sep 2025 14:18:36 -0400
+
 pscheduler-tool-bwctltraceroute (5.2.2-1) perfsonar-5.2; urgency=low
 
   * New upstream version.

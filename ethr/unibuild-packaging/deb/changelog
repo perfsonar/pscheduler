@@ -1,9 +1,15 @@
+ethr (1.0.0-1) perfsonar-5.2-staging; urgency=low
+
+  * New upstream version
+
+ -- Mark Feit <mfeit@internet2.edu>  Thu, 15 May 2025 13:30:00 -0400
+
 ethr (0.2.1-4) perfsonar-5.1-staging; urgency=low
 
   * Building on Ubuntu 20.
   * Port to Debian 12 and Ubuntu 22.
 
- -- Lætitia Delvaux <adelvaux@man.poznan.pl>  Tue, 23 Apr 2024 01:01:56 +0200 
+ -- Lætitia Delvaux <adelvaux@man.poznan.pl>  Tue, 23 Apr 2024 01:01:56 +0200
 
 ethr (0.2.1-3) perfsonar-minor-staging; urgency=low
 

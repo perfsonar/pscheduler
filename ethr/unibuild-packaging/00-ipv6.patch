@@ -1,0 +1,33 @@
+diff -ur ethr-1.0.0-orig/server.go ethr-1.0.0/server.go
+--- ethr-1.0.0-orig/server.go	2020-12-05 00:02:14.000000000 +0000
++++ ethr-1.0.0/server.go	2025-05-21 21:22:09.606443303 +0000
+@@ -68,7 +68,7 @@
+ }
+ 
+ func srvrRunTCPServer() error {
+-	l, err := net.Listen(Tcp(), gLocalIP+":"+gEthrPortStr)
++	l, err := net.Listen(Tcp(), "["+gLocalIP+"]:"+gEthrPortStr)
+ 	if err != nil {
+ 		return err
+ 	}
+@@ -233,7 +233,7 @@
+ }
+ 
+ func srvrRunUDPServer() error {
+-	udpAddr, err := net.ResolveUDPAddr(Udp(), gLocalIP+":"+gEthrPortStr)
++	udpAddr, err := net.ResolveUDPAddr(Udp(), "["+gLocalIP+"]:"+gEthrPortStr)
+ 	if err != nil {
+ 		ui.printDbg("Unable to resolve UDP address: %v", err)
+ 		return err
+diff -ur ethr-1.0.0-orig/utils.go ethr-1.0.0/utils.go
+--- ethr-1.0.0-orig/utils.go	2020-12-05 00:02:14.000000000 +0000
++++ ethr-1.0.0/utils.go	2025-05-21 21:22:41.733313469 +0000
+@@ -362,7 +362,7 @@
+ }
+ 
+ func ethrDialEx(p EthrProtocol, dialAddr, localIP string, localPortNum uint16, ttl int, tos int) (conn net.Conn, err error) {
+-	localAddr := fmt.Sprintf("%v:%v", localIP, localPortNum)
++	localAddr := fmt.Sprintf("[%v]:%v", localIP, localPortNum)
+ 	var la net.Addr
+ 	network := Tcp()
+ 	if p == TCP {
