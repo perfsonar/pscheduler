@@ -286,7 +286,7 @@ def run_server():
 
     ethr_args = [
 
-        "ethr",
+        "ethr0",
 
         # Server
         "-s",
