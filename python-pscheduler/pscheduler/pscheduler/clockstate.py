@@ -5,6 +5,7 @@ clock_state() below.
 
 import pscheduler
 import datetime
+import shutil
 import ntplib
 import psutil
 from dateutil import tz
