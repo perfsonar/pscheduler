@@ -62,19 +62,3 @@ class LimitTestType(object):
             return { "passed": False, "reasons": [ "No type in task" ] }
 
         return { "passed": False, "reasons": [ "Test type not in list" ] }
-
-
-
-# A short test program
-
-if __name__ == "__main__":
-
-    limit = LimitTestType({
-        "types": [ "rtt", "trace", "latency" ]
-    })
-
-
-    for test in [ "rtt", "trace", "throughput", "bogus" ]:
-        print(test, limit.evaluate({ "task": {
-            "test": { "type": test }}
-                                 }))

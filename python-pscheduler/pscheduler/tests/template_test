@@ -1,0 +1,20 @@
+#!/usr/bin/env python3
+"""
+Template for unit test files
+"""
+
+import unittest
+
+from test_base import PschedTestBase
+from pscheduler.FIXME import FIXME
+
+class TestFIXME(PschedTestBase):
+    """
+    Test for FIXME
+    """
+    def test_FIXME(self):
+        pass
+
+if __name__ == '__main__':
+    unittest.main()
+

@@ -61,18 +61,3 @@ class EnumMatcher(object):
 
         result = self.__contains(enum)
         return not result if self.invert else result
-
-
-# Test program
-
-if __name__ == "__main__":
-
-    matcher = EnumMatcher({
-        "enumeration": ["foo", "bar", "biz"],
-        "invert": False
-    })
-
-    for enum in [["foo"],
-                 ["foo", "bar"],
-                 ["foo", "notallowed", "biz"]]:
-        print(enum, matcher.contains(enum))

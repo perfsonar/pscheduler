@@ -61,36 +61,3 @@ class IdentifierHint(object):
             return False
 
         return self.matcher.matches(value)
-
-
-
-# A short test program
-
-if __name__ == "__main__":
-
-    print("Exact:")
-    ident = IdentifierHint({
-        "hint": "value",
-        "match": {
-            "style": "exact",
-            "match": "foo",
-            "case-insensitive": False
-        }
-    })
-
-    for value in [ "foo", "bar", "baz" ]:
-        print(value, ident.evaluate({ "value": value }))
-
-    print()
-    print("Regex:")
-    ident = IdentifierHint({
-        "hint": "value",
-        "match": {
-            "style": "regex",
-            "match": "(^b|oo$)"
-        }
-    })
-
-    for value in [ "foo", "bar", "baz", "glorp" ]:
-        print(value, ident.evaluate({ "value": value }))
-

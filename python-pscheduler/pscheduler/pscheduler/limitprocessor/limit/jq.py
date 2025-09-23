@@ -83,36 +83,3 @@ class LimitJQ(object):
             result["reasons"] = [reason]
 
         return result
-
-
-
-# A short test program
-
-if __name__ == "__main__":
-
-    test = {
-        "type": "trace",
-        "spec": {
-            "dest": "foo.bar.org",
-            "hops": 2
-        }
-    }
-
-    for script in [
-            "\"Script-provided failure reason\"",
-            "if .type == \"foo\" then true else \"Wrong test type\" end",
-            "if .type == \"trace\" and .spec.hops > 20 then \"Too many hops\" else true end"
-    ]:
-
-        data = {
-            "script": script,
-            "args": {}
-        }
-
-        print(jq_data_is_valid(data))
-
-        limit = LimitJQ(data)
-
-        print(test)
-        print(limit.evaluate(test))
-        print()

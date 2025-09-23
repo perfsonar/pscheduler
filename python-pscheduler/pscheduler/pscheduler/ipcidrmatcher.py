@@ -52,20 +52,3 @@ class IPCIDRMatcher(object):
         if self.invert:
             return not result
         return result
-
-
-# Test program
-
-if __name__ == "__main__":
-
-    cidrs = ["192.168.1.0/24", "10.0.0.0/8"]
-    
-    matcher = IPCIDRMatcher({
-        "cidr": cidrs,
-        "invert": False
-    })
-
-    for ip_address in ["192.168.1.1", "192.168.1.234", "192.168.2.1",
-                       "1.2.3.4",
-                       "10.16.57.254", "10.0.0.1"]:
-        print("%s in %s = %s" % (ip_address, cidrs, matcher.contains(ip_address)))

@@ -81,25 +81,3 @@ class LimitRunDateRange(object):
             result['reasons'] = [ "Ranges do not match" ]
 
         return result
-
-
-
-# A short test program
-
-if __name__ == "__main__":
-
-    test = {
-        "run_schedule": {
-            "start": "2015-12-31T23:59:50-04",
-            "duration": "PT20S"
-            }
-        }
-
-    limit = LimitRunDateRange({
-        "start": "2015-01-01T00:00:00-04",
-        "end":   "2015-12-31T23:59:59-04",
-        "overlap": True
-    })
-
-    ev = limit.evaluate({ "task": test })
-    print(test, ev)

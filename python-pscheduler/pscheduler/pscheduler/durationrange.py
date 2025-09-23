@@ -67,28 +67,3 @@ class DurationRange(object):
                             self.lower_str, self.upper_str))
 
         return True, None
-
-
-# Test program
-
-if __name__ == "__main__":
-
-    drange = DurationRange({
-        "lower": "PT10S",
-        "upper": "PT1M"
-    })
-
-    for value in ["PT1S",
-                  datetime.timedelta(seconds=3),
-                  "PT30S",
-                  datetime.timedelta(seconds=45),
-                  "PT1M",
-                  "PT5M",
-                  datetime.timedelta(minutes=10)
-                  ]:
-        result = value in drange
-        print(value, result)
-        for invert in [False, True]:
-            print("%s Invert=%s %s" % (value, invert,
-                                       drange.contains(value, invert=invert)))
-        print()
