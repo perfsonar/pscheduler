@@ -332,32 +332,3 @@ class LimitRunSchedule(object):
                                   for mis in match_failures ]
 
         return result
-
-
-
-# A short test program
-
-if __name__ == "__main__":
-
-    test = {
-        "run_schedule": {
-            "start": "2015-12-31T23:59:50-04",
-            "duration": "PT20S"
-            }
-        }
-
-    limit = LimitRunSchedule({
-#        "year": [ 2015, 2016, 2017, 2018 ],
-#        "month": [ { "lower": 1, "upper": 6 } ],
-#        "week": [],
-#        "day": [],
-#        "weekday": [ { "lower": 3, "upper": 6 } ],
-#        "hour": [3, 4, { "lower": 7, "upper": 11 } ],
-        "minute": [ 12,34 ],
-#        "second": [],
-#        "overlap": False
-    })
-
-
-    ev = limit.evaluate({ "task": test })
-    print(test, ev)
