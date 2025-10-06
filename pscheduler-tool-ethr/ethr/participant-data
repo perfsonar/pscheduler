@@ -5,20 +5,28 @@
 
 import packaging.version
 import pscheduler
+import shutil
 import sys
 import ethr_utils
 
 from ethr_defaults import *
 
 json = pscheduler.json_load(exit_on_error=True)
-result = {
-    'schema': 4,
 
-    # TODO: Ethr doesn't have a way to get its version number, so this
-    # is hard-wired for now.  They'll probably be on this version for
-    # a long time.
-    'ethr_major_version': 1
-}
+# D11 and U20 can't support Ethr 1.x.  Check for the presence of that
+# and return results accordingly.
+
+if shutil.which('ethr') is not None:
+    result = {
+        'schema': 4,
+
+        # TODO: Ethr doesn't have a way to get its version number, so this
+        # is hard-wired for now.  They'll probably be on this version for
+        # a long time.
+        'ethr_major_version': 1
+    }
+else:
+    result = {}
 
 
 try:
