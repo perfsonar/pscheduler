@@ -28,7 +28,7 @@ override_dh_auto_clean:
 override_dh_auto_build:
 	mkdir -p $(GOPATH) $(GOBIN)
 	go get ./...
-	go build
+	go build -buildvcs=false
 
 override_dh_auto_test:
 

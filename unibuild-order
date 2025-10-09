@@ -195,9 +195,15 @@ ifelse(FAMILY,Debian,,pscheduler-tool-dublin-traceroute)	# TODO: DT doesn't buil
 
 
 # Ethr 1.x doesn't build on D11/12 or U20/22/24, so disable it there.
-ifelse(FAMILY,Debian,,ethr0)
-ifelse(FAMILY,Debian,,ethr)
-ifelse(FAMILY,Debian,,pscheduler-tool-ethr)
+#ifelse(FAMILY,Debian,,ethr)
+ifelse(DISTRO/eval(MAJOR > 11),Debian/1,ethr,        # We only want ethr on D12 or up
+       DISTRO/eval(MAJOR > 23),Ubuntu/1,ethr,        # and U24 and up.
+       FAMILY,Debian,,
+       ethr)
+define(HAVE_ETHR,HAVE_GOLANG)
+ifelse(HAVE_ETHR,1,ethr0)
+ifelse(HAVE_ETHR,1,pscheduler-tool-ethr)
+
 
 pscheduler-tool-fpingreach		--bundle extras
 pscheduler-tool-fwmtu
@@ -207,8 +213,8 @@ pscheduler-tool-halfping
 iperf
 pscheduler-tool-iperf2
 
-ifelse(FAMILY/eval(MAJOR == 11 || MAJOR == 12),Debian/1,iperf3,        # We only want iperf3 on D11 or D12
-       DISTRO/eval(MAJOR == 20 || MAJOR == 22 || MAJOR == 24),Ubuntu/1,iperf3,        # and U20, U22, or U24
+ifelse(DISTRO/eval(MAJOR >= 11),Debian/1,iperf3,        # We only want iperf3 on D11 or above
+       DISTRO/eval(MAJOR >= 20),Ubuntu/1,iperf3,        # and U20, U22, or U24
        FAMILY,Debian,,
        iperf3)
 pscheduler-tool-iperf3

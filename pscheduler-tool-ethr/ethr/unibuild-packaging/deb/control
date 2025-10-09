@@ -12,6 +12,8 @@ Vcs-Browser: https://github.com/perfsonar/pscheduler
 Package: pscheduler-tool-ethr
 Architecture: all
 Depends: ${misc:Depends}, python3-pscheduler,
- pscheduler-server (>= 4.3.0), ethr (>= 1.0.0), ethr0
+ pscheduler-server (>= 4.3.0), ethr (>= 1.0.0) | ethr0, ethr0
+Recommends: ethr
 Description: pScheduler Ethr tool
- Ethr tool class for pScheduler
+ Ethr tool class for pScheduler, supports both ethr 1.x and
+ 0.2.1 if installed as ethr0.
