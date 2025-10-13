@@ -1,34 +1,9 @@
 #!/usr/bin/make -f
-# See debhelper(7) (uncomment to enable)
 # output every command that modifies files on the build system.
 #DH_VERBOSE = 1
 
-export GOPATH=$(CURDIR)/GOPATH
-export GOBIN=$(GOPATH)/bin
-export GOCACHE=$(GOPATH)/.cache
-
-# TODO: May need these for U24+
-#export GO111MODULE=on
-#export GOPROXY=direct
-
-# main packaging script based on dh7 syntax
 %:
-	dh $@
+	dh $@ --builddirectory=debian/build --buildsystem=golang
 
 override_dh_auto_install:
-	mkdir -p debian/ethr/usr/bin/
-	cp ethr debian/ethr/usr/bin/ethr
-	dh_auto_install
-
-override_dh_auto_clean:
-	$(RM) -rf $(GOPATH)
-	$(RM) -rf ethr
-	dh_auto_clean
-
-override_dh_auto_build:
-	mkdir -p $(GOPATH) $(GOBIN)
-	go get ./...
-	go build -buildvcs=false
-
-override_dh_auto_test:
-
+	dh_auto_install -- --no-source

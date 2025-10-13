@@ -1,19 +1,27 @@
 Source: ethr
-Section: misc
+Section: golang
 Priority: optional
 Maintainer: perfSONAR developers <debian@perfsonar.net>
 Uploaders: Lætitia Delvaux <adelvaux@man.poznan.pl>
-Build-Depends: debhelper (>= 10), golang-go (>= 2:1.19~), git, ca-certificates
-Standards-Version: 3.9.8
-Homepage: https://github.com/perfsonar/pscheduler
+Rules-Requires-Root: no
+Build-Depends: debhelper (>= 12), golang-any (>= 2:1.19~),
+ dh-sequence-golang,
+ golang-github-mattn-go-runewidth-dev,
+ golang-github-nsf-termbox-go-dev,
+ golang-golang-x-net-dev,
+Testsuite: autopkgtest-pkg-go
+Standards-Version: 4.7.2
 Vcs-Git: git://github.com/perfsonar/pscheduler
 Vcs-Browser: https://github.com/perfsonar/pscheduler
-XS-Go-Import-Path: github.com/Microsoft/Ethr
+Homepage: https://github.com/microsoft/ethr
+XS-Go-Import-Path: github.com/microsoft/ethr
 
 Package: ethr
-Architecture: all
-Depends: ${misc:Depends}
-Description: A cross-platform network performance measurement tool
+Section: net
+Architecture: any
+Depends: ${misc:Depends}, ${shlibs:Depends}
+Static-Built-Using: ${misc:Static-Built-Using}
+Description: Ethr is a Comprehensive Network Measurement Tool for TCP, UDP & ICMP
  Ethr is a cross platform network performance measurement tool written
  in golang. The goal of this project is to provide a native tool for
  comprehensive network performance measurements of bandwidth,

@@ -197,8 +197,6 @@ ifelse(FAMILY,Debian,,dublin-traceroute)		# TODO: Doesn't build on Debian.
 ifelse(FAMILY,Debian,,pscheduler-tool-dublin-traceroute)	# TODO: DT doesn't build on Debian, so no plugin.
 
 
-# Ethr 1.x doesn't build on D11/12 or U20/22/24, so disable it there.
-#ifelse(FAMILY,Debian,,ethr)
 ifelse(DISTRO/eval(MAJOR > 11),Debian/1,ethr,        # We only want ethr on D12 or up
        DISTRO/eval(MAJOR > 23),Ubuntu/1,ethr,        # and U24 and up.
        FAMILY,Debian,,
