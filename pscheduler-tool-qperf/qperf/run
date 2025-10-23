@@ -1,0 +1,203 @@
+#!/usr/bin/env python3
+#
+# Run an qperf test
+#
+
+import datetime
+import pscheduler
+import sys
+import qperf_utils
+import time
+import qperf_parser
+
+# track when this run starts
+start_time = datetime.datetime.now()
+
+logger = pscheduler.Log(prefix='tool-qperf', quiet=True)
+logger.debug('starting qperf tool')
+
+# parse JSON input
+input = pscheduler.json_load(exit_on_error=True)
+
+logger.debug(f'Input is {input}')
+
+try:
+    participant = input['participant']
+    participant_data = input['participant-data']
+    test_spec = input['test']['spec']    
+except KeyError as ex:
+    pscheduler.fail(f'Missing required key in run input: {ex}')
+except Exception:
+    pscheduler.fail(f'Error parsing run input: {sys.exc_info()[0]}')
+
+participants = len(participant_data)
+if not(participants == 2):
+    pscheduler.fail(f'qperf requires exactly 2 participants, got {len(participant_data)}')
+
+config = qperf_utils.get_config()
+
+# look up our local qperf command path
+qperf_cmd  = config['qperf_cmd']
+
+
+# convert from ISO to seconds for test duration
+test_duration = test_spec.get('duration', config['duration'])
+delta = pscheduler.iso8601_as_timedelta(test_duration)
+test_duration = int(pscheduler.timedelta_as_seconds(delta))
+
+
+qperf_first_args = [ qperf_cmd ]
+
+def run_client():
+    diags = []
+    global qperf_first_args
+    qperf_args = qperf_first_args.copy()
+
+    # destination
+    dest = test_spec['dest']
+    qperf_args.append('--host')
+    qperf_args.append(dest)
+
+    #duration
+    qperf_args.append('--time')
+    qperf_args.append(test_duration)
+
+    # cpu affinity
+    client_cpu_affinity = test_spec.get('client-cpu-affinity', None)
+    if client_cpu_affinity is not None:
+        qperf_args.append('--loc_cpu_affinity')
+        qperf_args.append(client_cpu_affinity)
+    server_cpu_affinity = test_spec.get('server-cpu-affinity', None)
+    if server_cpu_affinity is not None:
+        qperf_args.append('--rem_cpu_affinity')
+        qperf_args.append(server_cpu_affinity)
+    
+    # set server port. Must be same as server port
+    qperf_args.append('--listen_port')
+    qperf_args.append(config['port'])
+
+    qperf_test = test_spec['qperf-test'].lower()
+
+    # set data port
+    if qperf_test in ['tcp_bw', 'udp_bw', 'sdp_bw', 'rds_bw', 'sctp_bw']:
+        qperf_args.append('--ip_port')
+        qperf_args.append(config['data_port'])
+    
+    # options to unify output for test types
+    qperf_args.append('--unify_nodes')  # data from server as rem, from client as loc
+
+    # we want all the data
+    qperf_args.append('-vv')
+
+    # set test type
+    qperf_args.append(qperf_test)
+
+    # tell the server to stop after the test completes
+    qperf_args.append('quit')
+
+
+    # join and run_program want these all to be string types, so
+    # just to be safe cast everything in the list to a string
+    qperf_args = [str(x) for x in qperf_args]
+
+    command_line = ' '.join(qperf_args)
+    logger.debug(f'Client: Running command: {command_line}')
+
+    diags.append(command_line)
+
+    try:
+        start_at = input['schedule']['start']
+        logger.debug(f'Client: Sleeping until {start_at}')
+        pscheduler.sleep_until(start_at)
+        logger.debug('Client: Starting')
+    except KeyError:
+        pscheduler.fail('Unable to find start time in input')
+
+    logger.debug(f'Client: Waiting {config["wait_sleep"]} sec for server on other side to start')
+    time.sleep(config['wait_sleep']) # wait for server to start on other side
+
+    qperf_timeout = test_duration
+    qperf_timeout += qperf_utils.setup_time(test_spec.get('link-rtt'))
+    logger.debug(f'Client: timeout for client is {qperf_timeout}')
+
+    try:
+        status, stdout, stderr = pscheduler.run_program(qperf_args, timeout=qperf_timeout)
+    except Exception as ex:
+        logger.error(f'qperf failed to complete execution: {ex}')
+        return {'succeeded': False,
+                'diags': '\n'.join(diags),
+                'error': 'The qperf command failed during execution. See server logs for more details.'}
+
+    return _make_result('\n'.join(diags), status, stdout, stderr, test_duration)
+
+    
+
+def run_server():
+
+    diags = []
+
+    global qperf_first_args
+    qperf_args = qperf_first_args.copy()
+
+    # set server port. Must be same as server port
+    qperf_args.append('--listen_port')
+    qperf_args.append(config['port'])
+    
+    qperf_args = [str(x) for x in qperf_args]
+    logger.debug(f'Server: Running command: {" ".join(qperf_args)}')
+
+    stdout = ''
+    stderr = ''
+    status = 0
+
+    diags.append(' '.join(qperf_args))
+
+    try:
+        start_at = input['schedule']['start']
+        logger.debug(f'Server: Sleeping until {start_at}')
+        pscheduler.sleep_until(start_at)
+        logger.debug('Server: Starting')
+    except KeyError:
+        pscheduler.fail('Unable to find start time in input')
+
+    qperf_timeout = test_duration
+    qperf_timeout += qperf_utils.setup_time(test_spec.get('link-rtt'))
+    qperf_timeout += config['wait_sleep']
+    logger.debug(f'Server: Timeout for server is {qperf_timeout}')
+    status, stdout, stderr = pscheduler.run_program(qperf_args, timeout=qperf_timeout)
+    return _make_result('\n'.join(diags), status, stdout, stderr)
+
+    
+
+def _make_result(diags, status, stdout, stderr, duration=0):
+    if status:
+        error_text = f'[STDOUT]\n{stdout}\n\n[STDERR]\n{stderr}'
+        return {'succeeded': False,
+                'diags': diags,
+                'error': f'qperf returned an error: {error_text}'}
+
+    lines = stdout.split('\n')    
+
+    results = qperf_parser.parse_output(lines, duration)
+    results['diags'] = f'[DIAGS]\n{diags}\n\n[STDOUT]\n{stdout}'
+
+    return results
+
+
+results = {}
+try:
+    if participant == 0:
+        logger.debug('Running client')
+        results = run_client()
+    elif participant == 1:
+        # Non-loopback server
+        logger.debug('Running server')
+        results = run_server()
+    else:
+        pscheduler.fail('Invalid participant.')
+except Exception as ex:
+    logger.exception()
+
+logger.debug(f'Results: {results}')
+
+pscheduler.succeed_json(results)
