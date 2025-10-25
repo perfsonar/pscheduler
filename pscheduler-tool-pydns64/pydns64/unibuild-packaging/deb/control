@@ -11,6 +11,6 @@ Vcs-Browser: https://github.com/perfsonar/pscheduler/tree/master
 Package: pscheduler-tool-pydns64
 Architecture: all
 Depends: ${misc:Depends}, python3, python3-pscheduler,
- pscheduler-server, pscheduler-test-pydns64
+ pscheduler-server, pscheduler-test-dns64
 Description: pScheduler pydns64 tool
  pydns64 tool class for pScheduler
