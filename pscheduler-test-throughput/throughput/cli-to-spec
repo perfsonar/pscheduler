@@ -2,7 +2,6 @@
 #
 # Convert comamnd-line options to a test specification
 
-import optparse
 import pscheduler
 import sys
 import datetime
@@ -205,6 +204,11 @@ opt_parser.add_option("--loopback",
                       action="store_true",
                       dest="loopback")
 
+opt_parser.add_option('--qperf-test',
+                      help='Qperf test to run.',
+                      action='store', type='string',
+                      dest='qperf_test')
+
 (options, remaining_args) = opt_parser.parse_args(args)
 
 if len(remaining_args) != 0:
@@ -365,6 +369,10 @@ if options.reverse_connections:
 if options.loopback:
    result["loopback"] = True
    schema.set(5)
+
+if options.qperf_test:
+   result['qperf-test'] = options.qperf_test
+   schema.set(7)
        
 result["schema"] = schema.value()
 

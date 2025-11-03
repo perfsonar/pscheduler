@@ -219,6 +219,8 @@ ifelse(DISTRO/eval(MAJOR >= 11),Debian/1,iperf3,        # We only want iperf3 on
        iperf3)
 pscheduler-tool-iperf3
 
+pscheduler-tool-qperf
+
 pscheduler-tool-net-snmp-set		--bundle snmp
 pscheduler-tool-nmapreach			--bundle extras
 # TODO: This has problems.  See #1223.
