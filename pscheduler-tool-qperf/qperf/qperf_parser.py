@@ -92,6 +92,12 @@ def parse_output(lines, duration=0):
         'stream-id': 0,
     }
     for line in lines:
+        # some tests send fail messages to stdout, not stderr
+        if 'failed' in line:
+            return {
+                'succeeded': False,
+                'error': f'qperf test failed: {line}'
+            }
         if '=' in line:
             key, value = line.split('=', 1)
             summary.update(translate_line(key.strip(), value.strip()))
