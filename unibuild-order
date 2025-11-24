@@ -115,6 +115,7 @@ jsonschematool
 #
 
 pscheduler-account
+pscheduler-build-enumeration
 pscheduler-jq-library
 # Note: This requires pscheduler-core to work, but not build and
 # python-pscheduler uses it.

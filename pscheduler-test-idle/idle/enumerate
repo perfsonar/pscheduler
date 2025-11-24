@@ -1,15 +1,129 @@
-#!/bin/sed -e 1d
+#!/bin/sed -e 1d;/^#/d
 {
-    "schema": 1,
-
-    "name": "idle",
-    "description": "Consume time in the background",
-    "version": "1.0",
-    "maintainer": {
-        "name": "perfSONAR Development Team",
-	"email": "perfsonar-developer@internet2.edu",
-	"href": "http://www.perfsonar.net"
+  "schema": 1,
+  "name": "idle",
+  "description": "Consume time in the background",
+  "version": "1.0",
+  "maintainer": {
+    "name": "perfSONAR Development Team",
+    "email": "perfsonar-developer@internet2.edu",
+    "href": "http://www.perfsonar.net"
+  },
+  "scheduling-class": "background",
+  "spec": {
+    "jsonschema": {
+      "versions": {
+        "1": {
+          "additionalProperties": false,
+          "properties": {
+            "duration": {
+              "pattern": "^P(?:\\d+(?:\\.\\d+)?W)?(?:\\d+(?:\\.\\d+)?D)?(?:T(?:\\d+(?:\\.\\d+)?H)?(?:\\d+(?:\\.\\d+)?M)?(?:\\d+(?:\\.\\d+)?S)?)?$",
+              "type": "string",
+              "x-invalid-message": "'%s' is not a valid ISO 8601 duration."
+            },
+            "host": {
+              "anyOf": [
+                {
+                  "maxLength": 255,
+                  "minLength": 1,
+                  "pattern": "^[A-Za-z0-9_][A-Za-z0-9\\-]{0,62}(\\.[A-Za-z0-9][A-Za-z0-9\\-]{1,62})*\\.?$",
+                  "type": "string"
+                },
+                {
+                  "oneOf": [
+                    {
+                      "format": "ipv4",
+                      "type": "string"
+                    },
+                    {
+                      "format": "ipv6",
+                      "type": "string"
+                    }
+                  ]
+                }
+              ]
+            },
+            "host-node": {
+              "pattern": "(^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\\-]*[a-zA-Z0-9])\\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\\-]*[A-Za-z0-9])(:[0-9]+)?$)|(^\\[(([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|:((:[0-9a-fA-F]{1,4}){1,7}|:)|fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|::(ffff(:0{1,4}){0,1}:){0,1}((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])|([0-9a-fA-F]{1,4}:){1,4}:((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]))\\](:[0-9]+)?$)",
+              "type": "string"
+            },
+            "parting-comment": {
+              "type": "string"
+            },
+            "schema": {
+              "enum": [
+                1
+              ],
+              "type": "integer"
+            },
+            "starting-comment": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "duration"
+          ],
+          "type": "object"
+        },
+        "2": {
+          "additionalProperties": false,
+          "properties": {
+            "duration": {
+              "pattern": "^P(?:\\d+(?:\\.\\d+)?W)?(?:\\d+(?:\\.\\d+)?D)?(?:T(?:\\d+(?:\\.\\d+)?H)?(?:\\d+(?:\\.\\d+)?M)?(?:\\d+(?:\\.\\d+)?S)?)?$",
+              "type": "string",
+              "x-invalid-message": "'%s' is not a valid ISO 8601 duration."
+            },
+            "host": {
+              "items": {
+                "anyOf": [
+                  {
+                    "maxLength": 255,
+                    "minLength": 1,
+                    "pattern": "^[A-Za-z0-9_][A-Za-z0-9\\-]{0,62}(\\.[A-Za-z0-9][A-Za-z0-9\\-]{1,62})*\\.?$",
+                    "type": "string"
+                  },
+                  {
+                    "oneOf": [
+                      {
+                        "format": "ipv4",
+                        "type": "string"
+                      },
+                      {
+                        "format": "ipv6",
+                        "type": "string"
+                      }
+                    ]
+                  }
+                ]
+              },
+              "minItems": 1,
+              "type": "array"
+            },
+            "parting-comment": {
+              "type": "string"
+            },
+            "schema": {
+              "enum": [
+                2
+              ],
+              "type": "integer"
+            },
+            "starting-comment": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "schema",
+            "duration"
+          ],
+          "type": "object"
+        }
+      }
     },
-
-    "scheduling-class": "background"
+    "versions": [
+      null,
+      "1",
+      "2"
+    ]
+  }
 }

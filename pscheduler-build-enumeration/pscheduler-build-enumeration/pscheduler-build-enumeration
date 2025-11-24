@@ -1,0 +1,86 @@
+#!/bin/sh -e
+#
+# Build pScheduler enumerators from a skeleton and a validator schema.
+#
+# Usage: pscheduler-build-enumeration ENUM-JSON VALIDATOR-SCHEMA-JSON
+#
+
+TMPBASE=$(mktemp -d)
+cleanup()
+{
+    rm -rf "${TMPBASE}"
+}
+trap cleanup EXIT
+
+
+help()
+{
+    echo Usage: $(basename $0) ENUM-JSON VALIDATOR-SCHEMA-JSON
+}
+
+
+die()
+{
+    echo "$@" 1>&2
+    exit 1
+}
+
+
+if [ "$#" -ne 2 ]
+then
+    help
+    exit 1
+fi
+
+
+# Skeletal Enumeration
+ENUM="${TMPBASE}/enum.json"
+jq . "$1" > "${ENUM}" \
+   || die "Could not process enumeration $1"
+
+
+VALIDATOR="${TMPBASE}/validator.json"
+jq . "$2" > "${VALIDATOR}" \
+   || die "Could not process validator $2"
+
+
+# pScheduler's internal dictionary
+PS_DICT="${TMPBASE}/psdict"
+pscheduler internal json-dictionary > "${PS_DICT}"
+
+
+# Assemble an array of schemas by number
+SCHEMA_ARRAY="${TMPBASE}/schema-array.json"
+jq '
+    .["0"] = null
+  | . as $in
+  | keys
+  | [ .[] | $in[.] ]
+' "${VALIDATOR}" > "${SCHEMA_ARRAY}" \
+    || die "Unable to retrieve validators from $2"
+
+
+VALIDATOR_DEREF="${TMPBASE}/validator-deref"
+jsonschematool --pretty --dereference "${PS_DICT}" "${VALIDATOR}" > "${VALIDATOR_DEREF}" \
+    || die "Unable to process $2"
+
+
+SCHEMA_INDEX="${TMPBASE}/schema-index"
+jq '
+  .versions as $versions
+| ( [ .versions | keys[] | tonumber ] | max ) as $highest
+| [ range(0; $highest+1) ]
+| map(
+      (. | tostring) as $index
+    | if ($versions | has($index)) then ($index) else null end
+  )
+' "${VALIDATOR_DEREF}" > "${SCHEMA_INDEX}"
+
+# Generate the program
+echo '#!/bin/sed -e 1d;/^#/d'
+jq --slurp '
+  .[0].spec = {}
+| .[0].spec.jsonschema = .[1]
+| .[0].spec.versions = .[2]
+| .[0]
+' "${ENUM}" "${VALIDATOR_DEREF}" "${SCHEMA_INDEX}"

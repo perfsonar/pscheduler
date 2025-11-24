@@ -1,0 +1,14 @@
+Source: pscheduler-build-enumeration
+Section: misc
+Priority: optional
+Maintainer: perfSONAR Developers <perfsonar-developer@internet2.edu>
+Build-Depends: debhelper (>= 10)
+Standards-Version: 3.9.8
+Vcs-Git: git://github.com/perfsonar/pscheduler
+Vcs-Browser: https://github.com/perfsonar/pscheduler
+
+Package: pscheduler-build-enumeration
+Architecture: all
+Depends: ${misc:Depends}, jq, jsonschematool
+Description: Build a pScheduler enumeration script from JSON
+

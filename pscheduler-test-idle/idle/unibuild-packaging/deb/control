@@ -2,7 +2,7 @@ Source: pscheduler-test-idle
 Section: net
 Priority: optional
 Maintainer: perfSONAR developers <debian@perfsonar.net>
-Build-Depends: debhelper (>= 10), python3
+Build-Depends: debhelper (>= 10), python3, jsonschematool
 Standards-Version: 3.9.8
 Homepage: https://github.com/perfsonar/pscheduler
 Vcs-Git: git://github.com/perfsonar/pscheduler
