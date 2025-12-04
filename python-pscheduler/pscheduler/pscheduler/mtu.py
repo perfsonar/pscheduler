@@ -1,5 +1,6 @@
 """
 Functions for diagnosing path MTU
+Fix https://github.com/perfsonar/pscheduler/issues/1588
 """
 
 import netaddr
