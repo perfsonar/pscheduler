@@ -1,6 +1,6 @@
 #
 # pscheduler-context-linuxnns
 #
-Cmnd_Alias PSCHEDULER_CONTEXT_LINUXNNS=/usr/lib/pscheduler/libexec/classes/context/linuxnns/change-secure
+Cmnd_Alias PSCHEDULER_CONTEXT_LINUXNNS=/usr/lib/pscheduler/classes/context/linuxnns/change-secure
 pscheduler ALL = (root) NOPASSWD: PSCHEDULER_CONTEXT_LINUXNNS
 Defaults!PSCHEDULER_CONTEXT_LINUXNNS !requiretty
