@@ -1,6 +1,2 @@
 apache2.patch
-warmboot.patch
-db-reset.patch
 backup.patch
-db-udpate.patch
-db-change-password.patch
