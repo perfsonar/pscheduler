@@ -1,5 +1,6 @@
 """
 Functions for diagnosing path MTU
+Fix https://github.com/perfsonar/pscheduler/issues/1588
 """
 
 import netaddr
@@ -8,6 +9,53 @@ import socket
 
 from .ipaddr import ip_addr_version
 from .program import run_program
+
+def find_last_hop(hops):
+    null_hop_pattern = r'^\s?\d+\s+\*'
+    for hop in reversed(hops):
+        match = re.search(null_hop_pattern, hop)
+
+        if match:
+            continue
+        else:
+            return hop
+
+
+
+def extract_ip(input_string):
+    """
+    Extracts the first string surrounded by parentheses in the input string: the ip in the first line of traceroute output.
+    """
+    pattern = r'\((.*?)\)'
+
+    match = re.search(pattern, input_string)
+
+    if match:
+        # Group 1 (match.group(1)) contains the content captured inside the inner parentheses
+        return match.group(1)
+    else:
+        return None
+
+def check_host_in_hop(input_string, host):
+    """
+    Checks if the input_string starts with:
+    space + [one or more digits] + [one or more spaces] + [host string] + [one or more spaces]
+    
+    Args:
+        input_string (str): The string to search within.
+        host (str): The specific string content to match (e.g., an IP or domain).
+        
+    Returns:
+        bool: True if the pattern is found at the beginning, False otherwise.
+    """
+    escaped_host = re.escape(host)
+    pattern = rf'^\s?\d+\s+{escaped_host}\s+'
+    
+
+    if re.search(pattern, input_string):
+        return True
+    else:
+        return False
 
 
 def mtu_traceroute(host,
@@ -59,12 +107,16 @@ def mtu_traceroute(host,
     size_matcher = re.compile(r'traceroute to\s.*\s([0-9]+)\s+byte packets')
     hop_matcher = re.compile(r'^\s+[0-9]+\s')
     mtu_matcher = re.compile(r'(?<=F=)[0-9]+')
+    
     packet_size = None
     all_mtus = []
     min_mtu = None
     hops = 0
+    lines =  stdout.split('\n')
 
-    for line in stdout.split('\n'):
+    last_hop = ""
+
+    for line in lines:
 
         size_match = size_matcher.search(line)
         if size_match:
@@ -89,6 +141,16 @@ def mtu_traceroute(host,
             min_mtu = hop_mtu
 
     # If no MTUs were reported, do a best guess
+
+    dest_ip = extract_ip(lines[0])
+
+    if  hops > 0:
+        #last_hop = lines[-2]
+        last_hop = find_last_hop(lines[0:-1])
+        if check_host_in_hop(last_hop, dest_ip) is True:
+            return (min_mtu, all_mtus, hops, 'OK')
+        else:
+            return(None, None, hops, f"Destination |{dest_ip}| must be the last hop --- Possible PMTUD failure in |{last_hop}|")
 
     if min_mtu is None:
         if packet_size is not None and hops == 1:
