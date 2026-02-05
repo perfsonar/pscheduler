@@ -81,7 +81,6 @@ override_dh_auto_install:
 		DATADIR=$(ROOT)/usr/share/pscheduler \
 		INTERNALSDIR=$(ROOT)/usr/lib/pscheduler/internals \
 		install
-	rm -rf $(ROOT)/usr/share/pscheduler/
 
 	make -C api-server \
 		USER_NAME=pscheduler \
