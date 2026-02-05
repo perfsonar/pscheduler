@@ -150,7 +150,13 @@ def mtu_traceroute(host,
         if check_host_in_hop(last_hop, dest_ip) is True:
             return (min_mtu, all_mtus, hops, 'OK')
         else:
-            return(None, None, hops, f"Destination |{dest_ip}| must be the last hop --- Possible PMTUD failure in |{last_hop}|")
+            try:
+                (last_num, last_addr) = last_hop.split()[:2]
+                hop_message = f'last hop was #{last_num} at {last_addr}'
+            except ValueError:
+                hop_mssage = 'last hop unclear'
+
+            return(None, None, hops, f'Destination {dest_ip} not reached; {hop_message}.')
 
     if min_mtu is None:
         if packet_size is not None and hops == 1:
