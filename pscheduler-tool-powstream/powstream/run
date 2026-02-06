@@ -170,11 +170,9 @@ if packet_timeout > 0:
 result_sleep = count * interval + packet_timeout
 
 #set if ipv4 only or ipv6 only
-ip_version = str(test_spec.get('ip-version', ''))
-if ip_version == '4':
-    powstream_args.append('-4')
-elif ip_version == '6':
-    powstream_args.append('-6')
+ip_version = test_spec.get('ip-version', None)
+if ip_version is not None:
+    powstream_args.append(f'-{ip_version}')
 
 #bucket width is used for rounding delay values used as buckets for histogram
 bucket_width = test_spec.get('bucket-width', DEFAULT_BUCKET_WIDTH)
@@ -184,6 +182,24 @@ raw_output = test_spec.get('output-raw', DEFAULT_RAW_OUTPUT)
 
 #determine control port
 control_port = int(test_spec.get('ctrl-port', DEFAULT_OWAMPD_PORT))
+
+# Normalize the source and destination if both are present
+
+if ('source' in test_spec) and ('dest' in test_spec):
+
+    source_ip, dest_ip = pscheduler.ip_normalize_version(
+        test_spec['source'],
+        test_spec['dest'],
+        ip_version=ip_version
+    )
+    log.debug(f'Normalized source/dest to {source_ip} -> {dest_ip}')
+    if source_ip is None or dest_ip is None:
+        pscheduler.succeed_json({
+            "succeeded": False,
+            "error": 'Unable to find common IP version between the two hosts.'
+        })
+    test_spec['source'] = source_ip
+    test_spec['dest'] = dest_ip
     
 #finally, set the addresses and packet flow direction
 if flip:

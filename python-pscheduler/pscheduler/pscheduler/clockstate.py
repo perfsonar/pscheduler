@@ -190,11 +190,18 @@ def _ntp_status():
     except ntplib.NTPException:
         return None
 
+    # There's a bug in ntplib < 0.4 where stratum 0 causes
+    # stratum_to_text() to throw a TypeError.  See #1601.
+    if ntp.stratum > 0:
+        stratum_text = ntplib.stratum_to_text(ntp.stratum)
+    else:
+        stratum_text = "unspecified or invalid stratum"
+
     # Got some status.
     return {
         'offest': ntp.offset,
         'source': 'ntp',
-        'reference': f'{ntplib.stratum_to_text(ntp.stratum)} from {ntplib.ref_id_to_text(ntp.ref_id)}'
+        'reference': f'{stratum_text} from {ntplib.ref_id_to_text(ntp.ref_id)}'
     }
 
 

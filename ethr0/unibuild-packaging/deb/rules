@@ -8,8 +8,8 @@ export GOBIN=$(GOPATH)/bin
 export GOCACHE=$(GOPATH)/.cache
 
 # TODO: May need these for U24+
-#export GO111MODULE=on
-#export GOPROXY=direct
+export GO111MODULE=on
+export GOPROXY=direct
 
 # main packaging script based on dh7 syntax
 %:
@@ -25,10 +25,12 @@ override_dh_auto_clean:
 	$(RM) -rf ethr
 	dh_auto_clean
 
+
 override_dh_auto_build:
-	mkdir -p $(GOPATH) $(GOBIN)
-	go get ./...
-	go build
+	go mod tidy
+	go mod download
+	go build -v -o ethr .
+
 
 override_dh_auto_test:
 
