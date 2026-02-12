@@ -1,3 +1,9 @@
+python-pscheduler (5.2.4-2) perfsonar-5.2; urgency=low
+
+  * Removing deb/patches/classes.patch that was unneeded.
+
+ -- Lætitia Delvaux <adelvaux@man.poznan.pl>  Thu, 12 Feb 2026 16:45:24 +0100 
+
 python-pscheduler (5.2.4-1) perfsonar-5.2; urgency=low
 
   * New upstream version.
