@@ -2,11 +2,9 @@
 
 export PYBUILD_NAME = pscheduler
 
-# Nose needs to be told explicitly where to look for this module.
-export PYTHONPATH = .
-
 %:
 	dh $@ --with python3 --buildsystem=pybuild
 
 override_dh_auto_build:
 	make CLASSES=/usr/lib/pscheduler/classes
+	dh_auto_build
