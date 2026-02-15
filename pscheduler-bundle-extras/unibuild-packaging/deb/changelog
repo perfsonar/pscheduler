@@ -1,8 +1,8 @@
-pscheduler-bundle-extras (5.2.4) perfsonar-5.2; urgency=low
+pscheduler-bundle-extras (5.2.4.2) perfsonar-5.2; urgency=low
 
   * New upstream version.
 
- -- perfSONAR developers <debian@perfsonar.net>  Mon, 09 Feb 2026 16:41:01 -0500
+ -- Lætitia Delvaux <adelvaux@man.poznan.pl>  Sun, 15 Feb 2026 22:05:29 +0100
 
 pscheduler-bundle-extras (5.2.3) perfsonar-5.2; urgency=low
 

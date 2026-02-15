@@ -1,8 +1,8 @@
-pscheduler-archiver-rabbitmq (5.2.4-1) perfsonar-5.2; urgency=low
+pscheduler-archiver-rabbitmq (5.2.4-2) perfsonar-5.2; urgency=low
 
   * New upstream version.
 
- -- perfSONAR developers <debian@perfsonar.net>  Mon, 09 Feb 2026 16:41:00 -0500
+ -- Lætitia Delvaux <adelvaux@man.poznan.pl>  Sun, 15 Feb 2026 22:05:20 +0100
 
 pscheduler-archiver-rabbitmq (5.2.3-1) perfsonar-5.2; urgency=low
 
