@@ -20,6 +20,14 @@ Group:		Unspecified
 
 Provides:	%{name} = %{version}-%{release}
 
+
+# PostgreSQL on RHEL doesn't initialize properly without a
+# language pack installed.  See #1618.
+%if "%(source /etc/os-release && echo $ID)" == "rhel"
+Requires:       glibc-langpack-en
+%endif
+
+
 # TODO: This isn't harmful but can probably go.
 
 # NOTE: This is something of a hack because it forces installation of
@@ -33,7 +41,6 @@ Requires:	postgresql-libs >= %{_pscheduler_postgresql_version}
 Requires:	postgresql-plpython3 >= %{_pscheduler_postgresql_version}
 Requires:	postgresql-server  >= %{_pscheduler_postgresql_version}
 Requires:	rpm-post-wrapper
-
 Requires:       pscheduler-rpm
 Requires:       selinux-policy-devel
 
