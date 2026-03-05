@@ -99,10 +99,12 @@ if participants > 1:
     other_version = packaging.version.Version(participant_data[other_participant].get('iperf3-version', '0.0'))
     logger.debug(f'Local iperf3 is {my_version}, other is {other_version}')
 
-    # If the other end is believed-vulnerable and the local iperf3 has
-    # the compatibility switch, use it.
+    # If the other end is believed-vulnerable, the local iperf3 has
+    # the compatibility switch and we're the server side, use it.
 
-    if other_version < packaging.version.Version('3.17') and my_version >= packaging.version.Version('3.17'):
+    if participant == 2 \
+       and other_version < packaging.version.Version('3.17') \
+       and my_version >= packaging.version.Version('3.17'):
         logger.debug(f'Other side is using an old iperf3 ({other_version}); running in vulnerable mode')
         iperf3_first_args.append('--use-pkcs1-padding')
 
