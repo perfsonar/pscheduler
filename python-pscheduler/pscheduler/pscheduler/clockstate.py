@@ -231,7 +231,7 @@ def clock_state():
 
     # Grab the time now in case anyting below takes awhile.
 
-    utc = datetime.datetime.now(tz=tz.UTC)
+    utc = datetime.datetime.now(tz=datetime.timezone.utc)
     time_here = utc.astimezone(tz.tzlocal())
 
     raw_offset = time_here.strftime("%z")

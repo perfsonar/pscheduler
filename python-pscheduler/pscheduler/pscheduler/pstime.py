@@ -3,8 +3,7 @@
 #
 
 import datetime
-
-from dateutil.tz import tzlocal, UTC
+from dateutil.tz import tzlocal
 
 #
 # Timedelta
@@ -49,7 +48,7 @@ def time_epoch():
     """
     Return the date and time of the Unix epoch
     """
-    return datetime.datetime.fromtimestamp(0, UTC)
+    return datetime.datetime.fromtimestamp(0, datetime.timezone.utc)
 
 
 def time_now():
