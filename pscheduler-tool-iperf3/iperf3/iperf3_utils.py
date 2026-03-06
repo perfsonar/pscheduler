@@ -29,6 +29,10 @@ def get_config():
     if config.has_option("iperf3", "server_port"):
         obj["server_port"] = int(config.get("iperf3", "server_port"))
 
+    # supply local bind address for NAT config
+    if config.has_option("iperf3", "bind_address"):
+        obj["bind_address"] = config.get("iperf3", "bind_address")
+
     return obj
 
 
