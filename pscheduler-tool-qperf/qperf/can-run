@@ -1,0 +1,107 @@
+#!/usr/bin/env python3
+#
+# Determine if this tool can run a test based on a test spec.
+#
+
+import pscheduler
+
+logger = pscheduler.Log(prefix='tool-qperf', quiet=True)
+
+json = pscheduler.json_load(exit_on_error=True)
+
+logger.debug(f'can-run for {json}')
+
+try:
+    if json['type'] not in ['throughput']:
+        pscheduler.succeed_json({
+            'can-run': False,
+            'reasons': [ 'Unsupported test type' ]
+        })
+except KeyError:
+    pscheduler.succeed_json({
+        'can-run': False,
+        'reasons': [ 'Missing test type' ]
+    })
+
+
+try:
+    spec = json['spec']
+    pscheduler.json_check_schema(spec, 7)
+except KeyError:
+    pscheduler.succeed_json({
+        'can-run': False,
+        'reasons': [ 'Missing test specification' ]
+    })
+except ValueError as ex:
+    pscheduler.succeed_json({
+        'can-run': False,
+        'reasons': [ str(ex) ]
+    })
+
+
+throughput_tests = [
+    'rds_bw',  # RDS streaming one way bandwidth
+    'sctp_bw',  # SCTP streaming one way bandwidth
+    'sdp_bw',  # SDP streaming one way bandwidth
+    'tcp_bw',  # TCP streaming one way bandwidth
+    'udp_bw',  # UDP streaming one way bandwidth
+    'rc_bi_bw',  # RC streaming two way bandwidth
+    'rc_bw',  # RC streaming one way bandwidth
+    'uc_bi_bw',  # UC streaming two way bandwidth
+    'uc_bw',  # UC streaming one way bandwidth
+    'ud_bi_bw',  # UD streaming two way bandwidth
+    'ud_bw',  # UD streaming one way bandwidth
+    'rc_rdma_read_bw',  # RC RDMA read streaming one way bandwidth
+    'rc_rdma_write_bw',  # RC RDMA write streaming one way bandwidth
+    'uc_rdma_write_bw'  # UC RDMA write streaming one way bandwidth
+]
+
+try:
+    if spec['qperf-test'].lower() not in throughput_tests:
+        pscheduler.succeed_json({
+            'can-run': False,
+            'reasons': [ 'Unsupported qperf test type' ]
+        })
+except KeyError:
+    pscheduler.succeed_json({
+        'can-run': False,
+        'reasons': [ 'Missing qperf test type' ]
+    })
+except ValueError as ex:
+    pscheduler.succeed_json({
+        'can-run': False,
+        'reasons': [ str(ex) ]
+    })
+
+errors = []
+
+throughput_options = [
+    'schema',
+    'source',
+    'source-node',
+    'dest',
+    'dest-node',
+    'duration',
+    'link-rtt',
+    'client-cpu-affinity',
+    'server-cpu-affinity',
+    'qperf-test',
+]
+
+supported_options = throughput_options
+
+for option in spec:
+    if option not in supported_options:
+        logger.debug(f'qperf unsupported option {option}')
+        errors.append(f'qperf unsupported option {option}')
+
+logger.debug('can-run succeeded')
+
+result = {
+    'can-run': len(errors) == 0
+}
+
+if len(errors) > 0:
+    result['reasons'] = errors
+
+pscheduler.succeed_json(result)
