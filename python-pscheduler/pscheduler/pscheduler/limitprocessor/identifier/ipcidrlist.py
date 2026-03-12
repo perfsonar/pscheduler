@@ -75,19 +75,3 @@ class IdentifierIPCIDRList(object):
                 return True
 
         return False
-
-
-# A short test program
-
-if __name__ == "__main__":
-
-    ident = IdentifierIPCIDRList({
-        "cidrs": [ "10.0.0.0/8",
-                   "172.16.0.0/12",
-                   "192.168.0.0/16",
-                   "fd00::/8"
-               ]
-    })
-
-    for ip in [ "10.9.8.6", "198.6.1.1", "fd00:dead:beef::1" ]:
-        print(ip, ident.evaluate({ "requester": ip }))

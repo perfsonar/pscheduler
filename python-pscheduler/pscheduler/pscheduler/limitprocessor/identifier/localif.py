@@ -70,12 +70,3 @@ class IdentifierLocalIF(object):
                 return True
 
         return False
-
-# A short test program
-
-if __name__ == "__main__":
-
-    ident = IdentifierLocalIF({})
-
-    for ip in [ "127.0.0.1", "::1", "10.1.1.1", "198.129.254.30", "10.0.0.7" ]:
-        print(ip, ident.evaluate({ "requester": ip }))

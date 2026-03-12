@@ -41,13 +41,3 @@ class IdentifierAlways(object):
         """Always return true"""
 
         return True
-
-
-# A short test program
-
-if __name__ == "__main__":
-
-    ident = IdentifierAlways({})
-
-    for ip in [ "10.9.8.6", "198.6.1.1", "fd00:dead:beef::1" ]:
-        print(ip, ident.evaluate({ "requester": ip }))

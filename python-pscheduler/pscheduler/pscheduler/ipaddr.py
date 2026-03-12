@@ -169,21 +169,3 @@ def ip_normalize_version(src, dest, ip_version=None):
         dest_ip = dest_ip_v4
 
     return src_ip, dest_ip
-
-
-if __name__ == "__main__":
-
-    for addr in [
-            "127.0.0.1",
-            "127.0.0.1/32",
-            "127.0.0.1/quack",
-            "::1",
-            "::1/32",
-            "::1/quack",
-            "www.perfsonar.net",
-            "ipv4.test-ipv6.com",
-            "ipv6.test-ipv6.com"
-    ]:
-        print(addr, "->", ip_addr_version(addr))
-        print(addr, "->", ip_addr_version(addr, resolve=False))
-        print()
