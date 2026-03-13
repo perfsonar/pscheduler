@@ -37,7 +37,7 @@ if test_type != "http":
 
 
 
-MAX_SCHEMA = 3
+MAX_SCHEMA = 4
 
 try:
     pscheduler.json_check_schema(json["spec"], MAX_SCHEMA)
