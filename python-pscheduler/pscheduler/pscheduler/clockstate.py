@@ -171,40 +171,6 @@ def _chronyc_status():
     return result
 
 
-def _ntp_status():
-    '''
-    Return the time state as NTP understands it or None if unable.
-    '''
-
-    # See if ntpq is installed on the system.  This should keep
-    # SELinux from raising its hackles over trying to access the
-    # process table.
-
-    if shutil.which('ntpq') is None:
-         return None
-
-    # NTPD might be running.  Try to query it.
-
-    try:
-        ntp = ntplib.NTPClient().request('localhost', timeout=2)
-    except ntplib.NTPException:
-        return None
-
-    # There's a bug in ntplib < 0.4 where stratum 0 causes
-    # stratum_to_text() to throw a TypeError.  See #1601.
-    if ntp.stratum > 0:
-        stratum_text = ntplib.stratum_to_text(ntp.stratum)
-    else:
-        stratum_text = "unspecified or invalid stratum"
-
-    # Got some status.
-    return {
-        'offest': ntp.offset,
-        'source': 'ntp',
-        'reference': f'{stratum_text} from {ntplib.ref_id_to_text(ntp.ref_id)}'
-    }
-
-
 def clock_state():
     """
     Determine the state of the system clock and return a hash of
@@ -254,10 +220,6 @@ def clock_state():
     chronyc_result = _chronyc_status()
     if chronyc_result is not None:
         return { **result, **chronyc_result }
-
-    ntp_result = _ntp_status()
-    if ntp_result is not None:
-        return { **result, **ntp_result }
 
     # If nothing returned before this point, go with whatever we have.
     result['source'] = 'unknown'
