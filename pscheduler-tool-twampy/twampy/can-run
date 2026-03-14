@@ -1,0 +1,68 @@
+#!/usr/bin/env python3
+#
+# Determine if this tool can run a test based on a test spec.
+#
+
+import sys
+
+import pscheduler
+
+from twampy_utils import find_twampy
+
+json = pscheduler.json_load(exit_on_error=True)
+
+# Check test type
+try:
+    if json['type'] not in ['latency', 'rtt']:
+        pscheduler.succeed_json({
+            "can-run": False,
+            "reasons": ["Unsupported test type"]
+        })
+except KeyError:
+    pscheduler.succeed_json({
+        "can-run": False,
+        "reasons": ["Missing test type"]
+    })
+
+# Check test spec
+try:
+    spec = json["spec"]
+    pscheduler.json_check_schema(spec, 4)
+except KeyError:
+    pscheduler.succeed_json({
+        "can-run": False,
+        "reasons": ["Missing test specification"]
+    })
+except ValueError as ex:
+    pscheduler.succeed_json({
+        "can-run": False,
+        "reasons": [str(ex)]
+    })
+
+errors = []
+
+test_type = json['type']
+
+# Check if twampy is available
+if find_twampy() is None:
+    errors.append("twampy is not installed or not found in PATH")
+
+# Only support stamp protocol (or unspecified, defaulting to stamp)
+try:
+    protocol = spec.get('protocol', 'stamp')
+    if protocol not in ('stamp', 'twamp'):
+        errors.append("Only stamp and twamp protocols are supported by twampy")
+except KeyError:
+    pass
+
+# Ports are supported by twampy
+# No port restriction needed
+
+result = {
+    "can-run": len(errors) == 0
+}
+
+if len(errors) > 0:
+    result["reasons"] = errors
+
+pscheduler.succeed_json(result)
