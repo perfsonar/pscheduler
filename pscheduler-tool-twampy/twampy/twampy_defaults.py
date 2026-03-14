@@ -23,6 +23,11 @@ DEFAULT_CLIENT_SLEEP = 1
 # Default STAMP reflector port (IANA assigned for STAMP)
 DEFAULT_STAMP_PORT = 862
 
+# Minimum padding for RFC 8762 compliance
+# STAMP sender packet: 14 bytes header + 30 bytes MBZ = 44 bytes minimum
+# twampy header is 14 bytes, so minimum padding is 30 bytes
+DEFAULT_MIN_PADDING = 30
+
 # Time scale for millisecond conversions
 TIME_SCALE = 0.001
 

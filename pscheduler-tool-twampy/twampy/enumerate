@@ -3,7 +3,7 @@
     "schema": 1,
 
     "name": "twampy",
-    "description": "Determine latency with STAMP (RFC 8762) via Nokia twampy",
+    "description": "Measure latency using STAMP (RFC 8762) / TWAMP-Light via Nokia twampy (unauthenticated mode)",
     "version": "0.1",
     "tests": [ "latency", "rtt" ],
 

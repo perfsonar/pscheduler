@@ -2,6 +2,12 @@
 #
 # Run a STAMP/TWAMP test using Nokia twampy
 #
+# twampy implements STAMP (RFC 8762) unauthenticated mode.
+# Note: twampy's wire format is also compatible with TWAMP-Light.
+# One-way delay measurements (outbound/inbound) require clock
+# synchronization between sender and reflector (e.g. NTP/PTP).
+# Round-trip delay does not require clock synchronization.
+#
 
 import datetime
 import json
@@ -63,6 +69,10 @@ if role == CLIENT_ROLE:
 
     twampy_args = [twampy_cmd, 'sender', dest]
 
+    # Enable verbose output for per-packet data
+    # Without -v, twampy only prints summary statistics
+    twampy_args.append('--verbose')
+
     # Packet count
     count = test_spec.get('packet-count', test_spec.get('count', DEFAULT_PACKET_COUNT))
     twampy_args.extend(['--count', str(count)])
@@ -86,8 +96,14 @@ if role == CLIENT_ROLE:
     twampy_args.extend(['--interval', str(int(interval * 1000))])
 
     # Packet padding / size
-    if 'packet-padding' in test_spec:
-        twampy_args.extend(['--padding', str(test_spec['packet-padding'])])
+    # RFC 8762 requires minimum 44 bytes for sender packet (14 header + 30 MBZ).
+    # twampy header is 14 bytes, so we need at least 30 bytes of padding.
+    padding = test_spec.get('packet-padding', DEFAULT_MIN_PADDING)
+    if padding < DEFAULT_MIN_PADDING:
+        log.warning("Requested padding %d is below RFC 8762 minimum; using %d",
+                     padding, DEFAULT_MIN_PADDING)
+        padding = DEFAULT_MIN_PADDING
+    twampy_args.extend(['--padding', str(padding)])
 
     # DSCP / IP TOS
     if 'ip-tos' in test_spec:
@@ -155,11 +171,20 @@ if role == CLIENT_ROLE:
         pscheduler.succeed_json(results)
 
     # Parse twampy output
-    # twampy sender output format (one line per packet):
-    #   seq=<N> rtt=<float>ms send=<float>ms recv=<float>ms
-    # Summary lines at the end:
-    #   sent=<N> recv=<N> lost=<N> (<float>%)
-    #   rtt min/avg/max/stddev = <float>/<float>/<float>/<float> ms
+    #
+    # twampy verbose per-packet output (via -v, logged to stderr):
+    #   <timestamp> INFO     Reply from <IP> [rseq=<N> sseq=<N> rtt=<float>ms outbound=<float>ms inbound=<float>ms]
+    #
+    # twampy summary output (always printed to stdout):
+    #   ===============================================================================
+    #   Direction         Min         Max         Avg          Jitter     Loss
+    #   -------------------------------------------------------------------------------
+    #     Outbound:       X.XXms     X.XXms     X.XXms       Xus      X.X%
+    #     Inbound:        X.XXms     X.XXms     X.XXms       Xus      X.X%
+    #     Roundtrip:      X.XXms     X.XXms     X.XXms       Xus      X.X%
+    #   -------------------------------------------------------------------------------
+    #
+    # Note: dp() formats values adaptively: Xms, Xus, X.XXsec, X.Xmin
 
     results['packets-sent'] = 0
     results['packets-received'] = 0
@@ -175,56 +200,85 @@ if role == CLIENT_ROLE:
 
     bucket_width = test_spec.get('bucket-width', DEFAULT_BUCKET_WIDTH)
 
-    # Regex patterns for twampy output
+    # Regex for twampy per-packet verbose output (appears in stderr with -v)
+    # Format: "... Reply from <IP> [rseq=N sseq=N rtt=X.XXms outbound=X.XXms inbound=X.XXms]"
     pkt_regex = re.compile(
-        r'seq=(\d+)\s+rtt=([\d.]+)\s*ms\s+send=([\d.]+)\s*ms\s+recv=([\d.]+)\s*ms'
+        r'Reply from\s+(\S+)\s+\[rseq=(\d+)\s+sseq=(\d+)\s+'
+        r'rtt=([\d.]+)\s*ms\s+'
+        r'outbound=([\d.]+)\s*ms\s+'
+        r'inbound=([\d.]+)\s*ms\]'
     )
-    summary_regex = re.compile(
-        r'sent=(\d+)\s+recv=(\d+)\s+lost=(\d+)'
+
+    # Regex for twampy summary statistics lines
+    # Format: "  Roundtrip:      X.XXms     X.XXms     X.XXms       Xus      X.X%"
+    # Values may use adaptive units: ms, us, sec, min
+    delay_value = r'([\d.]+)\s*(?:ms|us|sec|min)'
+    summary_rt_regex = re.compile(
+        r'Roundtrip:\s+' + delay_value + r'\s+' + delay_value + r'\s+' +
+        delay_value + r'\s+' + delay_value + r'\s+([\d.]+)%'
     )
-    stats_regex = re.compile(
-        r'rtt\s+min/avg/max/stddev\s*=\s*([\d.]+)/([\d.]+)/([\d.]+)/([\d.]+)\s*ms'
+    summary_ob_regex = re.compile(
+        r'Outbound:\s+' + delay_value + r'\s+' + delay_value + r'\s+' +
+        delay_value + r'\s+' + delay_value + r'\s+([\d.]+)%'
+    )
+    summary_ib_regex = re.compile(
+        r'Inbound:\s+' + delay_value + r'\s+' + delay_value + r'\s+' +
+        delay_value + r'\s+' + delay_value + r'\s+([\d.]+)%'
     )
 
     roundtrips = []
     rtts = []
+    outbound_delays = []
+    inbound_delays = []
     prev_seq = -1
-    rtt_length = test_spec.get('length', 41)
+    rtt_length = test_spec.get('length', DEFAULT_MIN_PADDING + 14)
+    packets_sent = int(count)
 
-    stdout_lines = stdout.split("\n") if stdout else []
+    # Combine stdout and stderr for parsing (per-packet goes to stderr via logging)
+    all_output = ""
+    if stdout:
+        all_output += stdout
+    if stderr:
+        all_output += "\n" + stderr
+    all_lines = all_output.split("\n")
 
-    for line in stdout_lines:
+    for line in all_lines:
         # Match per-packet output
         pkt_match = pkt_regex.search(line)
         if pkt_match:
-            seq = int(pkt_match.group(1))
-            rtt_ms = float(pkt_match.group(2))
-            send_ms = float(pkt_match.group(3))
-            recv_ms = float(pkt_match.group(4))
+            reply_ip = pkt_match.group(1)
+            rseq = int(pkt_match.group(2))
+            sseq = int(pkt_match.group(3))
+            rtt_ms = float(pkt_match.group(4))
+            outbound_ms = float(pkt_match.group(5))
+            inbound_ms = float(pkt_match.group(6))
 
             rtt_sec = rtt_ms / 1000.0
-            send_sec = send_ms / 1000.0
+            outbound_sec = outbound_ms / 1000.0
+            inbound_sec = inbound_ms / 1000.0
 
-            results['packets-sent'] += 1
             results['packets-received'] += 1
 
             rtts.append(rtt_sec)
+            outbound_delays.append(outbound_sec)
+            inbound_delays.append(inbound_sec)
 
             # Build roundtrip entry for rtt test type
             rt = {
-                'seq': seq,
+                'seq': sseq,
                 'length': int(rtt_length),
                 'rtt': pscheduler.timedelta_as_iso8601(
                     datetime.timedelta(seconds=rtt_sec)
                 )
             }
-            if dest:
-                rt['ip'] = dest
+            if reply_ip:
+                rt['ip'] = reply_ip
             roundtrips.append(rt)
 
-            # Delay histogram (one-way send delay)
+            # Delay histogram (outbound = forward one-way delay, T2-T1)
+            # Note: one-way delay accuracy depends on clock synchronization
             delay_bucket = DELAY_BUCKET_FORMAT % (
-                round(send_sec / bucket_width, DELAY_BUCKET_DIGITS) + 0
+                round(outbound_sec / bucket_width, DELAY_BUCKET_DIGITS) + 0
             )
             if delay_bucket in results['histogram-latency']:
                 results['histogram-latency'][delay_bucket] += 1
@@ -234,29 +288,33 @@ if role == CLIENT_ROLE:
             # Raw packets
             if raw_output:
                 results['raw-packets'].append({
-                    'seq-num': seq,
+                    'seq-num': sseq,
+                    'rseq-num': rseq,
                     'rtt-ms': rtt_ms,
-                    'send-ms': send_ms,
-                    'recv-ms': recv_ms,
+                    'outbound-ms': outbound_ms,
+                    'inbound-ms': inbound_ms,
+                    'ip': reply_ip,
                 })
 
-            # Reorder detection
-            if seq < prev_seq:
+            # Reorder detection (based on sender sequence)
+            if sseq < prev_seq:
                 results['packets-reordered'] += 1
-            prev_seq = seq
+            prev_seq = sseq
 
             continue
 
-        # Match summary line
-        summary_match = summary_regex.search(line)
-        if summary_match:
-            results['packets-sent'] = int(summary_match.group(1))
-            results['packets-received'] = int(summary_match.group(2))
-            results['packets-lost'] = int(summary_match.group(3))
+        # Match roundtrip summary line for loss calculation
+        rt_match = summary_rt_regex.search(line)
+        if rt_match:
+            loss_pct = float(rt_match.group(5))
+            results['packets-lost'] = int(round(packets_sent * loss_pct / 100.0))
             continue
+
+    # Set packets-sent from count parameter
+    results['packets-sent'] = packets_sent
 
     # Ensure packets-lost is consistent
-    if results['packets-lost'] == 0:
+    if results['packets-lost'] == 0 and results['packets-received'] < results['packets-sent']:
         results['packets-lost'] = results['packets-sent'] - results['packets-received']
 
     # Convert results for rtt schema
