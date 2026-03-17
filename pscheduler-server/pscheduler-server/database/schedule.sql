@@ -564,6 +564,93 @@ $$ LANGUAGE plpgsql;
 
 
 
+DO $$ BEGIN PERFORM drop_function_all('schedule_exclusive_time_ranges'); END $$;
+
+-- Find and merge all of the exclusive jobs on the schedule within a
+-- time range
+CREATE OR REPLACE FUNCTION schedule_exclusive_time_ranges (
+    constrain_to TSTZRANGE
+)
+RETURNS TABLE (
+    range TSTZRANGE,
+    duration INTERVAL
+)
+AS $$
+DECLARE
+    current_range TSTZRANGE;
+    range TSTZRANGE;
+BEGIN
+
+    current_range := NULL;
+
+    FOR range in
+        SELECT times FROM run_conflictable
+	WHERE times && constrain_to
+	ORDER BY LOWER(times)
+    LOOP
+
+	IF current_range IS NULL
+	THEN
+	    current_range := range;
+	    CONTINUE;
+	END IF;
+
+	IF range && current_range
+	THEN
+	    -- Ranges overlap.  Combine them.
+	    current_range := current_range + range;
+	ELSE
+	    -- Disjoint range.  Spit out what we have so far and start over.
+	    RETURN QUERY SELECT current_range, (UPPER(current_range)-LOWER(current_range));
+	    current_range := range;
+	END IF;
+
+    END LOOP;
+
+    -- Spit out anything left over.
+    IF current_range IS NOT NULL
+    THEN
+        RETURN QUERY SELECT current_range, (UPPER(current_range)-LOWER(current_range));
+    END IF;
+
+END;
+$$ LANGUAGE plpgsql;
+
+
+DO $$ BEGIN PERFORM drop_function_all('schedule_availability'); END $$;
+
+-- Return schedule availability for exclusive runs within a time
+-- range.
+CREATE OR REPLACE FUNCTION schedule_availability (
+    constrain_to TSTZRANGE
+)
+RETURNS FLOAT
+AS $$
+DECLARE
+    available FLOAT;
+BEGIN
+
+    SELECT
+        1.0 - (EXTRACT('epoch' from SUM(duration)) / EXTRACT('epoch' FROM (UPPER(constrain_to)-LOWER(constrain_to))))
+    INTO available
+    FROM (
+        SELECT duration
+        FROM schedule_exclusive_time_ranges(constrain_to)
+        ) consumed
+    ;
+
+    IF available IS NULL
+    THEN
+        RETURN 1.0;
+    ELSE
+        RETURN available;
+    END IF;
+
+END;
+$$ LANGUAGE plpgsql;
+
+
+
 --
 -- Maintenance
 --

@@ -1,0 +1,168 @@
+#!/usr/bin/env python3
+#
+# Get availability for a pScheduler server
+#
+# General syntax:
+#     pscheduler availability [options]
+
+import argparse
+import datetime
+import os
+import pscheduler
+import sys
+
+pscheduler.set_graceful_exit()
+
+
+#
+# Gargle the arguments
+#
+
+args = sys.argv[1:]
+
+# Pre-convert any trailing arguments that look like times or deltas
+# into raw times so the option parser doesn't choke on negative
+# deltas.
+if len(args) > 0:
+    arg = -1
+    while True and abs(arg) <= len(args):
+        try:
+            args[arg] = pscheduler.datetime_as_iso8601((pscheduler.iso8601_absrel(str(args[arg]))))
+        except ValueError:
+            break
+        arg -= 1
+
+arg_parser = argparse.ArgumentParser(
+    prog=os.path.basename(sys.argv[0]),
+    usage='%(prog)s [ options ] [ start [ end ] ]',
+    formatter_class=argparse.RawTextHelpFormatter,
+    allow_abbrev=False,
+    epilog=
+'''
+Output:
+
+  A floating-point number in [0.0,1.0] showing the fraction of time
+  available on the schedule for the period.
+
+Examples:
+
+  availability
+      Show availability on the local host for the next hour
+
+  availability --host ps3.example.net
+      Show availability  on ps3.example.net for the next hour
+
+  availability -PT1H
+      Show availability on the local host for an hour in the
+      the past
+
+  availability +PT25M
+      Show availability on the local host for 25 minutes in
+      the future
+
+  availability -PT1H +PT30M
+      Show availability  on the local host for an hour in the
+      the past and 30 minutes into the future
+
+  availability 2016-05-01T12:40:00 2016-05-01T12:55:00
+      Show availability on the local host between the times
+      specified.
+'''
+)
+
+arg_parser.add_argument('--bind',
+                        help='Make the request from the provided address',
+                        dest='bind')
+
+arg_parser.add_argument('--host',
+                        help='Request availability from named host',
+                        default=pscheduler.api_local_host(),
+                        dest='host')
+
+arg_parser.add_argument('start',
+                        help='Start time or delta from now (ISO 8601 timestamp or duration)',
+                        nargs='?')
+arg_parser.add_argument('end',
+                        help='End time or delta from now (ISO 8601 timestamp or duration)',
+                        nargs='?')
+
+arguments = arg_parser.parse_args(args)
+
+now = pscheduler.time_now()
+
+if arguments.start is None and arguments.end is None:
+
+    # No arguments
+
+    start = now
+    end = start + datetime.timedelta(hours=1)
+
+
+elif arguments.end is None:
+
+    # One argument is an absolute time or a timedelta.
+
+    try:
+        arg = pscheduler.iso8601_as_datetime(arguments.start)
+    except ValueError:
+        pscheduler.fail('Invalid time or delta specification')
+        
+    if arg < now:
+        start = arg
+        end = now
+    else:
+        start = now
+        end = arg
+
+else:
+
+    # Two arguments is a start and an end
+
+    try:
+        start = pscheduler.iso8601_as_datetime(arguments.start)
+        end = pscheduler.iso8601_as_datetime(arguments.end)
+    except ValueError:
+        pscheduler.fail('Invalid time specification')
+
+
+if end < start:
+    start, end = end, start
+
+
+# Check the API
+
+status, api = pscheduler.url_get(
+    pscheduler.api_url(host=arguments.host, path='api'),
+    throw=False)
+
+if status == 404:
+    pscheduler.fail('Server is not running pScheduler')
+
+if status != 200:
+    pscheduler.fail('Server returned status %d: %s' % (status, api))
+
+if int(api) < 7:
+    pscheduler.fail('Server does not support determining availability.')
+
+
+# Fetch availability
+
+params={}
+
+if start is not None:
+    params['start'] = pscheduler.datetime_as_iso8601(start)
+
+if end is not None:
+    params['end'] = pscheduler.datetime_as_iso8601(end)
+
+status, avail = pscheduler.url_get(
+    pscheduler.api_url(host=arguments.host, path='schedule/availability'),
+    bind=arguments.bind, params=params, throw=False)
+
+if status != 200:
+    pscheduler.fail('Server returned status %d: %s' % (status, avail))
+
+if 'availability' not in avail or (not isinstance(avail['availability'], float)):
+    pscheduler.fail('Server returned unexpected data.')
+
+print(avail['availability'])

@@ -22,6 +22,7 @@ RAWPROGRAMS=\
 
 COMMANDS=\
 	archiving-summary \
+	availability \
 	batch \
 	cancel \
 	clock \
