@@ -471,7 +471,7 @@ def tasks():
                 offer_set = tool_offers.get(participant)                
                 if offer_set is None:
                     offers.append(
-                        f'{participant}:\n\n  Offered nothing.'
+                        f'\n{participant}:\n Offered nothing.'
                         f'{ "  (System is running older software.)" if participant_api < 6 else ""}'
                     )
                     continue
@@ -491,12 +491,12 @@ def tasks():
                         for reason in decline['can-run'].get('reasons', []):
                             declined += f'''      - {reason}\n'''
                 else:
-                    declined = '\n  Declined nothing.'
+                    declined = '  Declined nothing.'
 
-                offers.append(f'{participant}:\n\n{offered}{declined}')
+                offers.append(f'\n{participant}:\n\n{offered}\n{declined}')
 
             joined = '\n'.join(offers)
-            return no_can_do(f'None of the participants could run this test:\n\n{joined}')
+            return no_can_do(f'None of the participants could run this test:{joined}')
 
         task['tool'] = tool
 
