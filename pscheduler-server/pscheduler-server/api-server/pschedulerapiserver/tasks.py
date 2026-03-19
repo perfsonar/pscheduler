@@ -480,11 +480,11 @@ def tasks():
                     offer['tool']['name']
                     for offer in offer_set if offer['can-run']['can-run']
                 ])
-                offered = f'  Offered\n    {offer_list}' if offer_list else '  Offered nothing.'
+                offered = f'  Offered:\n    {offer_list}' if offer_list else '  Offered nothing.'
 
                 declined_list = [ offer for offer in offer_set if not offer['can-run']['can-run'] ]
                 if declined_list:
-                    declined = '\n  Declined\n'
+                    declined = '\n  Declined:\n'
                     # TODO: This would be nicer (but messier) with list comprehensions
                     for decline in declined_list:
                         declined += f'''    {decline['tool']['name']}\n'''
@@ -496,7 +496,7 @@ def tasks():
                 offers.append(f'\n{participant}:\n\n{offered}\n{declined}')
 
             joined = '\n'.join(offers)
-            return no_can_do(f'None of the participants could run this test:{joined}')
+            return no_can_do(f'None of the participants could run this test:\n{joined}')
 
         task['tool'] = tool
 
