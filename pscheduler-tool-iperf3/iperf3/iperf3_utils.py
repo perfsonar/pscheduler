@@ -70,7 +70,14 @@ def strip_output(output):
     try:
         output_json['start']['system_info'] = 'REDACTED'
     except KeyError:
-        return output
+        pass
+
+    # This shows up on the client when asking for server-side results.
+    try:
+        output_json['server_output_json']['start']['system_info'] = 'REDACTED'
+    except KeyError:
+        pass
+
 
     return pscheduler.json_dump(output_json, pretty=True)
 

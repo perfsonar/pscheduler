@@ -13,48 +13,34 @@ logger = pscheduler.Log(quiet=True)
 
 input = pscheduler.json_load(exit_on_error=True)
 
-results = {'succeeded': False}
-
 try:
     result_list = input['results']
 except KeyError as ex:
     logger.error("merged-result error %s" % ex)
     pscheduler.fail("Missing required key in merged-result input: %s" % ex)
 
+reverse = input['test']['spec'].get('reverse', False)
 single_ended = input['test']['spec'].get('single-ended')
 loopback = input['test']['spec'].get('loopback')
 result_len = len(result_list)
 if not(result_len == 2 or (result_len == 1 and (single_ended or loopback))):
     pscheduler.fail("Expected 2 results in merged-results, got %s" % len(result_list))
 
-source_results = result_list[0]
-if (not single_ended) and (not loopback):
-    dest_results = result_list[1]
 
-final_results = source_results
+# The run method will have made sure that the lead participant will
+# have the receiving end's data.  Use that.  See #1158.
 
-# if this was a reverse test, we want to look at the destination's
-# output instead of the source's
+if result_list[0] is not None:
+    result = result_list[0]
+else:
+    result = { 'succeeded': False }
 
-if input['test']['spec'].get('reverse') and not (single_ended or loopback):
-    final_results = dest_results
-    # This has to be copied in manually since the 'source' side in a reverse
-    # test is the receiver.
-    final_results['summary']['summary']['receiver-throughput-bits'] \
-        = source_results['summary']['summary']['receiver-throughput-bits']
+diags = []
 
-# it's possible one could come back as null, ensure we have the right type
-if not final_results:
-    final_results = {"succeeded": False}
+for participant in [0] if result_len == 1 else [0, 1]:
+    if result_list[participant].get('diags') is not None:
+        diags.append(f'''Participant {participant}:\n{result_list[participant]['diags']}\n''')
 
-final_diag = ""
+result['diags'] = '\n'.join(diags)
 
-if source_results and source_results.get('diags'):
-    final_diag += "Participant 0:\n%s\n" % source_results.get('diags')
-
-if not (single_ended or loopback) and dest_results and dest_results.get('diags'):
-    final_diag += "Participant 1:\n%s\n" % dest_results.get('diags')
-
-final_results['diags'] = final_diag
-
-pscheduler.succeed_json(final_results)
+pscheduler.succeed_json(result)

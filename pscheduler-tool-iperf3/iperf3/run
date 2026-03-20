@@ -194,6 +194,11 @@ def run_client():
     # always ask for json output, a lot more consistent to parse
     iperf3_args.append("--json")
 
+    # If we're running a forward measurement, get the server-side
+    # output, which will have more information.  See #1158.
+    if not reverse:
+        iperf3_args.append('--get-server-output')
+
     # big list of optional arguments to iperf3, map from test spec
     if 'interval' in test_spec and test_spec['interval'] != None:
         iperf3_args.append('-i')
