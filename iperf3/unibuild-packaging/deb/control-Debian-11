@@ -9,7 +9,7 @@ Homepage: http://software.es.net/iperf/
 
 Package: iperf3
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}
+Depends: libiperf0 (= ${binary:Version}), ${shlibs:Depends}, ${misc:Depends}
 Description: Internet Protocol bandwidth measuring tool
  Iperf3 is a tool for performing network throughput measurements. It can
  test either TCP or UDP throughput.

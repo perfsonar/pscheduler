@@ -1,1 +1,2 @@
-common-golang-sys.patch
+go-18
+00-ipv6.patch

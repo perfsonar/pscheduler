@@ -5,8 +5,9 @@ clock_state() below.
 
 import pscheduler
 import datetime
-import ntplib
 import shutil
+import ntplib
+import psutil
 
 from dateutil import tz
 
@@ -170,33 +171,6 @@ def _chronyc_status():
     return result
 
 
-def _ntp_status():
-    '''
-    Return the time state as NTP understands it or None if unable.
-    '''
-
-    # See if ntpq is installed on the system.  This should keep
-    # SELinux from raising its hackles over trying to access the
-    # process table.
-
-    if shutil.which('ntpq') is None:
-         return None
-
-    # NTPD might be running.  Try to query it.
-
-    try:
-        ntp = ntplib.NTPClient().request('localhost', timeout=2)
-    except ntplib.NTPException:
-        return None
-
-    # Got some status.
-    return {
-        'offest': ntp.offset,
-        'source': 'ntp',
-        'reference': f'{ntplib.stratum_to_text(ntp.stratum)} from {ntplib.ref_id_to_text(ntp.ref_id)}'
-    }
-
-
 def clock_state():
     """
     Determine the state of the system clock and return a hash of
@@ -223,7 +197,7 @@ def clock_state():
 
     # Grab the time now in case anyting below takes awhile.
 
-    utc = datetime.datetime.now(tz=tz.UTC)
+    utc = datetime.datetime.now(tz=datetime.timezone.utc)
     time_here = utc.astimezone(tz.tzlocal())
 
     raw_offset = time_here.strftime("%z")
@@ -246,10 +220,6 @@ def clock_state():
     chronyc_result = _chronyc_status()
     if chronyc_result is not None:
         return { **result, **chronyc_result }
-
-    ntp_result = _ntp_status()
-    if ntp_result is not None:
-        return { **result, **ntp_result }
 
     # If nothing returned before this point, go with whatever we have.
     result['source'] = 'unknown'

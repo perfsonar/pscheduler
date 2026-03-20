@@ -1,13 +1,13 @@
 Format: http://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Source: https://github.com/microsoft/ethr
 Upstream-Name: ethr
-Source: https://github.com/Microsoft/Ethr
 
 Files: *
 Copyright: 2020 Microsoft Corporation
 License: MIT
 
 Files: debian/*
-Copyright: 2020-2020 perfSONAR project
+Copyright: 2020-2025 perfSONAR project
 License: Apache-2.0
 
 License: Apache-2.0

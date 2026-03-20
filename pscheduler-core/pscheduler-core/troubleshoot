@@ -433,7 +433,8 @@ def run_task(message, lead, task, bind=None):
             archived = [ True
                          for ar in archive_data["archivings"]
                          # This is a fallback for older systems
-                         if ar.get("completed", ar.get("archived", False))
+                         if ar.get("completed", ar.get("archived", False)) \
+                         and ar['spec'].get('label','').startswith('troubleshoot-')
             ]
 
             if len(archived) == len(task["archives"]):
@@ -580,6 +581,8 @@ for host in hosts:
                          "schedule": {},
                          "archives": [
                              {
+                                 "schema": 3,
+                                 "label": "troubleshoot-1",
                                  "archiver": "bitbucket",
                                  "data": {},
                                  "transform": {
@@ -588,6 +591,8 @@ for host in hosts:
                                  "ttl": "PT1M"
                              },
                              {
+                                 "schema": 3,
+                                 "label": "troubleshoot-2",
                                  "archiver": "bitbucket",
                                  "data": {},
                                  "transform": {
@@ -612,6 +617,8 @@ for host in hosts:
                          "schedule": {},
                          "archives": [
                              {
+                                 "schema": 3,
+                                 "label": "troubleshoot-1",
                                  "archiver": "bitbucket",
                                  "data": {},
                                  "transform": {
@@ -620,6 +627,8 @@ for host in hosts:
                                  "ttl": "PT1M"
                              },
                              {
+                                 "schema": 3,
+                                 "label": "troubleshoot-2",
                                  "archiver": "bitbucket",
                                  "data": {},
                                  "transform": {

@@ -24,6 +24,7 @@ Requires:	pscheduler-server >= 1.1.6
 Requires:	rpm-post-wrapper
 
 BuildRequires:	pscheduler-rpm
+BuildRequires:	%{_pscheduler_python}-nose2
 
 
 %define directory %{_includedir}/make

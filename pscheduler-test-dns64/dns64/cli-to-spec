@@ -27,49 +27,56 @@ else:
    args = []
 
    if not isinstance(json_args,list):
-      pscheduler.fail("Invalid JSON for this operation")
+      pscheduler.fail('Invalid JSON for this operation')
    for arg in json_args:
       if not ( isinstance(arg, str)
                or isinstance(arg, int)
                or isinstance(arg, float) ):
-         pscheduler.fail("Invalid JSON for this operation")
+         pscheduler.fail('Invalid JSON for this operation')
    args = [ str(arg) for arg in json_args ]
 
 
 
 # Gargle the arguments
 
-arg_parser = argparse.ArgumentParser(epilog=
-"""
-    This test validates DNS64 IPv4 and IPv6 conversion
-"""
+arg_parser = pscheduler.FailingArgumentParser(
+   prog='dns64',
+   allow_abbrev=False,
+   epilog=
+'''Examples:
+
+    dns64 --query host.example.org --nameserver dns.example.org
+        Translate host.example.org through nameserver dns.example.org
+'''
 )
 
 # Add all potential command line options here
 
 
-arg_parser.add_argument("--query",
-                      help="Hostname to look up.")
+arg_parser.add_argument('--query',
+                        help='Hostname to look up.')
 
-arg_parser.add_argument("--nameserver",
-                      help="Nameserver to query.")
+arg_parser.add_argument('--nameserver',
+                        help='Nameserver to query.')
 
-arg_parser.add_argument("--host",
-                      help="Host to run the test.")
+arg_parser.add_argument('--host',
+                        help='Host to run the test.')
 
-arg_parser.add_argument("--host-node",
-                      help="Hostname to run the test.", dest="host_node")
+arg_parser.add_argument('--host-node',
+                        help='Hostname to run the test.'
+                        , dest='host_node')
 
-arg_parser.add_argument("--translation-prefix",
-                      help="Translation prefix to expect for converted results.",
-                      dest="translation_prefix")
+arg_parser.add_argument('--translation-prefix',
+                        help='Translation prefix to expect for converted results.',
+                        dest='translation_prefix')
 
-arg_parser.add_argument("--timeout",
-                      help="Timeout for each query attempt",
-                      dest="timeout")
+arg_parser.add_argument('--timeout',
+                        help='Timeout for each query attempt',
+                        dest='timeout')
 
 
 arguments = arg_parser.parse_args(args)
+
 
 
 # Call .set(n) on this object to indicate that a parameter requires

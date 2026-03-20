@@ -11,7 +11,7 @@ Package: iperf3-ssl3
 Provides: iperf3
 Conflicts: iperf3
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}
+Depends: libiperf0-ssl3 (= ${binary:Version}), ${shlibs:Depends}, ${misc:Depends}
 Description: Internet Protocol bandwidth measuring tool
  Iperf3 is a tool for performing network throughput measurements. It can
  test either TCP or UDP throughput.

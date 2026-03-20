@@ -2,6 +2,7 @@
 Description=pScheduler server - __PROG__
 # This forces starting and stopping in concert
 PartOf=__PGSERVICE__
+After=__PGSERVICE__
 
 [Service]
 Type=exec

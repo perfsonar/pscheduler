@@ -5,7 +5,7 @@
 
 %define short ethr
 Name:		%{short}
-Version:	0.2.1
+Version:	1.0.0
 Release:	1%{?dist}
 Summary:	A cross-platform network performance measurement tool
 BuildArch:	%(uname -m)
@@ -20,7 +20,7 @@ URL:		https://github.com/microsoft/ethr
 
 Source:		%{short}-%{version}.tar.gz
 
-Patch3:         common-golang-sys.patch
+Patch0:		00-ipv6.patch
 
 BuildRequires:  golang
 
@@ -43,7 +43,7 @@ such as Windows, Linux and other Unix systems.
 
 %prep
 %setup -q
-%patch3 -p1
+%patch0 -p1
 
 
 %build

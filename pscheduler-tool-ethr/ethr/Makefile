@@ -11,7 +11,10 @@ FILES=\
 	merged-results \
 	participant-data \
 	run \
-	ethr_defaults.py
+	run-ethr0 \
+	run-ethr1 \
+	ethr_defaults.py \
+	ethr_utils.py
 
 install: $(FILES)
 ifndef DESTDIR

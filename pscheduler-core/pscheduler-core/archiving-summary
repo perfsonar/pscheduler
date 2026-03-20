@@ -231,7 +231,11 @@ def format_count(count, total):
     """
     Format a count and percentage as '12 ( 57%)'
     """
-    return f'{count:9d} ({round(count/total*100):3d}%)'
+    try:
+        rounded = round(count/total*100)
+    except ZeroDivisionError:
+        rounded = 0
+    return f'{count:9d} ({rounded:3d}%)'
 
 
 def header_line(label_len):

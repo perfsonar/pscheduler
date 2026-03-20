@@ -99,10 +99,12 @@ if participants > 1:
     other_version = packaging.version.Version(participant_data[other_participant].get('iperf3-version', '0.0'))
     logger.debug(f'Local iperf3 is {my_version}, other is {other_version}')
 
-    # If the other end is believed-vulnerable and the local iperf3 has
-    # the compatibility switch, use it.
+    # If the other end is believed-vulnerable, the local iperf3 has
+    # the compatibility switch and we're the server side, use it.
 
-    if other_version < packaging.version.Version('3.17') and my_version >= packaging.version.Version('3.17'):
+    if participant == 2 \
+       and other_version < packaging.version.Version('3.17') \
+       and my_version >= packaging.version.Version('3.17'):
         logger.debug(f'Other side is using an old iperf3 ({other_version}); running in vulnerable mode')
         iperf3_first_args.append('--use-pkcs1-padding')
 
@@ -191,6 +193,11 @@ def run_client():
 
     # always ask for json output, a lot more consistent to parse
     iperf3_args.append("--json")
+
+    # If we're running a forward measurement, get the server-side
+    # output, which will have more information.  See #1158.
+    if not reverse:
+        iperf3_args.append('--get-server-output')
 
     # big list of optional arguments to iperf3, map from test spec
     if 'interval' in test_spec and test_spec['interval'] != None:

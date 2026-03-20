@@ -1,3 +1,21 @@
+pscheduler-tool-tracemtu (5.2.4-2) perfsonar-5.2; urgency=low
+
+  * New upstream version.
+
+ -- Lætitia Delvaux <adelvaux@man.poznan.pl>  Sun, 15 Feb 2026 22:04:57 +0100
+
+pscheduler-tool-tracemtu (5.2.3-1) perfsonar-5.2; urgency=low
+
+  * New upstream version.
+
+ -- perfSONAR developers <debian@perfsonar.net>  Fri, 19 Sep 2025 12:36:07 -0400
+
+pscheduler-tool-tracemtu (5.2.2-1) perfsonar-5.2; urgency=low
+
+  * New upstream version.
+
+ -- perfSONAR developers <debian@perfsonar.net>  Thu, 04 Sep 2025 10:34:14 -0400
+
 pscheduler-tool-tracemtu (5.2.1-2) perfsonar-5.2; urgency=low
 
   * New upstream version.

@@ -1,6 +1,6 @@
 #
 # pscheduler-context-linuxvrf
 #
-Cmnd_Alias PSCHEDULER_CONTEXT_LINUXVRF=/usr/lib/pscheduler/libexec/classes/context/linuxvrf/change-secure
+Cmnd_Alias PSCHEDULER_CONTEXT_LINUXVRF=/usr/lib/pscheduler/classes/context/linuxvrf/change-secure
 pscheduler ALL = (root) NOPASSWD: PSCHEDULER_CONTEXT_LINUXVRF
 Defaults!PSCHEDULER_CONTEXT_LINUXVRF !requiretty

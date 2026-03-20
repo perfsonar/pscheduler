@@ -8,9 +8,12 @@ Homepage: https://github.com/perfsonar/pscheduler
 Vcs-Git: git://github.com/perfsonar/pscheduler
 Vcs-Browser: https://github.com/perfsonar/pscheduler
 
+# TODO: The ethr0 dependency can be removed in 5.3.
 Package: pscheduler-tool-ethr
 Architecture: all
 Depends: ${misc:Depends}, python3-pscheduler,
- pscheduler-server (>= 4.3.0), ethr
+ pscheduler-server (>= 4.3.0), ethr (>= 1.0.0) | ethr0, ethr0
+Recommends: ethr
 Description: pScheduler Ethr tool
- Ethr tool class for pScheduler
+ Ethr tool class for pScheduler, supports both ethr 1.x and
+ 0.2.1 if installed as ethr0.

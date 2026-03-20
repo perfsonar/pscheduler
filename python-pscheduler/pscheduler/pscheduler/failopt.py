@@ -2,9 +2,53 @@
 Option parser that fails with minimal output when help is requested
 """
 
+import argparse
 import optparse
+import sys
 
 from .exitstatus import fail
+
+
+# TODO: This isn't really needed
+class FailingArgumentParser(argparse.ArgumentParser):
+    '''
+    A subclass of argparse that conforms to the expected
+    spec-to-cli behavior when '--help' or '-h' is present in the
+    arguments::
+
+     - Sends help to the standard error
+     - Exits 1
+
+    Don't use this for regular command-line programs.  The epilog
+    can be formatted verbatim with
+    formatter_class=argparse.RawTextHelpFormatter,
+    '''
+
+    def __init__(self, *args, **kwargs):
+        '''
+        Initialize an instance of the class.
+        '''
+        super().__init__(*args, **kwargs)
+
+    def parse_args(self, args):
+        '''
+        Parse the arguments, but behave correctly when asked for
+        help.
+        '''
+        if '--help' in args or '-h' in args:
+            help_lines = []
+            if self.usage is not None:
+                help_lines.append(super().format_usage())
+            help_lines.append('Options:\n')
+            # TODO: This doesn't work when there are positionals.
+            help_lines.extend(super().format_help().split('\n\n', maxsplit=2)[1].split('\n')[1:])
+
+            print('\n'.join(help_lines), file=sys.stderr)
+            if self.epilog is not None:
+                print(self.epilog, file=sys.stderr)
+                exit(1)
+
+        return super().parse_args(args)
 
 
 class FailingOptionParser(optparse.OptionParser):

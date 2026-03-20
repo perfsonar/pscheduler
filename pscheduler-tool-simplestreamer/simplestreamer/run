@@ -192,7 +192,7 @@ elif participant == 1:
     diags.append("Listening on %s" % str(server_address))
 
     try:
-        socket_family = pscheduler.ip_addr_version(server_host, family=True)[0]
+        socket_family = pscheduler.ip_addr_version(recv_ip, family=True)[0]
         diags.append("Socket family is %s" % str(socket_family))
         if socket_family is None:
             raise socket.gaierror("Unable to determine address family.")
