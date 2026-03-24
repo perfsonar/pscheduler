@@ -28,6 +28,7 @@ Requires:       jq >= 1.6.10
 Requires:       oniguruma >= 5.9
 
 BuildRequires:  %{_pscheduler_python}
+BuildRequires:  %{_pscheduler_python}-devel
 BuildRequires:  %{_pscheduler_python}-setuptools
 BuildRequires:  Cython >= 0.19
 BuildRequires:  jq-devel >= 1.5
