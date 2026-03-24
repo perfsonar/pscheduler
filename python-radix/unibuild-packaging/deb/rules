@@ -1,7 +1,0 @@
-#!/usr/bin/make -f
-
-export PYBUILD_NAME=radix
-export DEB_BUILD_MAINT_OPTIONS=hardening=+all
-
-%:
-	dh $@ --with python3 --buildsystem=pybuild
