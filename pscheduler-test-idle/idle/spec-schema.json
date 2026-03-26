@@ -1,38 +1,43 @@
-[
-    null,
+{
+    "#": "This gets merged into every version as #/local.",
+    "local": {},
 
-    {
-        "type": "object",
-        "properties": {
-	    "schema":           { "type": "integer", "enum": [ 1 ] },
-	    "duration":         { "$ref": "#/pScheduler/Duration" },
-	    "host":             { "$ref": "#/pScheduler/Host" },
-	    "host-node":        { "$ref": "#/pScheduler/URLHostPort" },
-	    "parting-comment":  { "$ref": "#/pScheduler/String" },
-	    "starting-comment": { "$ref": "#/pScheduler/String" }
-        },
-        "additionalProperties": false,
-        "required": [
-	    "duration"
-        ]
-    },
+    "#": "The zeroth element of this is always null since there is no version 0.",
+    "versions": [
+	null,
 
-    {
-        "type": "object",
-        "properties": {
-	    "schema":           { "type": "integer", "enum": [ 2 ] },
-	    "duration":         { "$ref": "#/pScheduler/Duration" },
-	    "host":             { "type": "array",
-                                  "items": { "$ref": "#/pScheduler/Host" },
-                                  "minItems" : 1 },
-	    "parting-comment":  { "$ref": "#/pScheduler/String" },
-	    "starting-comment": { "$ref": "#/pScheduler/String" }
-        },
-        "additionalProperties": false,
-        "required": [
-	    "schema",
-	    "duration"
-        ]
-    }
-]
+	{
+            "type": "object",
+            "properties": {
+		"schema":           { "type": "integer", "enum": [ 1 ] },
+		"duration":         { "$ref": "#/pScheduler/Duration" },
+		"host":             { "$ref": "#/pScheduler/Host" },
+		"host-node":        { "$ref": "#/pScheduler/URLHostPort" },
+		"parting-comment":  { "$ref": "#/pScheduler/String" },
+		"starting-comment": { "$ref": "#/pScheduler/String" }
+            },
+            "additionalProperties": false,
+            "required": [
+		"duration"
+            ]
+	},
 
+	{
+            "type": "object",
+            "properties": {
+		"schema":           { "type": "integer", "enum": [ 2 ] },
+		"duration":         { "$ref": "#/pScheduler/Duration" },
+		"host":             { "type": "array",
+                                      "items": { "$ref": "#/pScheduler/Host" },
+                                      "minItems" : 1 },
+		"parting-comment":  { "$ref": "#/pScheduler/String" },
+		"starting-comment": { "$ref": "#/pScheduler/String" }
+            },
+            "additionalProperties": false,
+            "required": [
+		"schema",
+		"duration"
+            ]
+	}
+    ]
+}

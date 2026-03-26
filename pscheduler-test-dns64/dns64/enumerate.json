@@ -1,8 +1,9 @@
-#!/bin/sed -e 1d
+
+
 {
     "schema": 1,
-    "name": "http",
-    "description": "Measure HTTP Response Time",
+    "name": "dns64",
+    "description": "Test that checks for the correct functioning of a DNS64 server",
     "version": "1.0",
     "maintainer": {
         "name": "perfSONAR Development Team",

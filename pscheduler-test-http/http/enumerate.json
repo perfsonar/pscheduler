@@ -1,9 +1,7 @@
-#!/bin/sed -e 1d
 {
     "schema": 1,
-
-    "name": "clock",
-    "description": "Measure the clock difference between hosts",
+    "name": "http",
+    "description": "Measure HTTP Response Time",
     "version": "1.0",
     "maintainer": {
         "name": "perfSONAR Development Team",

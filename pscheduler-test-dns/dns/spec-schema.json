@@ -1,0 +1,32 @@
+{
+    "#": "This gets merged into every version as #/local.",
+    "local": {
+	"record": {
+            "type": "string",
+            "enum": [ "a", "aaaa", "ns", "cname", "soa", "ptr", "mx", "txt" ]
+        }
+    },
+
+    "#": "Versions of the schema, with the zeroth always being null.",
+    "versions": [
+	null,
+
+	{
+            "type": "object",
+            "properties": {
+		"schema":            { "$ref": "#/pScheduler/Cardinal" },
+		"host":              { "$ref": "#/pScheduler/Host" },
+		"host-node":         { "$ref": "#/pScheduler/URLHostPort" },
+		"query":             { "$ref": "#/pScheduler/Host" },
+		"record":            { "$ref": "#/local/record" },
+		"timeout":           { "$ref": "#/pScheduler/Duration" },
+		"nameserver":        { "$ref": "#/pScheduler/Host" }
+            },
+	    "additionalProperties": false,
+            "required": [
+		"query",
+		"record"
+            ]
+	}
+    ]
+}

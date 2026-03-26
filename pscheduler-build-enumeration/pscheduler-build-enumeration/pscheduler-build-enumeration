@@ -34,36 +34,67 @@ fi
 
 
 # Skeletal Enumeration
-ENUM="${TMPBASE}/enum.json"
+ENUM="${TMPBASE}/enum"
 jq . "$1" > "${ENUM}" \
     || die "Could not process enumeration $1"
 
 
+# Plugin validator
+
+jq . "$2" > /dev/null \
+    || die "Could not process validator $2"
+
+# If local isn't present, use an empty default.
+VALIDATOR_LOCAL="${TMPBASE}/validator-local"
+jq 'if .local == null then {} else .local end' "$2" \
+   > "${VALIDATOR_LOCAL}"
+
+# Do some basic validation on the validator.
+jq '
+    if (.versions | type) != "array"
+    then
+        ("Versions not found in validator\n" | halt_error(1))
+    else
+        empty
+    end' "$2"
+
+VALIDATOR_ARRAY="${TMPBASE}/validator-array"
+jq '.versions' "$2" > "${VALIDATOR_ARRAY}"
+
+
+# Make sure the first element is null
+jq 'if .[0] != null then halt_error(1) else halt_error(0) end' "${VALIDATOR_ARRAY}" > /dev/null \
+   || die "First element in validator must be null."
+
+
 # Plugin validator array, converted to an object
-VALIDATOR="${TMPBASE}/validator.json"
-jq '[ to_entries[] | .key = (.key | tostring ) ] | from_entries' "$2" > "${VALIDATOR}" \
-   || die "Could not process validator $2"
+VALIDATOR="${TMPBASE}/validator"
+jq '[ to_entries[] | .key = (.key | tostring ) ] | from_entries' "${VALIDATOR_ARRAY}" > "${VALIDATOR}" \
 
 
-# pScheduler's internal dictionary
-PS_DICT="${TMPBASE}/psdict.json"
+# pScheduler's internal dictionary, with /local merged in
+PS_DICT="${TMPBASE}/psdict"
 pscheduler internal json-dictionary > "${PS_DICT}"
 
+PS_DICT_FULL="${TMPBASE}/psdict-full"
+jq --slurp '
+    .[].local = .[1] | .[0]
+    ' "${PS_DICT}" "${VALIDATOR_LOCAL}" > "${PS_DICT_FULL}"
 
 # Dereferenced validator
-VALIDATOR_DEREF="${TMPBASE}/validator-deref.json"
-jsonschematool --pretty --dereference "${PS_DICT}" "${VALIDATOR}" > "${VALIDATOR_DEREF}" \
+VALIDATOR_DEREF="${TMPBASE}/validator-deref"
+jsonschematool --pretty --dereference "${PS_DICT_FULL}" "${VALIDATOR}" > "${VALIDATOR_DEREF}" \
     || die "Unable to process $2"
 
 
 # Ibid, turned into an array
-VALIDATOR_ARRAY="${TMPBASE}/validator-array.json"
+VALIDATOR_ARRAY_FINAL="${TMPBASE}/validator-array-final"
 jq '
       [ to_entries[] | .key = (.key | tonumber) ]
     | sort_by(.key)
     | [ .[] | .value ]
    ' "${VALIDATOR_DEREF}" \
-       > "${VALIDATOR_ARRAY}"
+       > "${VALIDATOR_ARRAY_FINAL}"
 
 
 # Generate the program
@@ -73,4 +104,4 @@ jq --slurp '
     | .[0].spec.jsonschema = {}
     | .[0].spec.jsonschema.versions = .[1]
     | .[0]
-    ' "${ENUM}" "${VALIDATOR_ARRAY}"
+    ' "${ENUM}" "${VALIDATOR_ARRAY_FINAL}"
