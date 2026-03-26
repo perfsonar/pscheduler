@@ -24,23 +24,11 @@ default: build
 
 ### TODO: THIS PIECE SHOULD BE INCLUDABLE
 
-PS_DICT := pscheduler-dictionary.json
-$(PS_DICT)::
-	pscheduler internal json-dictionary > $@
-TO_CLEAN += $(PS_DICT)
-
-
-SPEC_SCHEMA := spec-schema.json
-DEREFED_SPEC := spec-schema-deref.json
-$(DEREFED_SPEC): $(PS_DICT) $(SPEC_SCHEMA)
-	jsonschematool --pretty  --dereference $(PS_DICT) $(SPEC_SCHEMA) > $@
-TO_CLEAN := $(DEREFED_SPEC)
-
-
 ENUMERATE := enumerate
 ENUMERATE_JSON := enumerate.json
+SPEC_SCHEMA := spec-schema.json
 
-$(ENUMERATE): $(ENUMERATE_JSON) $(DEREFED_SPEC)
+$(ENUMERATE): $(ENUMERATE_JSON) $(SPEC_SCHEMA)
 	pscheduler-build-enumeration $^ > $@
 	chmod +x $@
 TO_CLEAN += $(ENUMERATE)

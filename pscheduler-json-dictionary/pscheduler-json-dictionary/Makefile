@@ -15,14 +15,18 @@ PICKLER := ./pickle-json
 %.pickled: %.json $(PICKLER)
 	$(PICKLER) < $< > $@
 
-INTERNAL := json-dictionary
-$(INTERNAL): $(INTERNAL).raw
+json-dictionary: json-dictionary.raw
 ifndef DATADIR
 	@echo No DATADIR specified for build
 	@false
 endif
 	sed -e "s|__DATADIR__|$(DATADIR)|g" < $< > $@
-TO_CLEAN += $(INTERNAL)
+TO_CLEAN += json-dictionary
+
+INTERNALS := \
+	json-dictionary \
+	json-validate
+
 
 
 TESTS := ./tests
@@ -30,11 +34,11 @@ test: $(JSON) $(TESTS)
 	./run-tests --prefix pScheduler "$(JSON)" "$(TESTS)"
 
 
-build: test $(PICKLED) $(INTERNAL)
+build: test $(PICKLED) $(INTERNALS)
 
 
 
-install: $(PICKLED) $(INTERNAL)
+install: build
 ifndef INTERNALSDIR
 	@echo No INTERNALSDIR specified for installation
 	@false
@@ -44,7 +48,7 @@ ifndef INSTALLED_DATADIR
 	@false
 endif
 	mkdir -p $(INTERNALSDIR)
-	install -m 555 $(INTERNAL) $(INTERNALSDIR)
+	install -m 555 $(INTERNALS) $(INTERNALSDIR)
 	mkdir -p $(INSTALLED_DATADIR)
 	install -m 444 $(JSON) $(INSTALLED_DATADIR)
 	install -m 444 $(PICKLED) $(INSTALLED_DATADIR)

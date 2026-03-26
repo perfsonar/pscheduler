@@ -31,6 +31,13 @@
             "items": { "$ref": "#/pScheduler/Cardinal" }
         },
 
+	"#": "This is any cardinal number reperesented as a string",
+	"CardinalString": {
+            "type": "string",
+	    "pattern": "^[1-9]\\d*$"
+        },
+
+
         "CardinalZero": {
             "type": "integer",
             "minimum": 0
@@ -968,6 +975,44 @@
 
         "PluginEnumeration": {
 
+	    "local": {
+
+		"SpecJSONSchemaVersions": {
+		    "#": "TODO: Need to use prefixItems to make sure the first is null",
+		    "type": "array",
+		    "#": "TODO: Validate JSONSchema here, not just anything.",
+		    "items": {
+			"anyOf": [
+			    { "type": "object" },
+			    { "type": "null" }
+			]
+		    },
+		    "minItems": 2
+		},
+
+		"SpecJSONSchema": {
+		    "type": "object",
+		    "properties": {
+			"versions": { "$ref": "#/pScheduler/PluginEnumeration/local/SpecJSONSchemaVersions" }
+		    },
+		    "additionalProperties": false,
+		    "required": [
+			"versions"
+		    ]		    
+		},
+
+		"Spec": {
+		    "type": "object",
+		    "properties": {
+			"jsonschema": { "$ref": "#/pScheduler/PluginEnumeration/local/SpecJSONSchema" }
+		    },
+		    "additionalProperties": false,
+		    "required": [
+			"jsonschema"
+		    ]
+		}
+	    },
+
             "Test": {
                 "type": "object",
                 "properties": {
@@ -984,7 +1029,8 @@
                             "exclusive",
                             "normal"
                         ]
-                    }
+                    },
+		    "spec":         { "$ref": "#/pScheduler/PluginEnumeration/local/Spec" }
                 },
                 "additionalProperties": false,
                 "required": [

@@ -36,51 +36,41 @@ fi
 # Skeletal Enumeration
 ENUM="${TMPBASE}/enum.json"
 jq . "$1" > "${ENUM}" \
-   || die "Could not process enumeration $1"
+    || die "Could not process enumeration $1"
 
 
+# Plugin validator array, converted to an object
 VALIDATOR="${TMPBASE}/validator.json"
-jq . "$2" > "${VALIDATOR}" \
+jq '[ to_entries[] | .key = (.key | tostring ) ] | from_entries' "$2" > "${VALIDATOR}" \
    || die "Could not process validator $2"
 
 
 # pScheduler's internal dictionary
-PS_DICT="${TMPBASE}/psdict"
+PS_DICT="${TMPBASE}/psdict.json"
 pscheduler internal json-dictionary > "${PS_DICT}"
 
 
-# Assemble an array of schemas by number
-SCHEMA_ARRAY="${TMPBASE}/schema-array.json"
-jq '
-    .["0"] = null
-  | . as $in
-  | keys
-  | [ .[] | $in[.] ]
-' "${VALIDATOR}" > "${SCHEMA_ARRAY}" \
-    || die "Unable to retrieve validators from $2"
-
-
-VALIDATOR_DEREF="${TMPBASE}/validator-deref"
+# Dereferenced validator
+VALIDATOR_DEREF="${TMPBASE}/validator-deref.json"
 jsonschematool --pretty --dereference "${PS_DICT}" "${VALIDATOR}" > "${VALIDATOR_DEREF}" \
     || die "Unable to process $2"
 
 
-SCHEMA_INDEX="${TMPBASE}/schema-index"
+# Ibid, turned into an array
+VALIDATOR_ARRAY="${TMPBASE}/validator-array.json"
 jq '
-  .versions as $versions
-| ( [ .versions | keys[] | tonumber ] | max ) as $highest
-| [ range(0; $highest+1) ]
-| map(
-      (. | tostring) as $index
-    | if ($versions | has($index)) then ($index) else null end
-  )
-' "${VALIDATOR_DEREF}" > "${SCHEMA_INDEX}"
+      [ to_entries[] | .key = (.key | tonumber) ]
+    | sort_by(.key)
+    | [ .[] | .value ]
+   ' "${VALIDATOR_DEREF}" \
+       > "${VALIDATOR_ARRAY}"
+
 
 # Generate the program
 echo '#!/bin/sed -e 1d;/^#/d'
 jq --slurp '
-  .[0].spec = {}
-| .[0].spec.jsonschema = .[1]
-| .[0].spec.versions = .[2]
-| .[0]
-' "${ENUM}" "${VALIDATOR_DEREF}" "${SCHEMA_INDEX}"
+      .[0].spec = {}
+    | .[0].spec.jsonschema = {}
+    | .[0].spec.jsonschema.versions = .[1]
+    | .[0]
+    ' "${ENUM}" "${VALIDATOR_ARRAY}"
