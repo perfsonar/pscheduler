@@ -1,0 +1,131 @@
+{
+    "#": "This gets merged into every version as #/local.",
+    "local": {
+        "protocol": {
+            "type": "string",
+            "enum": ["icmp", "twamp"]
+        }
+    },
+
+    "#": "The zeroth element of this is always null since there is no version 0.",
+    "versions": [
+        null,
+
+        {
+            "type": "object",
+            "properties": {
+                "schema":            { "$ref": "#/pScheduler/Cardinal", "enum": [ 1 ] },
+                "count":             { "$ref": "#/pScheduler/Cardinal" },
+                "dest":              { "$ref": "#/pScheduler/Host" },
+		"#": "There is no dest-node because this is a one-participant test.",
+		"#": "TODO: This is supposed to be a 20-bit number.  Validate that.",
+                "flow-label":        { "$ref": "#/pScheduler/CardinalZero" },
+                "hostnames":         { "$ref": "#/pScheduler/Boolean" },
+                "interval":          { "$ref": "#/pScheduler/Duration" },
+                "ip-version":        { "$ref": "#/pScheduler/ip-version" },
+                "source":            { "$ref": "#/pScheduler/Host" },
+                "source-node":       { "$ref": "#/pScheduler/URLHostPort" },
+                "suppress-loopback": { "$ref": "#/pScheduler/Boolean" },
+                "ip-tos":            { "$ref": "#/pScheduler/IPTOS" },
+                "length":            { "$ref": "#/pScheduler/Cardinal" },
+                "ttl":               { "$ref": "#/pScheduler/Cardinal" },
+                "deadline":          { "$ref": "#/pScheduler/Duration" },
+                "timeout":           { "$ref": "#/pScheduler/Duration" }
+            },
+            "required": [
+                "dest"
+            ],
+            "additionalProperties": false
+        },
+
+        {
+            "type": "object",
+            "properties": {
+                "schema":            { "$ref": "#/pScheduler/Cardinal", "enum": [ 2 ] },
+                "count":             { "$ref": "#/pScheduler/Cardinal" },
+                "dest":              { "$ref": "#/pScheduler/Host" },
+                "#": "There is no dest-node because this is a one-participant test.",
+                "#": "TODO: This is supposed to be a 20-bit number.  Validate that.",
+                "flow-label":        { "$ref": "#/pScheduler/CardinalZero" },
+                "hostnames":         { "$ref": "#/pScheduler/Boolean" },
+                "interval":          { "$ref": "#/pScheduler/Duration" },
+                "ip-version":        { "$ref": "#/pScheduler/ip-version" },
+                "source":            { "$ref": "#/pScheduler/Host" },
+                "source-node":       { "$ref": "#/pScheduler/URLHostPort" },
+                "suppress-loopback": { "$ref": "#/pScheduler/Boolean" },
+                "ip-tos":            { "$ref": "#/pScheduler/IPTOS" },
+                "length":            { "$ref": "#/pScheduler/Cardinal" },
+                "ttl":               { "$ref": "#/pScheduler/Cardinal" },
+                "deadline":          { "$ref": "#/pScheduler/Duration" },
+                "timeout":           { "$ref": "#/pScheduler/Duration" },
+                "protocol":          { "$ref": "#/local/protocol" }
+            },
+            "required": [
+                "schema",
+                "dest"
+            ],
+            "additionalProperties": false
+        },
+
+        {
+            "type": "object",
+            "properties": {
+                "schema":            { "$ref": "#/pScheduler/Cardinal", "enum": [ 3 ] },
+                "count":             { "$ref": "#/pScheduler/Cardinal" },
+                "dest":              { "$ref": "#/pScheduler/Host" },
+                "#": "There is no dest-node because this is a one-participant test.",
+		"#": "TODO: This is supposed to be a 20-bit number.  Validate that.",
+                "flow-label":        { "$ref": "#/pScheduler/CardinalZero" },
+                "fragment":          { "$ref": "#/pScheduler/Boolean" },
+                "hostnames":         { "$ref": "#/pScheduler/Boolean" },
+                "interval":          { "$ref": "#/pScheduler/Duration" },
+                "ip-version":        { "$ref": "#/pScheduler/ip-version" },
+                "source":            { "$ref": "#/pScheduler/Host" },
+                "source-node":       { "$ref": "#/pScheduler/URLHostPort" },
+                "suppress-loopback": { "$ref": "#/pScheduler/Boolean" },
+                "ip-tos":            { "$ref": "#/pScheduler/IPTOS" },
+                "length":            { "$ref": "#/pScheduler/Cardinal" },
+                "ttl":               { "$ref": "#/pScheduler/Cardinal" },
+                "deadline":          { "$ref": "#/pScheduler/Duration" },
+                "timeout":           { "$ref": "#/pScheduler/Duration" },
+                "protocol":          { "$ref": "#/local/protocol" }
+            },
+            "required": [
+                "schema",
+                "dest"
+            ],
+            "additionalProperties": false
+        },
+
+	{
+            "type": "object",
+            "properties": {
+                "schema":            { "$ref": "#/pScheduler/Cardinal", "enum": [ 4 ] },
+                "count":             { "$ref": "#/pScheduler/Cardinal" },
+                "dest":              { "$ref": "#/pScheduler/Host" },
+                "#": "There is no dest-node because this is a one-participant test.",
+		"#": "TODO: This is supposed to be a 20-bit number.  Validate that.",
+                "flow-label":        { "$ref": "#/pScheduler/CardinalZero" },
+                "fragment":          { "$ref": "#/pScheduler/Boolean" },
+                "hostnames":         { "$ref": "#/pScheduler/Boolean" },
+                "interval":          { "$ref": "#/pScheduler/Duration" },
+                "ip-version":        { "$ref": "#/pScheduler/ip-version" },
+                "source":            { "$ref": "#/pScheduler/Host" },
+                "source-node":       { "$ref": "#/pScheduler/URLHostPort" },
+                "suppress-loopback": { "$ref": "#/pScheduler/Boolean" },
+                "ip-tos":            { "$ref": "#/pScheduler/IPTOS" },
+                "length":            { "$ref": "#/pScheduler/Cardinal" },
+                "ttl":               { "$ref": "#/pScheduler/Cardinal" },
+                "deadline":          { "$ref": "#/pScheduler/Duration" },
+                "timeout":           { "$ref": "#/pScheduler/Duration" },
+                "port":              { "$ref": "#/pScheduler/IPPort" },
+                "protocol":          { "$ref": "#/pScheduler/String" }
+            },
+            "required": [
+                "schema",
+                "dest"
+            ],
+            "additionalProperties": false
+        }
+    ]
+}

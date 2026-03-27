@@ -1,8 +1,9 @@
-#!/bin/sed -e 1d
+
+
 {
     "schema": 1,
-    "name": "snmpset",
-    "description": "Set SNMP Variables",
+    "name": "wifibssid",
+    "description": "Outputs a list of BSSIDs in json format with the given SSID",
     "version": "1.0",
     "maintainer": {
         "name": "perfSONAR Development Team",

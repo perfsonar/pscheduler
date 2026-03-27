@@ -1,0 +1,22 @@
+{
+    "#": "This gets merged into every version as #/local.",
+    "local": {},
+
+    "#": "The zeroth element of this is always null since there is no version 0.",
+    "versions": [
+	null,
+
+	{
+            "type": "object",
+            "properties": {
+                "schema":           { "type": "integer", "enum": [ 1 ] },
+                "data":             { "$ref": "#/pScheduler/AnyJSON" },
+                "host":             { "$ref": "#/pScheduler/Host" },
+                "host-node":        { "$ref": "#/pScheduler/URLHostPort" },
+                "fail":             { "$ref": "#/pScheduler/Probability" }
+            },
+            "additionalProperties": false,
+            "required": []
+        }
+    ]
+}

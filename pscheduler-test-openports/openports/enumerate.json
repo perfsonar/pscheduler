@@ -1,15 +1,14 @@
-#!/bin/sed -e 1d
+
+
 {
     "schema": 1,
-    "name": "throughput",
-    "description": "Measure network throughput between hosts",
-
+    "name": "openports",
+    "description": "Identifies open ports on a given host/subnet",
     "version": "1.0",
-
     "maintainer": {
         "name": "perfSONAR Development Team",
 	"email": "perfsonar-developer@internet2.edu",
 	"href": "http://www.perfsonar.net"
     },
-    "scheduling-class": "exclusive"
+    "scheduling-class": "background"
 }

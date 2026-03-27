@@ -1,0 +1,34 @@
+{
+    "#": "This gets merged into every version as #/local.",
+    "local": {},
+
+    "#": "The zeroth element of this is always null since there is no version 0.",
+    "versions": [
+        null,
+
+        {
+            "type": "object",
+            "properties": {
+                "schema": { "type": "integer", "enum": [ 1 ] },
+                "host":        { "$ref": "#/pScheduler/Host" },
+                "host-node":   { "$ref": "#/pScheduler/Host" },
+                "duration":    { "$ref": "#/pScheduler/Duration" },
+                "timeout":     { "$ref": "#/pScheduler/Duration" },
+	        "_access-key": { "$ref": "#/pScheduler/String" },
+	        "bucket":      { "$ref": "#/pScheduler/String" },
+                "_secret-key": { "$ref": "#/pScheduler/String" },
+	        "url":	       { "$ref": "#/pScheduler/URL" },
+       	        "iterations":  { "$ref": "#/pScheduler/Cardinal" },
+	        "object-size": { "$ref": "#/pScheduler/Cardinal" }
+            },
+            "required": [
+                "_access-key",
+                "bucket",
+	        "_secret-key",
+                "url",
+                "object-size"
+            ],
+            "additionalProperties": false
+        }
+    ]
+}

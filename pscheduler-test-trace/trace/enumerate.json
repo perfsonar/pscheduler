@@ -1,9 +1,9 @@
-#!/bin/sed -e 1d
 {
     "schema": 1,
-    "name": "snmpget",
-    "description": "Make an/multiple SNMP get query(ies) to a destination and (optionally) calculate delta values between polls.",
-    "version": "1.0.0.3",
+
+    "name": "trace",
+    "description": "Trace the path between IP hosts",
+    "version": "1.0",
     "maintainer": {
         "name": "perfSONAR Development Team",
 	"email": "perfsonar-developer@internet2.edu",

@@ -1,0 +1,87 @@
+{
+    "#": "This gets merged into every version as #/local.",
+    "local": {
+        "VersionNumber": {
+            "type": "string",
+            "enum": [ "1", "2c", "3"]
+        },
+        "AuthProtocol": {
+            "type": "string",
+            "enum": [ "md5", "sha"]
+        },
+        "PrivProtocol": {
+            "type": "string",
+            "enum": [ "aes", "des"]
+        },
+        "SecurityLevel": {
+            "type": "string",
+            "enum": [ "noauthnopriv", "authnopriv", "authpriv"]
+        },
+        "TransportProtocol": {
+            "type": "string",
+            "enum": ["tcp", "udp"]
+        },
+        "SNMPv1Spec": {
+            "type": "object",
+            "properties": {
+                "schema":       { "$ref": "#/pScheduler/Cardinal" },
+                "host":         { "$ref": "#/pScheduler/Host" },
+                "host-node":    { "$ref": "#/pScheduler/Host" },
+                "dest":         { "$ref": "#/pScheduler/Host" },
+                "version":      { "$ref": "#/local/VersionNumber"},
+                "_community":    { "$ref": "#/pScheduler/String"},
+                "oid":          { "type": "array", 
+                                  "items": { "$ref": "#/pScheduler/SNMPOID" } 
+                                },
+                "protocol":     { "$ref": "#/local/TransportProtocol" },
+                "timeout":      { "$ref": "#/pScheduler/Duration" }
+            },
+            "required": [
+                "version",
+                "_community",
+                "dest",
+                "oid"
+            ]
+        },
+        "SNMPv3Spec": {
+            "type": "object",
+            "properties": {
+                "schema":       { "$ref": "#/pScheduler/Cardinal" },
+                "host":         { "$ref": "#/pScheduler/Host" },
+                "host-node":    { "$ref": "#/pScheduler/Host" },
+                "dest":         { "$ref": "#/pScheduler/Host" },
+                "version":      { "$ref": "#/local/VersionNumber"},
+                "oid":          { "type": "array", 
+                                  "items": { "$ref": "#/pScheduler/SNMPNumericOID" } 
+                                },
+                "protocol":     { "$ref": "#/local/TransportProtocol" },
+                "security-name":           { "$ref": "#/pScheduler/String" },
+                "auth-protocol":           { "$ref": "#/local/AuthProtocol" },
+                "priv-protocol":           { "$ref": "#/local/PrivProtocol" },
+                "auth-key":           { "$ref": "#/pScheduler/String" },
+                "priv-key":           { "$ref": "#/pScheduler/String" },
+                "security-level":           { "$ref": "#/local/SecurityLevel" },
+                "context":      { "$ref": "#/pScheduler/String" },
+                "timeout":      { "$ref": "#/pScheduler/Duration" }
+            },
+            "required": [
+                "version",
+                "dest",
+                "oid"
+            ]
+        }
+    },
+
+    "#": "The zeroth element of this is always null since there is no version 0.",
+    "versions": [
+        null,
+
+	{
+            "oneOf": [
+		{ "$ref": "#/local/SNMPv1Spec" },
+		{ "$ref": "#/local/SNMPv3Spec" }
+	    ],
+            "additionalProperties": false
+	}
+    ]
+}

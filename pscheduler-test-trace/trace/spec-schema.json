@@ -1,0 +1,73 @@
+{
+    "#": "This gets merged into every version as #/local.",
+    "local": {
+        "algorithm": {
+            "type": "string"
+        },
+	
+        "probe-type": {
+            "type": "string",
+            "enum": ["icmp", "udp", "tcp"]
+        }
+    },
+
+    "#": "The zeroth element of this is always null since there is no version 0.",
+    "versions": [
+        null,
+
+	{
+            "type": "object",
+            "properties": {
+                "schema":      { "type": "integer", "enum": [ 1 ] },
+                "algorithm":   { "$ref": "#/pScheduler/String" },
+                "as":          { "$ref": "#/pScheduler/Boolean" },
+                "dest-port":   { "$ref": "#/pScheduler/IPPort" },
+                "dest":        { "$ref": "#/pScheduler/Host" },
+                "first-ttl":   { "$ref": "#/pScheduler/Cardinal" },
+                "fragment":    { "$ref": "#/pScheduler/Boolean" },
+                "hops":        { "$ref": "#/pScheduler/Cardinal" },
+                "hostnames":   { "$ref": "#/pScheduler/Boolean" },
+                "ip-tos":      { "$ref": "#/pScheduler/Cardinal" },
+                "ip-version":  { "$ref": "#/pScheduler/ip-version" },
+                "length":      { "$ref": "#/pScheduler/Cardinal" },
+                "probe-type":  { "$ref": "#/local/probe-type" },
+                "queries":     { "$ref": "#/pScheduler/Cardinal" },
+                "sendwait":    { "$ref": "#/pScheduler/Duration" },
+                "source":      { "$ref": "#/pScheduler/Host" },
+                "source-node": { "$ref": "#/pScheduler/URLHostPort" },
+                "wait":        { "$ref": "#/pScheduler/Duration" }
+            },
+            "required": [
+                "dest"
+            ]
+        },
+
+        {
+            "type": "object",
+            "properties": {
+                "schema":      { "type": "integer", "enum": [ 2 ] },
+                "algorithm":   { "$ref": "#/pScheduler/String" },
+                "as":          { "$ref": "#/pScheduler/Boolean" },
+                "dest-port":   { "$ref": "#/pScheduler/IPPort" },
+                "dest":        { "$ref": "#/pScheduler/Host" },
+                "first-ttl":   { "$ref": "#/pScheduler/Cardinal" },
+                "flow-label":  { "$ref": "#/pScheduler/Cardinal" },
+                "fragment":    { "$ref": "#/pScheduler/Boolean" },
+                "hops":        { "$ref": "#/pScheduler/Cardinal" },
+                "hostnames":   { "$ref": "#/pScheduler/Boolean" },
+                "ip-tos":      { "$ref": "#/pScheduler/Cardinal" },
+                "ip-version":  { "$ref": "#/pScheduler/ip-version" },
+                "length":      { "$ref": "#/pScheduler/Cardinal" },
+                "probe-type":  { "$ref": "#/local/probe-type" },
+                "queries":     { "$ref": "#/pScheduler/Cardinal" },
+                "sendwait":    { "$ref": "#/pScheduler/Duration" },
+                "source":      { "$ref": "#/pScheduler/Host" },
+                "source-node": { "$ref": "#/pScheduler/URLHostPort" },
+                "wait":        { "$ref": "#/pScheduler/Duration" }
+            },
+            "required": [
+                "dest"
+            ]
+        }
+    ]
+}
