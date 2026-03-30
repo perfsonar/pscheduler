@@ -17,7 +17,11 @@
 	        "_access-key": { "$ref": "#/pScheduler/String" },
 	        "bucket":      { "$ref": "#/pScheduler/String" },
                 "_secret-key": { "$ref": "#/pScheduler/String" },
-	        "url":	       { "$ref": "#/pScheduler/URL" },
+	        "url":	       {
+		    "type": "string",
+		    "format": "uri",
+		    "pattern": "^https?://"
+		},
        	        "iterations":  { "$ref": "#/pScheduler/Cardinal" },
 	        "object-size": { "$ref": "#/pScheduler/Cardinal" }
             },

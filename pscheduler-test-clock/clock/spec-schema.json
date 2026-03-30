@@ -16,7 +16,8 @@
             },
             "required": [
 		"dest"
-            ]
+            ],
+	    "additionalProperties": false
 	},
 
 	{
@@ -30,7 +31,8 @@
             },
             "required": [
 		"dest"
-            ]
+            ],
+	    "additionalProperties": false
 	}
     ]
 }
