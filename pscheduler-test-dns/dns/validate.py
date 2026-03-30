@@ -10,33 +10,6 @@
 
 from pscheduler import json_validate
 
-MAX_SCHEMA = 1
-
-def spec_is_valid(json):
-    schema = {
-        "local": {
-            "RecordType": {
-                "type": "string",
-                "enum": [ "a", "aaaa", "ns", "cname", "soa", "ptr", "mx", "txt" ]
-            }
-        },
-        "type": "object",
-        "properties": {
-            "schema":            { "$ref": "#/pScheduler/Cardinal" },
-            "host":              { "$ref": "#/pScheduler/Host" },
-            "host-node":         { "$ref": "#/pScheduler/URLHostPort" },
-            "query":             { "$ref": "#/pScheduler/Host" },
-            "record":            { "$ref": "#/local/RecordType" },
-            "timeout":           { "$ref": "#/pScheduler/Duration" },
-            "nameserver":        { "$ref": "#/pScheduler/Host" },
-            },
-        "required": [
-            "query",
-            "record"
-            ]
-        }
-
-    return json_validate(json, schema, max_schema=MAX_SCHEMA)
 
 
 def result_is_valid(json):

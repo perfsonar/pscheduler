@@ -10,25 +10,6 @@
 
 from pscheduler import json_validate
 
-MAX_SCHEMA = 1
-
-def spec_is_valid(json):
-    schema = {
-        "type": "object",
-        "properties": {
-            "schema":           { "$ref": "#/pScheduler/Cardinal" },
-            "duration":         { "$ref": "#/pScheduler/Duration" },
-            "host":             { "$ref": "#/pScheduler/Host" },
-            "host-node":        { "$ref": "#/pScheduler/URLHostPort" },
-            "parting-comment":  { "$ref": "#/pScheduler/String" },
-            "starting-comment": { "$ref": "#/pScheduler/String" },
-            },
-        "required": [
-            "duration"
-            ]
-        }
-    return json_validate(json, schema, max_schema=MAX_SCHEMA)
-
 
 def result_is_valid(json):
     schema = {

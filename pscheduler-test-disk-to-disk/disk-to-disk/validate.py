@@ -10,32 +10,6 @@
 
 from pscheduler import json_validate
 
-MAX_SCHEMA = 1
-
-def spec_is_valid(json):
-    schema = {"type": "object",
-                # schema, host, host-node, and timeout are standard,
-                # and should be included
-                "properties": {
-                    "schema":       { "$ref": "#/pScheduler/Cardinal" },
-                    "parallel":     { "$ref": "#/pScheduler/Cardinal" },
-                    "host":         { "$ref": "#/pScheduler/Host"     },
-                    "dest":         { "$ref": "#/pScheduler/String"   },
-                    "source":       { "$ref": "#/pScheduler/String"   },
-                    "duration":     { "$ref": "#/pScheduler/Duration" },
-                    "timeout":      { "$ref": "#/pScheduler/Duration" },
-                    "cleanup":      { "$ref": "#/pScheduler/Boolean"  },
-                },
-                # If listed here, data of this type MUST be in the test spec
-                "required":  [
-                    "dest", "source"
-                    ],
-
-        "additionalProperties": False
-    }
-
-    return json_validate(json, schema, max_schema=MAX_SCHEMA)
-
 
 def result_is_valid(json):
     schema = {
