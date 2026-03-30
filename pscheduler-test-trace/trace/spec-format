@@ -5,9 +5,6 @@
 
 import pscheduler
 
-from validate import spec_is_valid
-from validate import MAX_SCHEMA
-
 TEMPLATE='''
 {%- set schema = 1 if schema is undefined else schema -%}
 {% if _mime_type == 'text/plain' %}
@@ -65,4 +62,4 @@ Wait ................. {{ unspec(wait) }}
 {% endif %}
 '''
 
-pscheduler.spec_format_method(TEMPLATE, max_schema=MAX_SCHEMA, validator=spec_is_valid)
+pscheduler.spec_format_method(TEMPLATE)

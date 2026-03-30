@@ -12,12 +12,11 @@
 # 
 #
 
+# TODO: This needs to be brought up to the latest format.
+
 import jsontemplate
 import pscheduler
 import sys
-
-from validate import spec_is_valid
-
 
 try:
    format = sys.argv[1]
@@ -26,11 +25,6 @@ except IndexError:
 
 
 json = pscheduler.json_load(exit_on_error=True)
-
-valid, message = spec_is_valid(json)
-
-if not valid:
-    pscheduler.fail(message)
 
 # Format a test spec into plain text
 if format == 'text/plain':
