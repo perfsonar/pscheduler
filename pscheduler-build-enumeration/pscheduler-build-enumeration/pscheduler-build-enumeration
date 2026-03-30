@@ -63,13 +63,13 @@ jq '.versions' "$2" > "${VALIDATOR_ARRAY}"
 
 
 # Make sure the first element is null
-jq 'if .[0] != null then halt_error(1) else halt_error(0) end' "${VALIDATOR_ARRAY}" > /dev/null \
+jq 'if .[0] != null then halt_error(1) else halt_error(0) end' "${VALIDATOR_ARRAY}" > /dev/null 2>&1 \
    || die "First element in validator must be null."
 
 
 # Plugin validator array, converted to an object
 VALIDATOR="${TMPBASE}/validator"
-jq '[ to_entries[] | .key = (.key | tostring ) ] | from_entries' "${VALIDATOR_ARRAY}" > "${VALIDATOR}" \
+jq '[ to_entries[] | .key = (.key | tostring ) ] | from_entries' "${VALIDATOR_ARRAY}" > "${VALIDATOR}"
 
 
 # pScheduler's internal dictionary, with /local merged in
