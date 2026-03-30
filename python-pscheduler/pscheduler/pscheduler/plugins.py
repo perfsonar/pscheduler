@@ -48,11 +48,13 @@ def plugin_invoke(pltype, which, method, argv=[], **kwargs):
 
 # Run the local enumerate
 
-def _enumerated_spec_is_valid(proposed, plugin_type, plugin=None):
+def enumerated_spec_is_valid(proposed, plugin_type, plugin=None, semantic=None):
     '''
     This private function is the meat of plugin_spec_is_valid().
     See comments for how it works.
     '''
+
+    assert semantic is None or callable(semantic)
 
     # The structure of plugins requires that the {spec,data}-is-valid
     # method be in the same directory as the enumerator.  Run it from
@@ -102,11 +104,17 @@ def _enumerated_spec_is_valid(proposed, plugin_type, plugin=None):
         path = "/".join([str(x) for x in ex.absolute_path])
         return (False, "At /%s: %s" % (path, message))
 
+    # If the caller gave us a final hook to validate semantics rather
+    # than structure, call that.  Otherwise, all is good.
+
+    if semantic is not None:
+        return semantic(proposed)
+
     return (True, 'OK')
 
 
 
-def plugin_spec_is_valid(plugin_type, plugin=None):
+def plugin_spec_is_valid(plugin_type, plugin=None, semantic=None):
     '''
     This is a fully-fleshed-out {spec,data}-is-valid method for
     plugins that reads a proposed JSON spec from stdin, runs the
@@ -114,7 +122,8 @@ def plugin_spec_is_valid(plugin_type, plugin=None):
     the proposed spec or data and does the standard exit for these
     methods.
 
-    See _enumerated_spec_is_valid(), above, for additional deatails.
+    If 'semantic' is provided, that will be called with the proposed
+    spec as a last step.  Returns (bool, str) for (is-valid, error-message)
     '''
 
     try:
@@ -125,7 +134,7 @@ def plugin_spec_is_valid(plugin_type, plugin=None):
             "error": str(ex)
         })
 
-    valid, message = _enumerated_spec_is_valid(proposed, plugin_type, plugin)
+    valid, message = enumerated_spec_is_valid(proposed, plugin_type, plugin, semantic)
 
     result = {
         "valid": valid
