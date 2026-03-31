@@ -1,0 +1,50 @@
+#!/bin/sh -e
+#
+# pScheduler API shell script example
+#
+
+
+# Establish some temporary space that will go away after this script
+# exits.
+
+TMPBASE=$(mktemp -d)
+cleanup()
+{
+    rm -rf "${TMPBASE}"
+}
+trap cleanup EXIT
+
+
+# Write a JSON task spec to a file
+
+TASK="${TMPBASE}/task"
+pscheduler task --export --repeat PT30S --max-runs 4 rtt --dest www.perfsonar.net > "${TASK}"
+
+
+# Post the task to pScheduler and capture the response.
+
+OUTPUT="${TMPBASE}/output"
+# Writes response + newline + response code + newline.  Don't use -o here.
+curl -s -k -H 'Content-Type: application/json' \
+     -d "@${TASK}" \
+     -X POST \
+     -w "%{response_code}\n" \
+     https://localhost/pscheduler/tasks \
+     > "${OUTPUT}"
+
+RESPONSE_CODE=$(tail -n 1 "${OUTPUT}")
+RESPONSE=$(sed -e '$d' "${OUTPUT}")
+
+
+# Deal with the results
+
+if [ "${RESPONSE_CODE}" -ne 200 ]
+then
+    echo "FAILED: ${RESPONSE_CODE}: ${RESPONSE}" 1>&2
+    exit 1
+fi
+
+# Low-budget de-JSON-ification
+URL=$(echo "${RESPONSE}" | tr -d '"')
+
+echo "Task posted to ${URL}"
