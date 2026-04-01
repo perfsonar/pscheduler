@@ -128,6 +128,8 @@ pscheduler-server
 # PSCHEDULER PLUG-INS
 #
 
+pscheduler-plugin-makefiles
+
 # Things needed for a very-minimal functioning installation
 
 # Idle Test and Tools

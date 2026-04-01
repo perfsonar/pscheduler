@@ -85,6 +85,9 @@ cat > $RPM_BUILD_ROOT/%{macro_prefix}%{name} <<EOF
 %%_pscheduler_datadir %%{_datadir}/pscheduler
 %%_pscheduler_vardir %%{_var}/lib/pscheduler
 
+# Make templates
+%%_pscheduler_includedir %%{_includedir}/pscheduler
+
 # Where RPM Macros live
 %%_pscheduler_rpmmacrodir %{macro_dir}
 # Prefix for all macro files.  Use as %{_pscheduler_rpmmacroprefix}foo

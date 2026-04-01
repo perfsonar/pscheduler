@@ -11,7 +11,7 @@
 from pscheduler import json_validate
 from pscheduler import json_validate_from_standard_template
 from pscheduler import json_standard_template_max_schema
-#
+
 
 RESULT_SCHEMA = {
 
