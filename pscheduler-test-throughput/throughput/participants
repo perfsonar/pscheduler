@@ -12,7 +12,7 @@ import sys
 
 from validate import check_spec_semantics
 
-json = pscheduler.plugin_spec_is_valid('test', return_if_valid=True, semantics=check_spec_semantics)
+json = pscheduler.plugin_spec_is_valid('test', return_if_valid=True, semantic=check_spec_semantics)
 
 null_reason = None
 

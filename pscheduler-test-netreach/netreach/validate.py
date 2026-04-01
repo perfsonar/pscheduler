@@ -16,27 +16,27 @@ def check_spec_semantics(proposed):
 
     def gateway_ip(network, gateway):
 
-    '''Calculate the gateway's IP address if it's an integer or
-    return what was passed in if it isn't.  Raises ValueError if
-    there's a problem.'''
+        '''Calculate the gateway's IP address if it's an integer or
+        return what was passed in if it isn't.  Raises ValueError if
+        there's a problem.'''
+        
+        if isinstance(gateway, int):
 
-    if isinstance(gateway, int):
+            if abs(gateway) > (network.num_addresses - 2):
+                raise ValueError('Gateway host number is outside the network')
 
-        if abs(gateway) > (network.num_addresses - 2):
-            raise ValueError('Gateway host number is outside the network')
+            if gateway < 0:
+                gateway -= 1
 
-        if gateway < 0:
-            gateway -= 1
+            return network[gateway]
 
-        return network[gateway]
+        elif isinstance(gateway, str):
 
-    elif isinstance(gateway, str):
+            return ipaddress.ip_address(str(gateway))
 
-        return ipaddress.ip_address(str(gateway))
+        else:
 
-    else:
-
-        raise ValueError('Unknown gateway type.  Check JSON validation.')
+            raise ValueError('Unknown gateway type.  Check JSON validation.')
 
 
     try:

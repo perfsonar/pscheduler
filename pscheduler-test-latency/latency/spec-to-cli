@@ -6,7 +6,7 @@ import pscheduler
 
 from validate import check_spec_semantics
 
-spec = pscheduler.plugin_spec_is_valid('test', return_if_valid=True, semantics=check_spec_semantics)
+spec = pscheduler.plugin_spec_is_valid('test', return_if_valid=True, semantic=check_spec_semantics)
 
 
 # With a valid spec in hand, we can simply spit out the values one at

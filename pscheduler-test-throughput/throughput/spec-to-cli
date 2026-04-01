@@ -7,28 +7,18 @@ import validate
 
 spec = pscheduler.json_load(exit_on_error=True)
 
-if not isinstance(spec, dict):
-    pscheduler.fail("Invalid JSON for this operation")
-
-valid, message = validate.spec_is_valid(spec)
-if not valid:
-    pscheduler.fail(message)
-
 strings = []
 bools = []
 
-schema = spec.get('schema', 1)
-try:
-    spec_properties = validate.SPEC_SCHEMA['local']['throughput_v{}'.format(schema)]['properties']
-except KeyError as ex:
-    pscheduler.fail('Internal problem with schema version {}: {}'.format(schema, str(ex)))
+for key, value in spec.items():
 
-for item in spec_properties:
-    if item == 'schema': continue
-    if "$ref" in spec_properties[item] and "Boolean" in spec_properties[item]['$ref']:
-        bools.append( (item, item) )
+    if key == 'schema':
+        continue
+
+    if isinstance(value, bool):
+        bools.append((key, key))
     else:
-        strings.append( (item, item) )
+        strings.append((key, key))
 
 result = pscheduler.speccli_build_args(spec, 
                                        strings=strings,
