@@ -8,7 +8,7 @@
 
 override_dh_auto_install:
 	make install \
-		BINDIR=$(CURDIR)/debian/json2pickle/usr/bin \
-		MANDIR=$(CURDIR)/debian/json2pickle/usr/share/man
+		BINDIR=$(CURDIR)/debian/jsonschematool/usr/bin \
+		MANDIR=$(CURDIR)/debian/jsonschematool/usr/share/man
 
 override_dh_auto_clean:
