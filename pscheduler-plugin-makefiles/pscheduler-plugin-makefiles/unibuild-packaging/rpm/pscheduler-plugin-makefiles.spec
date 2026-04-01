@@ -22,6 +22,7 @@ Source0:	%{name}-%{version}.tar.gz
 Provides:	%{name} = %{version}-%{release}
 
 Requires:	make
+Requires:	pscheduler-build-enumeration
 
 BuildRequires:	pscheduler-rpm
 

@@ -9,6 +9,6 @@ Vcs-Browser: https://github.com/perfsonar/pscheduler
 
 Package: pscheduler-plugin-makefiles
 Architecture: all
-Depends: ${misc:Depends}, make
+Depends: ${misc:Depends}, make, pscheduler-build-enumeration
 Description: Makefile templates for pScheduler plugins
 

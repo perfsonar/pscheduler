@@ -26,6 +26,7 @@ Requires:	rpm-post-wrapper
 
 BuildRequires:	jsonschematool
 BuildRequires:	pscheduler-rpm
+BuildRequires:	pscheduler-plugin-makefiles
 
 
 %description
