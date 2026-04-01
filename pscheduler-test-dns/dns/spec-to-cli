@@ -4,15 +4,7 @@
 
 import pscheduler
 
-from validate import spec_is_valid
-
-spec = pscheduler.json_load(exit_on_error=True, max_schema=1)
-
-valid, message = spec_is_valid(spec)
-
-if not valid:
-    pscheduler.fail(message)
-
+json = pscheduler.plugin_spec_is_valid('test', return_if_valid=True)
 
 result = pscheduler.speccli_build_args(spec, 
                                        strings=[

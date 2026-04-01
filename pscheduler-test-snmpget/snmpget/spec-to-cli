@@ -4,14 +4,7 @@
 
 import pscheduler
 
-from validate import spec_is_valid
-
-spec = pscheduler.json_load(exit_on_error=True)
-
-valid, message = spec_is_valid(spec)
-
-if not valid:
-    pscheduler.fail(message)
+spec = pscheduler.plugin_spec_is_valid('test', return_if_valid=True)
 
 # concatenate oids
 try:

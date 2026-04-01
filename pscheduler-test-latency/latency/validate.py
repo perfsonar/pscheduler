@@ -10,6 +10,20 @@
 
 from pscheduler import json_validate
 
+def check_spec_semantics(proposed):
+    '''
+    This checks that the spec is semantically-valid.  It is safe to
+    assume that validation of the JSON passed.
+    '''
+    # Verify flip is not set if source not included.
+    if 'source' not in proposed and proposed.get('flip', False):
+        return(False, 'Flipped testing requires source and dest')
+
+    return(True, 'OK')
+
+
+
+
 
 RESPONSE_SCHEMA = {
         "title": "pScheduler One-way Latency Response Schema",

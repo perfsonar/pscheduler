@@ -5,16 +5,6 @@
 
 import pscheduler
 
-def check_semantics(proposed):
-    '''
-    This checks that the spec is semantically-valid.  It is safe to
-    assume that validation of the JSON passed.
-    '''
-    # Verify flip is not set if source not included.
-    if 'source' not in proposed and proposed.get('flip', False):
-        return(False, 'Flipped testing requires source and dest')
+from validate import check_spec_semantics
 
-    return(True, 'OK')
-
-
-pscheduler.plugin_spec_is_valid('test', semantic=check_semantics)
+pscheduler.plugin_spec_is_valid('test', semantic=check_spec_semantics)

@@ -54,24 +54,22 @@ def enumerated_spec_is_valid(proposed, plugin_type, plugin=None, semantic=None):
     See comments for how it works.
     '''
 
-    assert semantic is None or callable(semantic)
+    assert callable(semantic)
 
     # The structure of plugins requires that the {spec,data}-is-valid
-    # method be in the same directory as the enumerator.  Run it from
-    # wherever we are.
+    # method be in the same directory as the enumeration JSON
+    # (enumerate.json).  Grab that from wherever we are.
 
     whereami = os.path.realpath(os.path.dirname(sys.argv[0]))
 
-    # Run the enumerator and see if the contents look sane.
+    try:
+        with open(f'{whereami}/enumerate.json') as enumeration_file:
+            enumeration = json_load(enumeration_file)
+    except (OSError, ValueError) as ex:
+        return (False, str(ex))
 
-    # Don't use plugin_invoke() here.  It assumes the installed
-    # location, and running from the same directory where the program
-    # was invoked wil allow it to operate in dev and production.
-    status, stdout, stderr = run_program(f'{whereami}/enumerate')
-    if status != 0:
-        return (False, f'INTERNAL ERROR: Could not get enumeration: {stderr}')
-    
-    enumeration = json_load(stdout)
+    # Give it a quick sanity check.
+
     try:
         versions = enumeration['spec']['jsonschema']['versions']
         if not isinstance(versions, list):
@@ -114,7 +112,7 @@ def enumerated_spec_is_valid(proposed, plugin_type, plugin=None, semantic=None):
 
 
 
-def plugin_spec_is_valid(plugin_type, plugin=None, semantic=None):
+def plugin_spec_is_valid(plugin_type, plugin=None, semantic=lambda p: (True, 'OK'), return_if_valid=False):
     '''
     This is a fully-fleshed-out {spec,data}-is-valid method for
     plugins that reads a proposed JSON spec from stdin, runs the
@@ -124,6 +122,10 @@ def plugin_spec_is_valid(plugin_type, plugin=None, semantic=None):
 
     If 'semantic' is provided, that will be called with the proposed
     spec as a last step.  Returns (bool, str) for (is-valid, error-message)
+
+    If 'return_if_valid' is True and the proposed spec validates, the
+    standard exit will not be done and control will be returned to the
+    caller with the input as the returned value.
     '''
 
     try:
@@ -142,5 +144,8 @@ def plugin_spec_is_valid(plugin_type, plugin=None, semantic=None):
 
     if not valid:
         result["error"] = message
+    else:
+        if return_if_valid:
+            return proposed
 
     succeed_json(result)

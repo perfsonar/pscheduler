@@ -5,6 +5,20 @@
 from pscheduler import json_validate
 import json
 
+def check_spec_semantics(proposed):
+    '''
+    This checks that the spec is semantically-valid.  It is safe to
+    assume that validation of the JSON passed.
+    '''
+    # TODO: This can be integrated into the schema, but probably
+    # without as anice an error message.
+    # See https://groups.google.com/g/json-schema/c/PiT9ZndbcCI
+    if ('single-ended' in proposed) and ('loopback' in proposed):
+        return(False, 'Single-ended and loopback modes are mutually-exclusive.')
+    
+    return(True, 'OK')
+
+
 
 RESULT_SCHEMA = {        
     "title": "pScheduler Throughput Response Schema",

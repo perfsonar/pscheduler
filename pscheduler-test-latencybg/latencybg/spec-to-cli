@@ -4,11 +4,9 @@
 
 import pscheduler
 
-#load spec JSON
+from validate import check_spec_semantics
 
-spec = pscheduler.json_load(exit_on_error=True, max_schema=spec_max_schema())
-if not isinstance(spec, dict):
-    pscheduler.fail("Invalid JSON for this operation")
+json = pscheduler.plugin_spec_is_valid('test', return_if_valid=True, semantics=check_spec_semantics)
 
 #get properties from schema
 spec_version = spec.get('schema', 1)

@@ -10,16 +10,9 @@
 import pscheduler
 import sys
 
-from validate import spec_is_valid
+from validate import check_spec_semantics
 
-
-json = pscheduler.json_load(exit_on_error=True)
-
-valid, message = spec_is_valid(json)
-
-if not valid:
-    pscheduler.fail(message)
-
+json = pscheduler.plugin_spec_is_valid('test', return_if_valid=True, semantics=check_spec_semantics)
 
 null_reason = None
 
