@@ -80,7 +80,7 @@ def enumerated_spec_is_valid(proposed, plugin_type, plugin=None, semantic=None):
     # Find and validate the schema
 
     schema = proposed.get('schema', 1)
-    if schema < 1 or schema > len(versions):
+    if schema < 1 or schema >= len(versions):
         return(False, f'Schema {schema} is not supported.')
 
     # Validate the proposed spec against the specified schema version.
