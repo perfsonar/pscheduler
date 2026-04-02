@@ -99,7 +99,7 @@ jq '
 
 # Generate the program
 echo '#!/bin/sh -e'
-echo 'cat <<EOF'
+echo 'cat <<"EOF"'
 jq --slurp '
       .[0].spec = {}
     | .[0].spec.jsonschema = {}
