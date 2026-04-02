@@ -1,0 +1,36 @@
+{
+    "#": "This gets merged into every version as #/local.",
+    "local": {},
+
+    "#": "The zeroth element of this is always null since there is no version 0.",
+    "versions": [
+        null,
+
+	{
+            "type": "object",
+            "properties": {
+                "schema": {" type": "integer", "enum": [ 1 ] },
+                "delay": { "$ref": "#/pScheduler/Duration" },
+                "fail": { "$ref": "#/pScheduler/Probability" },
+                "retry": { "$ref": "#/pScheduler/Probability" }
+            },
+            "additionalProperties": false
+        },
+
+        {
+            "type": "object",
+            "properties": {
+                "schema": {" type": "integer", "enum": [ 2 ] },
+                "schema": { "$ref": "#/pScheduler/Cardinal" },
+                "delay": { "$ref": "#/pScheduler/Duration" },
+                "fail": { "$ref": "#/pScheduler/Probability" },
+                "retry": { "$ref": "#/pScheduler/Probability" },
+                "badly": { "$ref": "#/pScheduler/Boolean" }
+            },
+            "required": [
+                "schema"
+            ],
+            "additionalProperties": false
+        }
+    ]
+}
