@@ -7,7 +7,7 @@ ENUMERATE_JSON := enumerate.json
 ENUMERATE_SKELETON := enumerate-skeleton.json
 SPEC_SCHEMA := spec-schema.json
 
-FILES=\
+FILES += \
 	cli-to-spec \
 	$(ENUMERATE) \
 	$(ENUMERATE_JSON) \
@@ -18,8 +18,8 @@ FILES=\
 	spec-to-cli
 
 
-MODULES=\
-	validate \
+MODULES += \
+	validate
 
 
 default: build
