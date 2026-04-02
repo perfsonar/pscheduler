@@ -56,6 +56,9 @@ def enumerated_spec_is_valid(proposed, plugin_type, plugin=None, semantic=None):
 
     assert callable(semantic)
 
+    if not isinstance(proposed, dict):
+        return(False, 'Proposed spec is not valid.')
+
     # The structure of plugins requires that the {spec,data}-is-valid
     # method be in the same directory as the enumeration JSON
     # (enumerate.json).  Grab that from wherever we are.
