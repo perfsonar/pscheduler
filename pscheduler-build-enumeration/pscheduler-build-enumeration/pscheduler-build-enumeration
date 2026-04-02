@@ -98,10 +98,12 @@ jq '
 
 
 # Generate the program
-echo '#!/bin/sed -e 1d;/^#/d'
+echo '#!/bin/sh -e'
+echo 'cat <<EOF'
 jq --slurp '
       .[0].spec = {}
     | .[0].spec.jsonschema = {}
     | .[0].spec.jsonschema.versions = .[1]
     | .[0]
     ' "${ENUM}" "${VALIDATOR_ARRAY_FINAL}"
+echo 'EOF'
