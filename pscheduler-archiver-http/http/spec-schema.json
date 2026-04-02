@@ -1,0 +1,109 @@
+{
+    "#": "This gets merged into every version as #/local.",
+    "local": {},
+
+    "#": "The zeroth element of this is always null since there is no version 0.",
+    "versions": [
+        null,
+
+        {
+            "type": "object",
+            "properties": {
+                "schema": {" type": "integer", "enum": [ 1 ] },
+                "_url": { "$ref": "#/pScheduler/URL" },
+                "op": {
+                    "type": "string",
+                    "enum": [
+                        "put",
+                        "post"
+                    ]
+                },
+                "bind": { "$ref": "#/pScheduler/Host" },
+                "retry-policy": { "$ref": "#/pScheduler/RetryPolicy" }
+            },
+            "required": [ "_url" ],
+            "additionalProperties": false
+        },
+
+        {
+            "type": "object",
+            "properties": {
+                "schema": {" type": "integer", "enum": [ 2 ] },
+                "_url": { "$ref": "#/pScheduler/URL" },
+                "op": {
+                    "type": "string",
+                    "enum": [
+                        "put",
+                        "post"
+                    ]
+                },
+                "_headers": {
+                    "type": "object",
+                    "patternProperties": {
+                        "^.*$": { "$ref": "#/pScheduler/String" }
+                    },
+                    "additionalProperties": false
+                },
+                "bind": { "$ref": "#/pScheduler/Host" },
+                "retry-policy": { "$ref": "#/pScheduler/RetryPolicy" }
+            },
+            "required": [ "schema", "_url" ],
+            "additionalProperties": false
+        },
+
+        {
+            "type": "object",
+            "properties": {
+                "schema": {" type": "integer", "enum": [ 3 ] },
+                "_url": { "$ref": "#/pScheduler/URL" },
+                "op": {
+                    "type": "string",
+                    "enum": [
+                        "put",
+                        "post"
+                    ]
+                },
+                "verify-ssl": { "$ref": "#/pScheduler/Boolean" },
+                "_headers": {
+                    "type": "object",
+                    "patternProperties": {
+                        "^.*$": { "$ref": "#/pScheduler/String" }
+                    },
+                    "additionalProperties": false
+                },
+                "bind": { "$ref": "#/pScheduler/Host" },
+                "retry-policy": { "$ref": "#/pScheduler/RetryPolicy" }
+            },
+            "required": [ "schema", "_url" ],
+            "additionalProperties": false
+         },
+
+        {
+            "type": "object",
+            "properties": {
+                "schema": {" type": "integer", "enum": [ 4 ] },
+                "_url": { "$ref": "#/pScheduler/URL" },
+                "op": {
+                    "type": "string",
+                    "enum": [
+                        "put",
+                        "post"
+                    ]
+                },
+                "verify-ssl": { "$ref": "#/pScheduler/Boolean" },
+                "_headers": {
+                    "type": "object",
+                    "patternProperties": {
+                        "^.*$": { "$ref": "#/pScheduler/String" }
+                    },
+                    "additionalProperties": false
+                },
+                "timeout": { "$ref": "#/pScheduler/Duration" },
+                "bind": { "$ref": "#/pScheduler/Host" },
+                "retry-policy": { "$ref": "#/pScheduler/RetryPolicy" }
+            },
+            "required": [ "schema", "_url" ],
+            "additionalProperties": false
+        }
+    ]
+}
