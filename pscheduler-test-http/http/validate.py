@@ -12,12 +12,19 @@
 
 from pscheduler import json_validate
 
-
+MAX_SCHEMA = 2
 
 RESULT_SCHEMA = {
     "local": {
 
-        "headers": HEADERS_SCHEMA,
+        "headers": {
+            "type": "object",
+            "patternProperties": {
+                # Regex is per https://tools.ietf.org/html/rfc7230#section-3.2
+                "^[!#\$%&'*+\-.\^`|~0-9A-Za-z]+$": { "$ref": "#/pScheduler/String" }
+            },
+            "additionalProperties": False
+        },
 
         "v1" : {
             "type": "object",
