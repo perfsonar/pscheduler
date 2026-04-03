@@ -1,4 +1,3 @@
-#!/bin/sed -e 1d
 {
     "schema": 1,
     "name": "postgresql",
