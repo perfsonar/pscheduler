@@ -1,4 +1,3 @@
-#!/bin/sed -e 1d
 {
     "schema": 1,
     "name": "kafka",
@@ -8,6 +7,6 @@
     "maintainer": {
         "name": "perfSONAR Development Team",
         "email": "perfsonar-developer@internet2.edu",
-	    "href": "http://www.perfsonar.net"
+	"href": "http://www.perfsonar.net"
     }
 }

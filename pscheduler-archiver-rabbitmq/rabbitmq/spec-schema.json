@@ -1,0 +1,66 @@
+{
+    "#": "This gets merged into every version as #/local.",
+    "local": {},
+
+    "#": "The zeroth element of this is always null since there is no version 0.",
+    "versions": [
+        null,
+
+        {
+            "type": "object",
+            "properties": {
+                "schema":       {" type": "integer", "enum": [ 1 ] },
+                "_url":         { "$ref": "#/pScheduler/String" },
+                "exchange":     { "$ref": "#/pScheduler/String" },
+                "routing-key":  { "$ref": "#/pScheduler/String" },
+                "retry-policy": { "$ref": "#/pScheduler/RetryPolicy" }
+            },
+            "required": [
+                "_url"
+            ],
+            "additionalProperties": false
+        },
+
+        {
+            "type": "object",
+            "properties": {
+                "schema":              {" type": "integer", "enum": [ 2 ] },
+                "_url":                { "$ref": "#/pScheduler/String" },
+                "exchange":            { "$ref": "#/pScheduler/String" },
+                "routing-key":         { "anyOf": [
+                    { "$ref": "#/pScheduler/String" },
+                    { "$ref": "#/pScheduler/JQTransformSpecification" }
+                ] },
+                "connection-expires":  { "$ref": "#/pScheduler/Duration" },
+                "retry-policy":        { "$ref": "#/pScheduler/RetryPolicy" }
+            },
+            "required": [
+                "schema",
+                "_url"
+            ],
+            "additionalProperties": false
+        },
+
+        {
+            "type": "object",
+            "properties": {
+                "schema":              {" type": "integer", "enum": [ 2 ] },
+                "_url":                { "$ref": "#/pScheduler/String" },
+                "exchange":            { "$ref": "#/pScheduler/String" },
+                "timeout":             { "$ref": "#/pScheduler/Duration" },
+                "routing-key":         { "anyOf": [
+                    { "$ref": "#/pScheduler/String" },
+                    { "$ref": "#/pScheduler/JQTransformSpecification" }
+                ] },
+                "connection-expires":  { "$ref": "#/pScheduler/Duration" },
+                "retry-policy":        { "$ref": "#/pScheduler/RetryPolicy" }
+            },
+            "required": [
+                "schema",
+                "_url"
+            ],
+            "additionalProperties": false
+        }
+
+    ]
+}
