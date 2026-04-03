@@ -1,0 +1,16 @@
+{
+    "archiver": "udp",
+    "data": {
+	"ip-version": 4,
+        "bind": "127.0.0.1",
+        "host": "127.0.0.1",
+	"port": 9999,
+	"retry-policy": [
+            { "attempts": 4,  "wait": "PT5S" }
+        ]
+    },
+    "transform": {
+    	"script": "\"This is a UDP packet.\""
+    },
+    "ttl": "PT1M"
+}

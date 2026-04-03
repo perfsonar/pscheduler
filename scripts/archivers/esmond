@@ -1,0 +1,15 @@
+{
+    "archiver": "esmond",
+    "data": {
+        "measurement-agent": "somehost",
+        "retry-policy": [
+            {
+                "attempts": 5,
+                "wait": "PT30S"
+            }
+        ],
+        "url": "https://ARCHIVEHOST/esmond/perfsonar/archive/",
+	"#bind": "10.0.2.15"
+    },
+    "ttl": "PT5M"
+}

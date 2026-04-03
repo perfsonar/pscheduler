@@ -1,0 +1,16 @@
+{
+    "archiver": "http",
+    "data": {
+        "_url": "http://www.posttestserver.com/post.php?dir=perfsonar",
+
+        "op": "post",
+
+	"#bind": "10.0.0.7",
+	"#bind": "192.168.222.7",
+
+	"retry-policy": [
+            { "attempts": 4,  "wait": "PT5S" }
+        ]
+    },
+    "ttl": "PT1M"
+}

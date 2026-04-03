@@ -1,0 +1,18 @@
+{
+    "schema": 2,
+    "archiver": "syslog",
+    "runs": "failed",
+    "data": {
+        "ident": "well-hello-there",
+	"facility": "local4",
+	"priority": "info"
+    },
+
+    "#": "Plain string with a statement about what happened",
+    "transform": {
+	"script": "\"FAILED: \\(.test.type) with \\(.tool.name)\"",
+	"output-raw": true
+    },
+
+    "ttl": "PT5M"
+}

@@ -1,0 +1,18 @@
+{
+    "schema": 2,
+    "archiver": "syslog",
+    "runs": "all",
+    "data": {
+        "ident": "well-hello-there",
+	"facility": "local4",
+	"priority": "info"
+    },
+
+    "#": "Plain string with a statement about what happened",
+    "transform": {
+	"script": "\"ALL: \\(.test.type) with \\(.tool.name)\"",
+	"output-raw": true
+    },
+
+    "ttl": "PT5M"
+}

@@ -1,0 +1,17 @@
+{
+    "archiver": "postgresql",
+    "data": {
+        "schema": 1,
+        "_dsn": "dbname=pscheduler user=pscheduler password=NTPsuc2VEoYI8pYaGO2B0d2gwV28vU5De8mXt66g8rIidTxyyoXGSPW9nm2VpQZU",
+        "table": "junk",
+        "column": "stuff",
+        "connection-expires": "PT30S",
+        "retry-policy": [
+            { "attempts": 5,  "wait": "PT5S" }
+        ]
+    },
+    "ttl": "PT1H",
+    "#": "Table creation:",
+    "#": "CREATE TABLE junk (stuff JSON);",
+    "#": "GRANT ALL ON junk TO pscheduler;"
+}

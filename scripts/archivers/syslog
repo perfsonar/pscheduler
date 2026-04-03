@@ -1,0 +1,22 @@
+{
+    "archiver": "syslog",
+
+    "data": {
+        "ident": "well-hello-there",
+	"facility": "local4",
+	"priority": "info"
+    },
+
+    "#transform": {
+	"script": [
+	    "."
+	]
+    },
+
+    "#transform": {
+	"script": "\"Ran \\(.test.type) with \\(.tool.name)\"",
+	"output-raw": true
+    },
+
+    "ttl": "PT1H"
+}
