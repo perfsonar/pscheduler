@@ -574,7 +574,7 @@
                 { "$ref": "#/pScheduler/SNMPAlphaNumOID"}
             ],
             "type": "string",
-            "pattern": "^(((\\.\\d)|\\d)+(\\.\\d+)*)|([a-z][A-Z]*))$"
+            "pattern": "^(((\\.\\d)|\\d)+(\\.\\d+)*)|([a-z][A-Z]*)$"
         },
 
         "SNMPInteger": {

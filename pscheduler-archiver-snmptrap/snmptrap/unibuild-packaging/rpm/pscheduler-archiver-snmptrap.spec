@@ -59,4 +59,4 @@ pscheduler internal warmboot
 %defattr(-,root,root,-)
 %license LICENSE
 %{dest}
-%{_pscheduler_archiver_doc}/*
+

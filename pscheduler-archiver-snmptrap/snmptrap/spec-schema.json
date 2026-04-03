@@ -1,0 +1,92 @@
+{
+    "#": "This gets merged into every version as #/local.",
+    "local": {
+	"VersionNumber": {
+                "type": "string",
+            "enum": [ "1", "2c", "3"]
+        },
+        "AuthProtocol": {
+            "type": "string",
+            "enum": [ "MD5", "SHA"]
+        },
+        "PrivProtocol": {
+            "type": "string",
+            "enum": [ "AES", "AES128", "AES192", "AES256", "DES", "3DES" ]
+        },
+        "SecurityLevel": {
+            "type": "string",
+            "enum": [ "noAuthNoPriv", "authNoPriv", "authPriv"]
+        },
+
+	"v2c": {
+            "type": "object",
+            "properties": {
+                "schema": { "$ref": "#/pScheduler/Cardinal" },
+                "dest": { "$ref": "#/pScheduler/String" },
+                "_community": { "$ref": "#/pScheduler/String" },
+                "trap-oid": { "$ref": "#/pScheduler/SNMPOID" },
+                "trap-varbinds": { "type": "array",
+				   "items": {
+                                       "type": "object",
+                                       "properties": {
+					   "oid": { "$ref": "#/pScheduler/SNMPOID" },
+					   "value": { "$ref": "#/pScheduler/AnyJSON" }
+                                       },
+                                       "additionalProperties": false
+				   }
+				 },
+		"instance-index": { "$ref": "#/pScheduler/Integer" }
+            },
+            "required": [
+                "dest",
+                "_community",
+                "trap-oid"
+            ]
+        },
+	
+        "v3": {
+            "type": "object",
+            "properties": {
+                "schema": { "$ref": "#/pScheduler/Cardinal" },
+                "dest": { "$ref": "#/pScheduler/String" },
+                "security-name":   { "$ref": "#/pScheduler/String" },
+                "auth-protocol":   { "$ref": "#/local/AuthProtocol" },
+                "priv-protocol":   { "$ref": "#/local/PrivProtocol" },
+                "_auth-key":       { "$ref": "#/pScheduler/String" },
+                "_priv-key":       { "$ref": "#/pScheduler/String" },
+                "security-level":  { "$ref": "#/local/SecurityLevel" },
+                "trap-oid": { "$ref": "#/pScheduler/SNMPOID" },
+                "trap-varbinds": { "type": "array",
+				   "items": {
+                                       "type": "object",
+                                       "properties": {
+					   "oid": { "$ref": "#/pScheduler/SNMPOID" },
+					   "value": { "$ref": "#/pScheduler/AnyJSON" }
+                                       },
+                                       "additionalProperties": false
+				   }
+				 },
+		"instance-index": { "$ref": "#/pScheduler/Integer" }
+            },
+            "required": [
+                "dest",
+                "security-name",
+                "trap-oid"
+            ]
+        }
+    },
+
+    "#": "The zeroth element of this is always null since there is no version 0.",
+    "versions": [
+        null,
+
+	{
+	    "oneOf": [
+		{ "$ref": "#/local/v2c" },
+		{ "$ref": "#/local/v3" }
+	    ],
+	    "additionalProperties": true
+	}
+
+    ]
+}
