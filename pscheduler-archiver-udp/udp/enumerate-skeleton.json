@@ -1,8 +1,7 @@
-#!/bin/sed -e 1d
 {
     "schema": 1,
-    "name": "tcp",
-    "description": "Send a raw JSON result to a TCP socket",
+    "name": "udp",
+    "description": "Send a JSON result as a UDP datagram",
     "version": "1.0",
 
     "maintainer": {
