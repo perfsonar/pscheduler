@@ -1,0 +1,54 @@
+{
+    "#": "This gets merged into every version as #/local.",
+    "local": {},
+
+    "#": "The zeroth element of this is always null since there is no version 0.",
+    "versions": [
+        null,
+
+	{
+	    "type": "object",
+	    "properties": {
+		"schema": { "$ref": "#/pScheduler/Cardinal" },
+		"ident": { "$ref": "#/pScheduler/String" },
+		"facility": {
+		    "type": "string",
+		    "enum": [
+			"kern",
+			"user",
+			"mail",
+			"daemon",
+			"auth",
+			"lpr",
+			"news",
+			"uucp",
+			"cron",
+			"syslog",
+			"local0",
+			"local1",
+			"local2",
+			"local3",
+			"local4",
+			"local5",
+			"local6",
+			"local7"
+		    ]
+		},
+		"priority": {
+		    "type": "string",
+		    "enum": [
+			"emerg",
+			"alert",
+			"crit",
+			"err",
+			"warning",
+			"notice",
+			"info",
+			"debug"
+		    ]
+		}
+	    },
+	    "additionalProperties": false
+	}
+    ]
+}
