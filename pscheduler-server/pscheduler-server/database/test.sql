@@ -98,10 +98,12 @@ DECLARE
     json_result TEXT;
 BEGIN
 
+    NEW.AVAILABLE := TRUE;
     json_result := json_validate(NEW.json, '#/pScheduler/PluginEnumeration/Test');
     IF json_result IS NOT NULL
     THEN
-        RAISE EXCEPTION 'Invalid enumeration: %', json_result;
+	RAISE EXCEPTION 'Invalid enumeration for test "%": %', NEW.name, json_result;
+	NEW.available := FALSE;
     END IF;
 
     NEW.name := NEW.json ->> 'name';
@@ -160,18 +162,10 @@ BEGIN
             CONTINUE;
         END IF;
 
-        json_result := json_validate(test_enumeration,
-	    '#/pScheduler/PluginEnumeration/Test');
-        IF json_result IS NOT NULL
-        THEN
-            RAISE WARNING 'Invalid enumeration for test "%": %', test_name, json_result;
-	    CONTINUE;
-        END IF;
-
-	INSERT INTO test (json, updated, available)
-	VALUES (test_enumeration, now(), TRUE)
+	INSERT INTO test (json, updated)
+	VALUES (test_enumeration, now())
 	ON CONFLICT (name) DO UPDATE
-        SET json = test_enumeration, updated = now(), available = TRUE;
+        SET json = test_enumeration, updated = now();
 
     END LOOP;
 

@@ -160,10 +160,12 @@ AS $$
 DECLARE
     json_result TEXT;
 BEGIN
+    NEW.available := TRUE;
     json_result := json_validate(NEW.json, '#/pScheduler/PluginEnumeration/Archiver');
     IF json_result IS NOT NULL
     THEN
-        RAISE EXCEPTION 'Invalid enumeration: %', json_result;
+        RAISE WARNING 'Invalid enumeration for archiver "%" (disabling): %', NEW.name, json_result;
+	NEW.available := FALSE;
     END IF;
 
     NEW.name := NEW.json ->> 'name';
@@ -278,14 +280,6 @@ BEGIN
             RAISE WARNING 'Archiver "%": schema % is not supported',
                 archiver_name, sschema;
             CONTINUE;
-        END IF;
-
-        json_result := json_validate(archiver_enumeration,
-	    '#/pScheduler/PluginEnumeration/Archiver');
-        IF json_result IS NOT NULL
-        THEN
-            RAISE WARNING 'Invalid enumeration for archiver "%": %', archiver_name, json_result;
-	    CONTINUE;
         END IF;
 
 	INSERT INTO archiver (json, updated, available)

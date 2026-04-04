@@ -80,11 +80,12 @@ AS $$
 DECLARE
     json_result TEXT;
 BEGIN
-    -- TODO: Need to add this to the dictionary
+    NEW.available := TRUE;
     json_result := json_validate(NEW.json, '#/pScheduler/PluginEnumeration/Context');
     IF json_result IS NOT NULL
     THEN
-        RAISE EXCEPTION 'Invalid enumeration: %', json_result;
+        RAISE EXCEPTION 'Invalid enumeration for context "%" (disabling): %', NEW.name, json_result;
+	NEW.available := FALSE;
     END IF;
 
     NEW.name := NEW.json ->> 'name';
@@ -145,18 +146,10 @@ BEGIN
             CONTINUE;
         END IF;
 
-        json_result := json_validate(context_enumeration,
-	    '#/pScheduler/PluginEnumeration/Context');
-        IF json_result IS NOT NULL
-        THEN
-            RAISE WARNING 'Invalid enumeration for context "%": %', context_name, json_result;
-	    CONTINUE;
-        END IF;
-
-	INSERT INTO context (json, updated, available)
-        VALUES (context_enumeration, now(), true)
+	INSERT INTO context (json, updated)
+        VALUES (context_enumeration, now())
         ON CONFLICT (name) DO UPDATE
-        SET json = context_enumeration, updated = now(), available = TRUE;
+        SET json = context_enumeration, updated = now();
 
     END LOOP;
 

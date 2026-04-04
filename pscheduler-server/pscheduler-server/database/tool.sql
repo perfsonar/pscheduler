@@ -161,10 +161,12 @@ DECLARE
     json_result TEXT;
 BEGIN
 
+    NEW.available := TRUE;
     json_result := json_validate(NEW.json, '#/pScheduler/PluginEnumeration/Tool');
     IF json_result IS NOT NULL
     THEN
-        RAISE EXCEPTION 'Invalid enumeration: %', json_result;
+       RAISE WARNING 'Invalid enumeration for tool "%" (disabled): %', NEW.name, json_result;
+       NEW.available := FALSE;
     END IF;
 
     NEW.name := NEW.json ->> 'name';
@@ -279,18 +281,10 @@ BEGIN
             CONTINUE;
         END IF;
 
-        json_result := json_validate(tool_enumeration,
-	    '#/pScheduler/PluginEnumeration/Tool');
-        IF json_result IS NOT NULL
-        THEN
-            RAISE WARNING 'Invalid enumeration for tool "%": %', tool_name, json_result;
-	    CONTINUE;
-        END IF;
-
-	INSERT INTO tool (json, updated, available)
-	VALUES (tool_enumeration, now(), TRUE)
+	INSERT INTO tool (json, updated)
+	VALUES (tool_enumeration, now())
 	ON CONFLICT (name) DO UPDATE
-        SET json = tool_enumeration, updated = now(), available = TRUE;
+        SET json = tool_enumeration, updated = now();
 
     END LOOP;
 
