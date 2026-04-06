@@ -80,15 +80,15 @@ AS $$
 DECLARE
     json_result TEXT;
 BEGIN
+    NEW.name := NEW.json ->> 'name';
     NEW.available := TRUE;
     json_result := json_validate(NEW.json, '#/pScheduler/PluginEnumeration/Context');
     IF json_result IS NOT NULL
     THEN
-        RAISE EXCEPTION 'Invalid enumeration for context "%" (disabling): %', NEW.name, json_result;
+        RAISE WARNING 'Invalid enumeration for context "%" (disabling): %', NEW.name, json_result;
 	NEW.available := FALSE;
     END IF;
 
-    NEW.name := NEW.json ->> 'name';
     NEW.description := NEW.json ->> 'description';
     RETURN NEW;
 END;

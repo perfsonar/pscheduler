@@ -1109,7 +1109,8 @@
                     "name",
                     "description",
                     "version",
-                    "maintainer"
+                    "maintainer",
+		    "spec"
                 ]
             }
         }

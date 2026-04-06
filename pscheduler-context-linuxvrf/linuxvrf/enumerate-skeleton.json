@@ -1,9 +1,8 @@
-#!/bin/sed -e 1d
 {
     "schema": 1,
 
-    "name": "linuxnns",
-    "description": "Change Linux network namespace",
+    "name": "linuxvrf",
+    "description": "Change Linux VRF",
     "version": "1.0",
 
     "maintainer": {

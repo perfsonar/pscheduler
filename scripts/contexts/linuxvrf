@@ -1,0 +1,14 @@
+{
+    "schema": 1,
+    "contexts": [
+        [
+            {
+                "context": "linuxvrf",
+                "data": {
+		    "schema": 1,
+		    "vrf": "xyzzy"
+                }
+            }
+        ]
+    ]
+}

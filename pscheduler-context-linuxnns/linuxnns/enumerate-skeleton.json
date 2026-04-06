@@ -1,9 +1,8 @@
-#!/bin/sed -e 1d
 {
     "schema": 1,
 
-    "name": "changenothing",
-    "description": "Make no changes - NOT FOR PRODUCTION",
+    "name": "linuxnns",
+    "description": "Change Linux network namespace",
     "version": "1.0",
 
     "maintainer": {

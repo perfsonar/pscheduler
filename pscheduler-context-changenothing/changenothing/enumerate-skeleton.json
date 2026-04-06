@@ -1,9 +1,8 @@
-#!/bin/sed -e 1d
 {
     "schema": 1,
 
-    "name": "linuxvrf",
-    "description": "Change Linux VRF",
+    "name": "changenothing",
+    "description": "Make no changes - NOT FOR PRODUCTION",
     "version": "1.0",
 
     "maintainer": {

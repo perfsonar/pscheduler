@@ -1,0 +1,27 @@
+{
+    "#": "This gets merged into every version as #/local.",
+    "local": {},
+
+    "#": "The zeroth element of this is always null since there is no version 0.",
+    "versions": [
+        null,
+
+	{
+	    "type": "object",
+	    "properties": {
+		"schema": {"$ref": "#/pScheduler/Cardinal"},
+		"namespace": {
+		    "type": "string",
+		    "#": "These have to be valid as filenames, and Linux is pretty",
+		    "#": "accommodating.",
+		    "pattern": "^[^/\\0]+$",
+		    "x-invalid-message": "'%s' is not a valid namespace name."
+		}
+	    },
+	    "required": [
+		"namespace"
+	    ],
+	    "additionalProperties": false
+	}
+    ]
+}

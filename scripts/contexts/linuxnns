@@ -1,0 +1,14 @@
+{
+    "schema": 1,
+    "contexts": [
+        [
+            {
+                "context": "linuxnns",
+                "data": {
+		    "schema": 1,
+		    "namespace": "xyzzy"
+                }
+            }
+        ]
+    ]
+}
