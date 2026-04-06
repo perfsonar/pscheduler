@@ -1,4 +1,6 @@
 {
+    "#": "To listen for this:  nc -l 9999",
+
     "archiver": "tcp",
     "data": {
 	"ip-version": 4,

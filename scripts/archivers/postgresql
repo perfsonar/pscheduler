@@ -2,7 +2,7 @@
     "archiver": "postgresql",
     "data": {
         "schema": 1,
-        "_dsn": "dbname=pscheduler user=pscheduler password=NTPsuc2VEoYI8pYaGO2B0d2gwV28vU5De8mXt66g8rIidTxyyoXGSPW9nm2VpQZU",
+        "_dsn": "dbname=pscheduler user=pscheduler password=lJAT61VWFI2Ajh_dH9mL1jxp4mOd5EgY0n1Df0KSDOOYxZBT5s0VICJraC_q4XGH",
         "table": "junk",
         "column": "stuff",
         "connection-expires": "PT30S",

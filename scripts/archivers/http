@@ -1,14 +1,21 @@
 {
     "archiver": "http",
     "data": {
-        "_url": "http://www.posttestserver.com/post.php?dir=perfsonar",
+	"schema": 2,
+	
+        "_url": "https://posttestserver.dev/p/perfsonar/post",
+
+	"#": "Posttestserver.dev requires a User-Agent.",
+	"_headers": {
+	    "User-Agent": "perfSONAR HTTP(S) Archiver"
+	},
 
         "op": "post",
 
 	"#bind": "10.0.0.7",
 	"#bind": "192.168.222.7",
 
-	"retry-policy": [
+	"#retry-policy": [
             { "attempts": 4,  "wait": "PT5S" }
         ]
     },

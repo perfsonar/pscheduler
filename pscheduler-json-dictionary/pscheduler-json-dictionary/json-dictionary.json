@@ -1038,7 +1038,8 @@
                     "description",
                     "version",
                     "maintainer",
-                    "scheduling-class"
+                    "scheduling-class",
+		    "spec"
                 ]
             },
 
@@ -1080,14 +1081,16 @@
                     "name":         { "$ref": "#/pScheduler/String" },
                     "description":  { "$ref": "#/pScheduler/String" },
                     "version":      { "$ref": "#/pScheduler/Version" },
-                    "maintainer":   { "$ref": "#/pScheduler/Maintainer" }
+                    "maintainer":   { "$ref": "#/pScheduler/Maintainer" },
+		    "spec":         { "$ref": "#/pScheduler/PluginEnumeration/local/Spec" }
                 },
                 "additionalProperties": false,
                 "required": [
                     "name",
                     "description",
                     "version",
-                    "maintainer"
+                    "maintainer",
+                    "spec"
                 ]
             },
 
@@ -1098,7 +1101,8 @@
                     "name":         { "$ref": "#/pScheduler/String" },
                     "description":  { "$ref": "#/pScheduler/String" },
                     "version":      { "$ref": "#/pScheduler/Version" },
-                    "maintainer":   { "$ref": "#/pScheduler/Maintainer" }
+                    "maintainer":   { "$ref": "#/pScheduler/Maintainer" },
+		    "spec":         { "$ref": "#/pScheduler/PluginEnumeration/local/Spec" }
                 },
                 "additionalProperties": false,
                 "required": [

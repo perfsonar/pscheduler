@@ -1,4 +1,5 @@
 {
+    "#": "To listen for this:  nc -l -u 9999",
     "archiver": "udp",
     "data": {
 	"ip-version": 4,

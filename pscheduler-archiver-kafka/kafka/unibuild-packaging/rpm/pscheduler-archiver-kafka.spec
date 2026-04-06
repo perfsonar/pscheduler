@@ -57,4 +57,3 @@ pscheduler internal warmboot
 %files
 %defattr(-,root,root,-)
 %{dest}
-%{_pscheduler_archiver_doc}/*

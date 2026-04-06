@@ -10,6 +10,8 @@
 
 from pscheduler import json_validate
 
+MAX_SCHEMA = 1
+
 def result_is_valid(json):
     schema = {
         "type": "object",

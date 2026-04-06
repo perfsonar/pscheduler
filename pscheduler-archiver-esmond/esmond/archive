@@ -6,7 +6,6 @@ Send a result to esmond
 import sys
 import pscheduler
 import calendar
-import esmond_util
 import memcache
 import urllib
 
