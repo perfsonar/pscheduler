@@ -288,7 +288,9 @@ SPEC_SCHEMA = {
                 "reverse": { "$ref": "#/pScheduler/Boolean" },
                 "reverse-connections": { "$ref": "#/pScheduler/Boolean" },
                 "loopback":    { "$ref": "#/pScheduler/Boolean" },
-                "qperf-test": { "type": "string", "enum": [ "rds_bw", "sctp_bw", "sdp_bw", "tcp_bw", "udp_bw", "rc_bi_bw", "rc_bw", "uc_bi_bw", "uc_bw", "ud_bi_bw", "ud_bw", "rc_rdma_read_bw", "rc_rdma_write_bw", "uc_rdma_write_bw" ] }
+                'rdma': { '$ref': '#/pScheduler/Boolean' },
+                'bidirectional': { '$ref': '#/pScheduler/Boolean' },
+                'protocol': { 'type': 'string', 'enum': [ 'rds', 'sctp', 'sdp', 'tcp', 'udp', 'rc', 'uc', 'ud'] },
             },
             "additionalProperties": False,
             "required": [

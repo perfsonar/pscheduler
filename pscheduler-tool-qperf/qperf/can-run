@@ -51,21 +51,21 @@ throughput_tests = [
     'uc_bw',  # UC streaming one way bandwidth
     'ud_bi_bw',  # UD streaming two way bandwidth
     'ud_bw',  # UD streaming one way bandwidth
-    'rc_rdma_read_bw',  # RC RDMA read streaming one way bandwidth
     'rc_rdma_write_bw',  # RC RDMA write streaming one way bandwidth
     'uc_rdma_write_bw'  # UC RDMA write streaming one way bandwidth
 ]
 
 try:
-    if spec['qperf-test'].lower() not in throughput_tests:
+    test_to_run = f'{spec.get("protocol", "tcp")}{"_bi" if spec.get("bidirectional", False) else ""}{"_rdma_write" if spec.get("rdma", False) else ""}_bw'
+    if test_to_run not in throughput_tests:
         pscheduler.succeed_json({
             'can-run': False,
-            'reasons': [ 'Unsupported qperf test type' ]
+            'reasons': [ f'Unsupported qperf test type {test_to_run}. Supported tests are {throughput_tests}' ]
         })
-except KeyError:
+except KeyError as ex:
     pscheduler.succeed_json({
         'can-run': False,
-        'reasons': [ 'Missing qperf test type' ]
+        'reasons': [ f'Something went wrong - missing test option {str(ex)}' ]
     })
 except ValueError as ex:
     pscheduler.succeed_json({
@@ -85,7 +85,9 @@ throughput_options = [
     'link-rtt',
     'client-cpu-affinity',
     'server-cpu-affinity',
-    'qperf-test',
+    'protocol',
+    'rdma',
+    'bidirectional'
 ]
 
 supported_options = throughput_options

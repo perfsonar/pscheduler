@@ -76,13 +76,15 @@ def run_client():
     qperf_args.append('--listen_port')
     qperf_args.append(config['port'])
 
-    qperf_test = test_spec['qperf-test'].lower()
-
+    qperf_test = f'{test_spec.get("protocol", "tcp")}{"_bi" if test_spec.get("bidirectional", False) else ""}{"_rdma_write" if test_spec.get("rdma", False) else ""}_bw'
     # set data port
     if qperf_test in ['tcp_bw', 'udp_bw', 'sdp_bw', 'rds_bw', 'sctp_bw']:
         qperf_args.append('--ip_port')
         qperf_args.append(config['data_port'])
-    
+    else:
+        # one of rdma test, enable connection manager
+        qperf_args.append('-cm1')
+
     # options to unify output for test types
     qperf_args.append('--unify_nodes')  # data from server as rem, from client as loc
 

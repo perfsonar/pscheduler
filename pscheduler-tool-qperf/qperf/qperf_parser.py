@@ -55,19 +55,10 @@ def to_count(value_str):
 
 
 def translate_line(key, value):
-    if key == 'bw':
+    if key in ['bw', 'send_bw']:
         return {
             'throughput-bits': to_bits(value),
             'throughput-bytes': to_bits(value) / 8,
-            'receiver-throughput-bits': to_bits(value)
-        }
-    if key == 'send_bw':
-        return {
-            'throughput-bits': to_bits(value),
-            'throughput-bytes': to_bits(value) / 8,
-        }
-    if key == 'recv_bw':
-        return {
             'receiver-throughput-bits': to_bits(value)
         }
     if key == 'loc_send_msgs':
