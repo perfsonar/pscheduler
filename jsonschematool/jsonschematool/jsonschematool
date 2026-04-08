@@ -17,6 +17,11 @@ import sys
 # Utilities
 #
 
+debug_on = False
+def debug(message, depth=0):
+    if debug_on:
+        print(f'''{' ' * depth}{message}''', file=sys.stderr)
+
 def die(message):
     '''Print an error message and bail out.'''
     print(message, file=sys.stderr)
@@ -26,7 +31,8 @@ def die(message):
 def get_ref(struct, ref, leaf=False):
     '''
     Figure out if a reference (e.g., '#/foo/bar') exists within a
-    given structure and return it.
+    given structure and return it.  Note that it may contain other
+    references, which wil not be resolved.
     '''
 
     if not isinstance(struct, dict):
@@ -57,7 +63,7 @@ def get_ref(struct, ref, leaf=False):
 def ref_parts(ref):
     parts = ref.split('/')
     if parts[0] != '#' or len(parts) < 2:
-        raise ValueError('Invalid refernce {0}'.format(ref))
+        raise ValueError(f'Invalid reference {ref}')
     return parts[1:]
 
 
@@ -68,6 +74,11 @@ def ref_parts(ref):
 #
 
 arg_parser = argparse.ArgumentParser()
+
+arg_parser.add_argument('--debug',
+                        help='Send debug to the standard error',
+                        action='store_true',
+                        dest='debug', default=False)
 
 # Merge Options
 
@@ -91,11 +102,6 @@ arg_deref_group.add_argument('--dereference', '-d',
                              help='Resolve all references to the places that make them',
                              action='store_true',
                              dest='dereference', default=False)
-
-arg_deref_group.add_argument('--overlay', '-o',
-                             help='Overlay referenced content when dereferencing instead of replacing',
-                             action='store_true',
-                             dest='overlay', default=False)
 
 
 # Output
@@ -127,6 +133,8 @@ args = arg_parser.parse_args()
 if len(list(filter(lambda v: v == '-', args.remaining))) > 1:
     die('Can only read from stdin once.')
 
+debug_on = args.debug
+
 
 # -----------------------------------------------------------------------------
 
@@ -157,6 +165,7 @@ def all_refs(struct):
         else:
             if key == '$ref' and isinstance(value, str):
                 refs[value] = 1
+
 
     return refs
 
@@ -245,54 +254,65 @@ def merge(inputs):
 
 # Dereferencing
 
-def walk_all(struct, struct_top):
-    '''Walk a tree and find a list of the references.'''
 
-    if not isinstance(struct, dict):
-        return {}
+def walk_all(struct, struct_top, depth=-1):
+    '''
+    Recursively Walk a tree of JSONSchema and find a list of the references.
 
-    refs = {}
+    Args:
+      struct - JSON data
+      struct_top - Top of the tree.  Initial call should equal 'struct'
+      depth - For debugging; used when this function calls itself.
+    '''
 
-    for key,value in struct.items():
+    assert isinstance(depth, int)
+    depth += 1
 
-        if isinstance(value, dict):
+    if isinstance(struct, dict):
 
-            if '$ref' in value:
-                ref = value['$ref']
-                refs[ref] = 1
-                if args.overlay:
-                    # TODO: Start with what's in the ref and overlay
-                    # what's in the main stuff so things can be
-                    # overridden properly.
-                    del struct[key]['$ref']
-                    struct[key].update(get_ref(struct_top, ref, leaf=True))
-                else:
-                    ref = get_ref(struct_top, value['$ref'], leaf=True)
-                    if ref is not None:
-                        struct[key] = copy.deepcopy(ref)
+        refs = {}
+        new_dict = {}
 
-                new_refs = walk_all(struct[key], struct_top)
-                refs.update(new_refs)
+        for key, value in struct.items():
+            if key == '$ref':
+                debug(f'REF {value}', depth)
+                refs[value] = 1
+                ref = get_ref(struct_top, value, leaf=True)
+                new_refs, new_dict = walk_all(ref, struct_top, depth+1)
+                refs.update(new_refs)                
+                debug(f'REPLACE {new_dict}', depth)
             else:
-                new_refs = walk_all(value, struct_top)
+                debug(f'{key}:', depth)
+                new_refs, new_value = walk_all(value, struct_top, depth+1)
                 refs.update(new_refs)
+                new_dict[key] = new_value
+
+        return refs, new_dict
+    
+    elif isinstance(struct, list):
+
+        refs = {}
+        new_list = []
+        for item in struct:
+            new_refs, new_item = walk_all(item, struct_top, depth+1)
+            refs.update(new_refs)
+            new_list.append(new_item)
+        return refs, new_list
+
+    elif struct is None or isinstance(struct, (int, float, bool, str)):
+
+        # Atomic types have no references.
+        debug(f'SIMPLE {struct}',depth=depth)
+        return {}, struct
+
+    else:
+
+        # Nothing else is understood
+        raise ValueError(f'Unsupported type {type(struct)}')
+    
+    assert False, 'This should not be reached.'
 
 
-        elif isinstance(value, list):
-            for num, item in enumerate(value):
-                if isinstance(item, dict) and '$ref' in item:
-                    new_value = copy.deepcopy(get_ref(struct_top, item['$ref'], leaf=True))
-                    refs[item['$ref']] = 1
-                    new_refs = walk_all(new_value, struct_top)
-                    refs.update(new_refs)
-                    value[num] = new_value
-
-        else:
-            if key == '$ref' and isinstance(value, str):
-                if not args.unresolved_ok:
-                    die(f'Found unresolvable $ref {value}')
-
-    return refs
 
 
 
@@ -320,10 +340,12 @@ def delete_ref(data, parts):
 
 
 def dereference(data):
-    refs = walk_all(data, data)
+    refs, new_data = walk_all(data, data)
+    debug('Deleting references:')
     for key in [ ref_parts(ref) for ref in refs.keys() ]:
-        delete_ref(data, key)
-    return data
+        debug(key, depth=1)
+        delete_ref(new_data, key)
+    return new_data
 
 
 
@@ -331,14 +353,15 @@ def dereference(data):
 
 # Main Program
 
-# This is stolen from the pScheduler library.
+# This is stolen from the pScheduler library so this program doesn't
+# have to depend on it.
 
 def json_decomment(json, prefix='#', null=False):
-    """
+    '''
     Remove any JSON object member whose name begins with 'prefix'
     (default '#') and return the result.  If 'null' is True, replace
     the prefixed items with a null value instead of deleting them.
-    """
+    '''
     if isinstance(json, dict):
         result = {}
         for item in json:

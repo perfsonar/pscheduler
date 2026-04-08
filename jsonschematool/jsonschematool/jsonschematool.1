@@ -24,7 +24,7 @@ jsonschematool \- Merge and dereference JSON Schema documents
 .PP
 
 This program combines JSONSchema files and, optionally, replaces
-references with their actual definitions.
+references ('$ref' items in objects) with their actual definitions.
 
 .SH ARGUMENTS
 
@@ -55,11 +55,6 @@ Leave unresolved references unchanged and don't complain about them.
 .TP
 .BI --dereference
 Resolve all references to their definitions
-
-.TP
-.BI --overlay
-Overlay (merge) referenced content when dereferencing instead of
-replacing the entire object
 
 .TP
 .BI --pretty
