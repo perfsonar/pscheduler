@@ -7,6 +7,9 @@
 # Editor Droppings
 .*.swp
 *~
+\#*\#
+.\#*
+
 
 # Python by-products
 __pycache__
