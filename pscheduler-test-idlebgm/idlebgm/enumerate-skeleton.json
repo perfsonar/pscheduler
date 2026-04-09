@@ -1,5 +1,5 @@
 {
-    "schema": 1,
+    "schema": 2,
 
     "name": "idlebgm",
     "description": "Consume time in the background - NOT FOR PRODUCTION",

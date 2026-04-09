@@ -1,7 +1,7 @@
 
 
 {
-    "schema": 1,
+    "schema": 2,
     "name": "disk-to-disk",
     "description": "Network testing of throughput and Read/Write speeds",
     "version": "1.0",

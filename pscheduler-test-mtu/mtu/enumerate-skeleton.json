@@ -1,7 +1,7 @@
 
 
 {
-    "schema": 1,
+    "schema": 2,
     "name": "mtu",
     "description": "Measure Maximum Transmission Unit (MTU)",
     "version": "1.0",

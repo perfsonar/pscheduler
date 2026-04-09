@@ -1,7 +1,7 @@
 
 
 {
-    "schema": 1,
+    "schema": 2,
     "name": "dot1x",
     "description": "802.1x authentication using wpa_supplicant and a wpa_supplicant config file",
     "version": "1.0",

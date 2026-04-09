@@ -1016,7 +1016,7 @@
             "Test": {
                 "type": "object",
                 "properties": {
-                    "schema":       { "$ref": "#/pScheduler/Cardinal" },
+                    "schema":       { "type": "integer", "const": 2 },
                     "name":         { "$ref": "#/pScheduler/String" },
                     "description":  { "$ref": "#/pScheduler/String" },
                     "version":      { "$ref": "#/pScheduler/Version" },
@@ -1046,7 +1046,7 @@
             "Tool": {
                 "type": "object",
                 "properties": {
-                    "schema":       { "$ref": "#/pScheduler/Cardinal" },
+		    "schema":       { "type": "integer", "const": 1 },
                     "name":         { "$ref": "#/pScheduler/String" },
                     "description":  { "$ref": "#/pScheduler/String" },
                     "version":      { "$ref": "#/pScheduler/Version" },
@@ -1077,7 +1077,7 @@
             "Archiver": {
                 "type": "object",
                 "properties": {
-                    "schema":       { "$ref": "#/pScheduler/Cardinal" },
+		    "schema":       { "type": "integer", "const": 2 },
                     "name":         { "$ref": "#/pScheduler/String" },
                     "description":  { "$ref": "#/pScheduler/String" },
                     "version":      { "$ref": "#/pScheduler/Version" },
@@ -1097,7 +1097,7 @@
             "Context": {
                 "type": "object",
                 "properties": {
-                    "schema":       { "$ref": "#/pScheduler/Cardinal" },
+		    "schema":       { "type": "integer", "const": 2 },
                     "name":         { "$ref": "#/pScheduler/String" },
                     "description":  { "$ref": "#/pScheduler/String" },
                     "version":      { "$ref": "#/pScheduler/Version" },

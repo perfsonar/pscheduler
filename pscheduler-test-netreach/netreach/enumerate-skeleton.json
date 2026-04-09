@@ -1,5 +1,5 @@
 {
-    "schema": 1,
+    "schema": 2,
     "name": "netreach",
     "description": "Determine if any host on a network is reachable",
     "version": "1.0",

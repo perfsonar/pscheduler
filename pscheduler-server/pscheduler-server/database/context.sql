@@ -118,7 +118,6 @@ DECLARE
     context_name TEXT;
     context_enumeration JSONB;
     json_result TEXT;
-    sschema NUMERIC;  -- Name dodges a reserved word
 BEGIN
     run_result := pscheduler_command(ARRAY['internal', 'list', 'context']);
     IF run_result.status <> 0 THEN
@@ -138,13 +137,6 @@ BEGIN
         END IF;
 
 	context_enumeration := run_result.stdout::JSONB;
-
-        sschema := text_to_numeric(context_enumeration ->> 'schema');
-        IF sschema IS NOT NULL AND sschema > 1 THEN
-            RAISE WARNING 'Context "%": schema % is not supported',
-                context_name, sschema;
-            CONTINUE;
-        END IF;
 
 	INSERT INTO context (json, updated)
         VALUES (context_enumeration, now())

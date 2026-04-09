@@ -1,7 +1,7 @@
 
 
 {
-    "schema": 1,
+    "schema": 2,
     "name": "dhcp",
     "description": "Tests the response time for getting a new dhcp lease.",
     "version": "1.0",

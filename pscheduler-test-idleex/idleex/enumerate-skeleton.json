@@ -1,5 +1,5 @@
 {
-    "schema": 1,
+    "schema": 2,
     "name": "idleex",
     "description": "Consume time exclusively - NOT FOR PRODUCTION",
     "version": "1.0",

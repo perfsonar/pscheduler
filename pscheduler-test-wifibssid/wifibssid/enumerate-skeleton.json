@@ -1,7 +1,7 @@
 
 
 {
-    "schema": 1,
+    "schema": 2,
     "name": "wifibssid",
     "description": "Outputs a list of BSSIDs in json format with the given SSID",
     "version": "1.0",

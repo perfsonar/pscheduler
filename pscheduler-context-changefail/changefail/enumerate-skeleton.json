@@ -1,5 +1,5 @@
 {
-    "schema": 1,
+    "schema": 2,
 
     "name": "changefail",
     "description": "Fail to change contexts - NOT FOR PRODUCTION",

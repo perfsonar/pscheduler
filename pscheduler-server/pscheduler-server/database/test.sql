@@ -99,14 +99,14 @@ DECLARE
 BEGIN
 
     NEW.AVAILABLE := TRUE;
+    NEW.name := NEW.json ->> 'name';
     json_result := json_validate(NEW.json, '#/pScheduler/PluginEnumeration/Test');
     IF json_result IS NOT NULL
     THEN
-	RAISE EXCEPTION 'Invalid enumeration for test "%": %', NEW.name, json_result;
+	RAISE WARNING 'Invalid enumeration for test "%": %', NEW.name, json_result;
 	NEW.available := FALSE;
     END IF;
 
-    NEW.name := NEW.json ->> 'name';
     NEW.description := NEW.json ->> 'description';
     NEW.scheduling_class := scheduling_class_find(NEW.json ->> 'scheduling-class');
 
@@ -135,7 +135,6 @@ DECLARE
     test_name TEXT;
     test_enumeration JSONB;
     json_result TEXT;
-    sschema NUMERIC;  -- Name dodges a reserved word
 BEGIN
     run_result := pscheduler_command(ARRAY['internal', 'list', 'test']);
     IF run_result.status <> 0 THEN
@@ -154,13 +153,6 @@ BEGIN
         END IF;
 
 	test_enumeration := run_result.stdout::JSONB;
-
-        sschema := text_to_numeric(test_enumeration ->> 'schema');
-        IF sschema IS NOT NULL AND sschema > 1 THEN
-            RAISE WARNING 'Test "%": schema % is not supported',
-                test_name, sschema;
-            CONTINUE;
-        END IF;
 
 	INSERT INTO test (json, updated)
 	VALUES (test_enumeration, now())

@@ -1,5 +1,5 @@
 {
-    "schema": 1,
+    "schema": 2,
     "name": "tcp",
     "description": "Send a raw JSON result to a TCP socket",
     "version": "1.0",

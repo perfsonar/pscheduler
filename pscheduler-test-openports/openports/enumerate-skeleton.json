@@ -1,7 +1,7 @@
 
 
 {
-    "schema": 1,
+    "schema": 2,
     "name": "openports",
     "description": "Identifies open ports on a given host/subnet",
     "version": "1.0",
