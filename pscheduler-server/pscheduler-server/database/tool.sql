@@ -160,7 +160,7 @@ AS $$
 DECLARE
     json_result TEXT;
 BEGIN
-
+    NEW.name := NEW.json ->> 'name';
     NEW.available := TRUE;
     json_result := json_validate(NEW.json, '#/pScheduler/PluginEnumeration/Tool');
     IF json_result IS NOT NULL
@@ -169,7 +169,6 @@ BEGIN
        NEW.available := FALSE;
     END IF;
 
-    NEW.name := NEW.json ->> 'name';
     NEW.description := NEW.json ->> 'description';
     NEW.preference := text_to_numeric(NEW.json ->> 'preference');
     RETURN NEW;
