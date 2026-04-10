@@ -1,6 +1,7 @@
 {
     "schema": 2,
     "name": "kafka",
+    "label": "Kafka",
     "description": "Archives data to an Apache Kafka message bus",
     "version": "1.2",
 

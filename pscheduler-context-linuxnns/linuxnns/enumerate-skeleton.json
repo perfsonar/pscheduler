@@ -2,6 +2,7 @@
     "schema": 2,
 
     "name": "linuxnns",
+    "label": "Linux Network Namespace",
     "description": "Change Linux network namespace",
     "version": "1.0",
 

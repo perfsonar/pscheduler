@@ -14,6 +14,7 @@
     "schema": 1,
 
     "name": "bssidscanner",
+    "label": "BSSID Scanner",
     "description": "Scans given interface for all BSSIDs. Returns a list of all associated BSSIDs in json format for the given SSID",
     "version": "1.0",
     "tests": [ "wifibssid" ],

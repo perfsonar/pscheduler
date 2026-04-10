@@ -1,6 +1,7 @@
 {
     "schema": 2,
     "name": "snmptrap",
+    "label": "SNMP Trap",
     "description": "Send an SNMP trap to a destination.",
     "version": "1.0.0.3",
 

@@ -2,6 +2,7 @@
     "schema": 2,
 
     "name": "trace",
+    "label": "Trace",
     "description": "Trace the path between IP hosts",
     "version": "1.0",
     "maintainer": {

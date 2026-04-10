@@ -3,6 +3,7 @@
     "schema": 1,
 
     "name": "dublin-traceroute",
+    "label": "Dublin Traceroute",
     "description": "Determine the route between hosts with Dublin Traceroute",
     "version": "1.0",
     "tests": [ "trace" ],

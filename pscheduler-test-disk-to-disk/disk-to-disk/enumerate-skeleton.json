@@ -3,6 +3,7 @@
 {
     "schema": 2,
     "name": "disk-to-disk",
+    "label": "Disk-to-Disk",
     "description": "Network testing of throughput and Read/Write speeds",
     "version": "1.0",
     "maintainer": {

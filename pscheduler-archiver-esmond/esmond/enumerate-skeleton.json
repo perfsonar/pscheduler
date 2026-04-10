@@ -1,6 +1,7 @@
 {
     "schema": 2,
     "name": "esmond",
+    "label": "Esmond",
     "description": "Send results to Esmond",
     "version": "1.0",
     "maintainer": {

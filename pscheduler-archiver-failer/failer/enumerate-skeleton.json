@@ -2,6 +2,7 @@
     "schema": 2,
 
     "name": "failer",
+    "label": "Failer",
     "description": "Dummy archiver that fails some of the time",
     "version": "1.0",
 

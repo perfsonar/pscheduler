@@ -1,6 +1,7 @@
 {
     "schema": 2,
     "name": "udp",
+    "label": "UDP",
     "description": "Send a JSON result as a UDP datagram",
     "version": "1.0",
 

@@ -1,6 +1,7 @@
 {
     "schema": 2,
     "name": "dns",
+    "label": "DNS",
     "description": "Measure DNS transaction time",
     "version": "1.0",
     "maintainer": {

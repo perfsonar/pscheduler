@@ -2,6 +2,7 @@
     "schema": 2,
 
     "name": "bitbucket",
+    "label": "Bit Bucket",
     "description": "Discard results",
     "version": "1.0",
 

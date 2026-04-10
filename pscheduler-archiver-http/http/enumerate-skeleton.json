@@ -1,6 +1,7 @@
 {
     "schema": 2,
     "name": "http",
+    "label": "HTTP",
     "description": "Send a raw JSON result to a HTTP server",
     "version": "1.0",
 

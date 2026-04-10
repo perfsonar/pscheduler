@@ -1,6 +1,7 @@
 {
     "schema": 2,
     "name": "http",
+    "label": "HTTP",
     "description": "Measure HTTP Response Time",
     "version": "1.0",
     "maintainer": {

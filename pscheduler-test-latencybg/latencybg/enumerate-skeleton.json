@@ -1,6 +1,7 @@
 {
     "schema": 2,
     "name": "latencybg",
+    "label": "Latency Background-Multi",
     "description": "Run one-way latency tests in the background",
     "version": "1.0",
     "maintainer": {

@@ -1,6 +1,7 @@
 {
     "schema": 2,
     "name": "throughput",
+    "label": "Throughput",
     "description": "Measure network throughput between hosts",
 
     "version": "1.0",

@@ -2,6 +2,7 @@
 {
     "schema": 1,
     "name": "bwctltraceroute",
+    "label": "BWCTL Traceroute",
     "description": "Determine the path between hosts with BWCTL - NON-FUNCTIONING",
     "version": "1.0",
     "tests": [ ],

@@ -1,6 +1,7 @@
 {
     "schema": 2,
     "name": "syslog",
+    "label": "Syslog",
     "description": "Send a raw JSON result to Syslog",
     "version": "1.0",
 

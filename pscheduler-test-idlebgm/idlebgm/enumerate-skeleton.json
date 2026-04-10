@@ -2,6 +2,7 @@
     "schema": 2,
 
     "name": "idlebgm",
+    "label": "Idle Background-Multi",
     "description": "Consume time in the background - NOT FOR PRODUCTION",
     "version": "1.0",
     "maintainer": {

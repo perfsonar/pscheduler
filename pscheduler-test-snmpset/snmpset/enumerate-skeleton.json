@@ -1,6 +1,7 @@
 {
     "schema": 2,
     "name": "snmpset",
+    "label": "SNMP Set",
     "description": "Set SNMP Variables",
     "version": "1.0",
     "maintainer": {

@@ -1018,6 +1018,7 @@
                 "properties": {
                     "schema":       { "type": "integer", "const": 2 },
                     "name":         { "$ref": "#/pScheduler/String" },
+                    "label":         { "$ref": "#/pScheduler/String" },
                     "description":  { "$ref": "#/pScheduler/String" },
                     "version":      { "$ref": "#/pScheduler/Version" },
                     "maintainer":   { "$ref": "#/pScheduler/Maintainer" },
@@ -1035,6 +1036,7 @@
                 "additionalProperties": false,
                 "required": [
                     "name",
+		    "label",
                     "description",
                     "version",
                     "maintainer",
@@ -1048,6 +1050,7 @@
                 "properties": {
 		    "schema":       { "type": "integer", "const": 1 },
                     "name":         { "$ref": "#/pScheduler/String" },
+		    "label":        { "$ref": "#/pScheduler/String" },
                     "description":  { "$ref": "#/pScheduler/String" },
                     "version":      { "$ref": "#/pScheduler/Version" },
                     "tests":        { "$ref": "#/pScheduler/StringList" },
@@ -1066,6 +1069,7 @@
                 "additionalProperties": false,
                 "required": [
                     "name",
+		    "label",
                     "description",
                     "version",
                     "tests",
@@ -1079,6 +1083,7 @@
                 "properties": {
 		    "schema":       { "type": "integer", "const": 2 },
                     "name":         { "$ref": "#/pScheduler/String" },
+                    "label":        { "$ref": "#/pScheduler/String" },
                     "description":  { "$ref": "#/pScheduler/String" },
                     "version":      { "$ref": "#/pScheduler/Version" },
                     "maintainer":   { "$ref": "#/pScheduler/Maintainer" },
@@ -1087,6 +1092,7 @@
                 "additionalProperties": false,
                 "required": [
                     "name",
+		    "label",
                     "description",
                     "version",
                     "maintainer",
@@ -1099,6 +1105,7 @@
                 "properties": {
 		    "schema":       { "type": "integer", "const": 2 },
                     "name":         { "$ref": "#/pScheduler/String" },
+                    "label":        { "$ref": "#/pScheduler/String" },
                     "description":  { "$ref": "#/pScheduler/String" },
                     "version":      { "$ref": "#/pScheduler/Version" },
                     "maintainer":   { "$ref": "#/pScheduler/Maintainer" },
@@ -1107,6 +1114,7 @@
                 "additionalProperties": false,
                 "required": [
                     "name",
+		    "label",
                     "description",
                     "version",
                     "maintainer",

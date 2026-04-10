@@ -3,6 +3,7 @@
     "schema": 1,
 
     "name": "tracepath",
+    "label": "Tracepath",
     "description": "Map the route between hosts with tracepath",
     "version": "1.0",
     "tests": [ "trace" ],

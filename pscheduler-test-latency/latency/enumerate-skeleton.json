@@ -2,6 +2,7 @@
     "schema": 2,
 
     "name": "latency",
+    "label": "Latency",
     "description": "Measure network latency between hosts",
     "version": "1.0",
     "maintainer": {

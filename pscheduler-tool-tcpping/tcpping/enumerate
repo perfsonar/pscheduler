@@ -3,6 +3,7 @@
     "schema": 1,
 
     "name": "tcpping",
+    "label": "TCP Ping",
     "description": "Measure the round-trip time to another host with tcpping",
     "version": "1.0",
     "tests": [ "rtt" ],

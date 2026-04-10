@@ -1,6 +1,7 @@
 {
     "schema": 2,
     "name": "postgresql",
+    "label": "PostgreSQL",
     "description": "PostgreSQL database archiver",
     "version": "1.0",
 

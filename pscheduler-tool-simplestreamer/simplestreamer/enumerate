@@ -3,6 +3,7 @@
     "schema": 1,
 
     "name": "simplestreamer",
+    "label": "Simple Streamer",
     "description": "Stream data from one node to another with TCP",
     "version": "1.0",
     "tests": [ "simplestream" ],

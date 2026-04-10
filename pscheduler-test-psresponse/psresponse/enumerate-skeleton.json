@@ -1,6 +1,7 @@
 {
     "schema": 2,
     "name": "psresponse",
+    "label": "pScheduler Response",
     "description": "Measure pScheduler Response Time",
     "version": "1.0",
     "maintainer": {

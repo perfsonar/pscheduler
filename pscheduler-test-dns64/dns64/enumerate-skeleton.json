@@ -1,8 +1,7 @@
-
-
 {
     "schema": 2,
     "name": "dns64",
+    "label": "DNS64",
     "description": "Test that checks for the correct functioning of a DNS64 server",
     "version": "1.0",
     "maintainer": {

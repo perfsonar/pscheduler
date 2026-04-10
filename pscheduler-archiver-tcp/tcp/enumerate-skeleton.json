@@ -1,6 +1,7 @@
 {
     "schema": 2,
     "name": "tcp",
+    "label": "TCP",
     "description": "Send a raw JSON result to a TCP socket",
     "version": "1.0",
 

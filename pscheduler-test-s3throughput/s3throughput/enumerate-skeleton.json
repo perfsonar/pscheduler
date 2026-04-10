@@ -1,8 +1,7 @@
-
-
 {
     "schema": 2,
     "name": "s3throughput",
+    "label": "S3 Throughput",
     "description": "Test throughput of S3 web service storage",
     "version": "1.0",
     "maintainer": {

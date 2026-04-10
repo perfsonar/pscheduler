@@ -3,6 +3,7 @@
     "schema": 1,
 
     "name": "traceroute",
+    "label": "Traceroute",
     "description": "Map the route between hosts with traceroute",
     "version": "1.0",
     "tests": [ "trace" ],

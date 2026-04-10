@@ -2,6 +2,7 @@
     "schema": 2,
 
     "name": "rabbitmq",
+    "label": "RabbitMQ",
     "description": "Send a JSON result to RabbitMQ",
     "version": "1.0",
 

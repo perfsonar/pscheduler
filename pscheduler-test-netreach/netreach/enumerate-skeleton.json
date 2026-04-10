@@ -1,6 +1,7 @@
 {
     "schema": 2,
     "name": "netreach",
+    "label": "Network Reachability",
     "description": "Determine if any host on a network is reachable",
     "version": "1.0",
     "maintainer": {

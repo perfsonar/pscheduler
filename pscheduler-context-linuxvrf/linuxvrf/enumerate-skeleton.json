@@ -2,6 +2,7 @@
     "schema": 2,
 
     "name": "linuxvrf",
+    "label": "Linux VRF",
     "description": "Change Linux VRF",
     "version": "1.0",
 

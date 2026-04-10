@@ -2,6 +2,7 @@
     "schema": 2,
 
     "name": "simplestream",
+    "label": "Simple Stream",
     "description": "Test communication between two hosts using TCP",
     "version": "1.0",
     "maintainer": {

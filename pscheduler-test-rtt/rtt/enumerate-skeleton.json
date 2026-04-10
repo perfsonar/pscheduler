@@ -1,6 +1,7 @@
 {
     "schema": 2,
     "name": "rtt",
+    "label": "RTT",
     "description": "Measure the round trip time between hosts",
     "version": "1.0",
     "maintainer": {
