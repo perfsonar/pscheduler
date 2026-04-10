@@ -31,6 +31,7 @@ Requires:	%{_pscheduler_python}-pscheduler >= 4.3.0
 Requires:	rpm-post-wrapper
 
 BuildRequires:	pscheduler-rpm
+BuildRequires:	pscheduler-plugin-makefiles
 
 %description
 globus tool class for pScheduler

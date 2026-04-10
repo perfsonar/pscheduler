@@ -28,6 +28,7 @@ Requires:	nuttcp >= 8.1.4
 Requires:	rpm-post-wrapper
 
 BuildRequires:	pscheduler-rpm
+BuildRequires:	pscheduler-plugin-makefiles
 
 
 %description

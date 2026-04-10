@@ -32,6 +32,7 @@ Requires:	%{_pscheduler_python}-nmap3
 Requires:	rpm-post-wrapper
 
 BuildRequires:	pscheduler-rpm
+BuildRequires:	pscheduler-plugin-makefiles
 
 %description
 nmapscan tool class for pScheduler

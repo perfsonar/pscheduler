@@ -27,6 +27,7 @@ Requires:	pscheduler-test-dns
 Requires:	rpm-post-wrapper
 
 BuildRequires:	pscheduler-rpm
+BuildRequires:	pscheduler-plugin-makefiles
 
 
 %description

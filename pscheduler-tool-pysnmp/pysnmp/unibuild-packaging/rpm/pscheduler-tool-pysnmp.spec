@@ -26,6 +26,7 @@ Requires:	%{_pscheduler_python}-pysnmp
 Requires:	rpm-post-wrapper
 
 BuildRequires:	pscheduler-rpm
+BuildRequires:	pscheduler-plugin-makefiles
 
 %description
 SNMP tool class for pScheduler

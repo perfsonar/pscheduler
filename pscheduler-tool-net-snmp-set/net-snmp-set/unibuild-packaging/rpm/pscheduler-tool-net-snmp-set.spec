@@ -27,6 +27,7 @@ Requires:	pscheduler-test-snmpset
 Requires:	rpm-post-wrapper
 
 BuildRequires:	pscheduler-rpm
+BuildRequires:	pscheduler-plugin-makefiles
 
 %description
 snmpset tool class for pScheduler

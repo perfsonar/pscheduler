@@ -33,6 +33,7 @@ Requires:   pscheduler-test-s3throughput
 Requires:	rpm-post-wrapper
 
 BuildRequires:	pscheduler-rpm
+BuildRequires:	pscheduler-plugin-makefiles
 
 %description
 s3-benchmark tool class for pScheduler

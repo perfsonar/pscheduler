@@ -36,6 +36,7 @@ Requires:	rpm-post-wrapper
 BuildRequires:	dhcp-client
 
 BuildRequires:	pscheduler-rpm
+BuildRequires:	pscheduler-plugin-makefiles
 BuildRequires: dhclient
 
 %description

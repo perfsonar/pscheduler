@@ -31,6 +31,7 @@ Requires:	%{_pscheduler_python}-pscheduler
 Requires:	rpm-post-wrapper
 
 BuildRequires:	pscheduler-rpm
+BuildRequires:	pscheduler-plugin-makefiles
 
 %description
 pydns64 tool class for pScheduler

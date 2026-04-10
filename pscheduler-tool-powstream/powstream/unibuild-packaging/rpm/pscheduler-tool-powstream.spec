@@ -30,6 +30,7 @@ Requires:	owamp-server
 Requires:	rpm-post-wrapper
 
 BuildRequires:	pscheduler-rpm
+BuildRequires:	pscheduler-plugin-makefiles
 BuildRequires:	%{_pscheduler_python}-pscheduler
 BuildRequires:  %{_pscheduler_python}-nose2
 

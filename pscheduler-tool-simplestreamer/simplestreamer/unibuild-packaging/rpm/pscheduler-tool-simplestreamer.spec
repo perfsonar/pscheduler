@@ -26,6 +26,7 @@ Requires:	pscheduler-test-simplestream >= 1.0.2.6.1
 Requires:	rpm-post-wrapper
 
 BuildRequires:	pscheduler-rpm
+BuildRequires:	pscheduler-plugin-makefiles
 
 
 %description

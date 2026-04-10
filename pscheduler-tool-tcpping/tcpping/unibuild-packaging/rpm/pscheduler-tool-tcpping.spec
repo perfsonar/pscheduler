@@ -30,6 +30,7 @@ Requires:	rpm-post-wrapper
 
 BuildRequires:	pscheduler-account
 BuildRequires:	pscheduler-rpm
+BuildRequires:	pscheduler-plugin-makefiles
 
 
 %description
