@@ -7,8 +7,216 @@
 
         { },
 
-        { },
+        {
+	    "type": "VerticalLayout",
+            "elements": [
+                {
+                    "type": "Control",
+                    "scope": "#/properties/schema",
+                    "customComponent": "dropdown-single-select"
+                },
+                {
+                    "type": "Control",
+                    "scope": "#/properties/source",
+                    "customComponent": "input-text-autocomplete"
+                },
+                {
+                    "type": "Control",
+                    "scope": "#/properties/source-node",
+                    "customComponent": "input-text-autocomplete"		    
+                },
+                {
+                    "type": "Control",
+                    "scope": "#/properties/dest",
+                    "customComponent": "input-text-autocomplete"
+                },
+                {
+                    "type": "Control",
+                    "scope": "#/properties/dest-node",
+                    "customComponent": "input-text-autocomplete"
+                },
+                {
+                    "type": "Control",
+                    "scope": "#/properties/packet-count",
+                    "customComponent": "input-number"
+                },
+                {
+                    "type": "Control",
+                    "scope": "#/properties/packet-interval",
+                    "customComponent": "input-number"
+                },
+                {
+                    "type": "Control",
+                    "scope": "#/properties/packet-timeout",
+                    "customComponent": "input-number"
+                },
+                {
+                    "type": "Control",
+                    "scope": "#/properties/packet-padding",
+                    "customComponent": "input-number"
+                },
+                {
+                    "type": "Control",
+                    "scope": "#/properties/ctrl-port",
+                    "customComponent": "input-number"
+                },
+                {
+                    "type": "Control",
+                    "scope": "#/properties/ip-tos",
+                    "customComponent": "input-number"
+                },
+                {
+                    "type": "Control",
+                    "scope": "#/properties/ip-version",
+                    "customComponent": "dropdown-single-select"
+                },
+                {
+                    "type": "Control",
+                    "scope": "#/properties/bucket-width",
+                    "customComponent": "input-number"
+                },
+                {
+                    "type": "Control",
+                    "scope": "#/properties/output-raw",
+                    "customComponent": "input-checkbox"
+                },
+                {
+                    "type": "Control",
+                    "scope": "#/properties/flip",
+                    "customComponent": "input-checkbox"
+                },
+                {
+                    "type": "Control",
+                    "scope": "#/properties/reverse",
+                    "customComponent": "input-checkbox"
+                },
+                {
+                    "type": "Control",
+                    "scope": "#/properties/traverse-nat",
+                    "customComponent": "input-checkbox"
+                }
+            ]
+	},
 
-        { }
+        {
+	    "type": "VerticalLayout",
+            "elements": [
+                {
+                    "type": "Control",
+                    "scope": "#/properties/schema",
+                    "customComponent": "dropdown-single-select"
+                },
+                {
+                    "type": "HorizontalLayout",
+                    "elements": [
+                        {
+                            "type": "Control",
+                            "scope": "#/properties/source",
+                            "customComponent": "input-text-autocomplete"
+                        },
+                        {
+                            "type": "Control",
+                            "scope": "#/properties/dest",
+                            "customComponent": "input-text-autocomplete"
+                        }
+                    ]
+                },
+                {
+                    "type": "HorizontalLayout",
+                    "elements": [
+                        {
+                            "type": "Control",
+                            "scope": "#/properties/source-node",
+                            "customComponent": "input-text-autocomplete"
+                        },
+                        {
+                            "type": "Control",
+                            "scope": "#/properties/dest-node",
+                            "customComponent": "input-text-autocomplete"
+                        }
+                    ]
+                },
+                {
+                    "type": "Control",
+                    "scope": "#/properties/protocol",
+                    "customComponent": "input-text"
+                },
+                {
+                    "type": "HorizontalLayout",
+                    "elements": [
+                        {
+                            "type": "Control",
+                            "scope": "#/properties/packet-count",
+                            "customComponent": "input-number"
+                        },
+                        {
+                            "type": "Control",
+                            "scope": "#/properties/packet-interval",
+                            "customComponent": "input-number"
+                        },
+                        {
+                            "type": "Control",
+                            "scope": "#/properties/packet-timeout",
+                            "customComponent": "input-number"
+                        },
+                    ]
+                },
+                {
+                    "type": "HorizontalLayout",
+                    "elements": [
+                        {
+                            "type": "Control",
+                            "scope": "#/properties/packet-padding",
+                            "customComponent": "input-number"
+                        },
+                        {
+                            "type": "Control",
+                            "scope": "#/properties/ctrl-port",
+                            "customComponent": "input-number"
+                        },
+                        {
+                            "type": "Control",
+                            "scope": "#/properties/ip-tos",
+                            "customComponent": "input-number"
+                        }
+                    ]
+                },
+                {
+                    "type": "Control",
+                    "scope": "#/properties/ip-version",
+                    "customComponent": "dropdown-single-select"
+                },
+                {
+                    "type": "Control",
+                    "scope": "#/properties/bucket-width",
+                    "customComponent": "input-number"
+                },
+                {
+                    "type": "HorizontalLayout",
+                    "elements": [
+                        {
+                            "type": "Control",
+                            "scope": "#/properties/output-raw",
+                            "customComponent": "input-checkbox"
+                        },
+                        {
+                            "type": "Control",
+                            "scope": "#/properties/flip",
+                            "customComponent": "input-checkbox",
+                        },
+                        {
+                            "type": "Control",
+                            "scope": "#/properties/reverse",
+                            "customComponent": "input-checkbox"
+                        },
+                        {
+                            "type": "Control",
+                            "scope": "#/properties/traverse-nat",
+                            "customComponent": "input-checkbox"
+                        }
+                    ]
+                }
+            ]
+        }
     ]
 }
