@@ -5,7 +5,8 @@
 ENUMERATE := enumerate
 ENUMERATE_JSON := enumerate.json
 ENUMERATE_SKELETON := enumerate-skeleton.json
-SPEC_SCHEMA := spec-schema.json
+SPEC_SCHEMA := spec-jsonschema.json
+UI_SCHEMA := spec-uischema.json
 
 FILES += \
 	cli-to-spec \
@@ -26,7 +27,7 @@ default: build
 
 
 
-$(ENUMERATE): $(ENUMERATE_SKELETON) $(SPEC_SCHEMA)
+$(ENUMERATE): $(ENUMERATE_SKELETON) $(SPEC_SCHEMA) $(UI_SCHEMA)
 	pscheduler-build-enumeration $^ > $@
 	chmod +x $@
 TO_CLEAN += $(ENUMERATE)

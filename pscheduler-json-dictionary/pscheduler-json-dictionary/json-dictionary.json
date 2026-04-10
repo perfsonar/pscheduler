@@ -1001,14 +1001,40 @@
 		    ]		    
 		},
 
-		"Spec": {
+		"SpecUISchemaVersions": {
+		    "#": "TODO: Need to use prefixItems to make sure the first is null",
+		    "type": "array",
+		    "#": "TODO: Validate UISchema here, not just anything.",
+		    "items": {
+			"anyOf": [
+			    { "type": "object" },
+			    { "type": "null" }
+			]
+		    },
+		    "minItems": 2
+		},
+
+		"SpecUISchema": {
 		    "type": "object",
 		    "properties": {
-			"jsonschema": { "$ref": "#/pScheduler/PluginEnumeration/local/SpecJSONSchema" }
+			"versions": { "$ref": "#/pScheduler/PluginEnumeration/local/SpecUISchemaVersions" }
 		    },
 		    "additionalProperties": false,
 		    "required": [
-			"jsonschema"
+			"versions"
+		    ]		    
+		},
+
+		"Spec": {
+		    "type": "object",
+		    "properties": {
+			"jsonschema": { "$ref": "#/pScheduler/PluginEnumeration/local/SpecJSONSchema" },
+			"uischema": { "$ref": "#/pScheduler/PluginEnumeration/local/SpecUISchema" }
+		    },
+		    "additionalProperties": false,
+		    "required": [
+			"jsonschema",
+			"uischema"
 		    ]
 		}
 	    },

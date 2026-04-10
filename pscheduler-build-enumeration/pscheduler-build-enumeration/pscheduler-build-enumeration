@@ -1,8 +1,8 @@
 #!/bin/sh -e
 #
-# Build pScheduler enumerators from a skeleton and a validator schema.
+# Build pScheduler enumerators from a skeleton, JSON and UI schemas.
 #
-# Usage: pscheduler-build-enumeration ENUM-JSON VALIDATOR-SCHEMA-JSON
+# Usage: pscheduler-build-enumeration ENUM-JSON VALIDATOR-SCHEMA-JSON UI-SCHEMA-JSON
 #
 
 TMPBASE=$(mktemp -d)
@@ -26,7 +26,7 @@ die()
 }
 
 
-if [ "$#" -ne 2 ]
+if [ "$#" -ne 3 ]
 then
     help
     exit 1
@@ -43,6 +43,10 @@ jq . "$1" > "${ENUM}" \
 
 jq . "$2" > /dev/null \
     || die "Could not process validator $2"
+
+jq . "$3" > /dev/null \
+    || die "Could not process UI $2"
+UI="$3"
 
 # If local isn't present, use an empty default.
 VALIDATOR_LOCAL="${TMPBASE}/validator-local"
@@ -104,6 +108,7 @@ jq --slurp '
       .[0].spec = {}
     | .[0].spec.jsonschema = {}
     | .[0].spec.jsonschema.versions = .[1]
+    | .[0].spec.uischema = .[2]
     | .[0]
-    ' "${ENUM}" "${VALIDATOR_ARRAY_FINAL}"
+    ' "${ENUM}" "${VALIDATOR_ARRAY_FINAL}" "${UI}"
 echo 'EOF'
