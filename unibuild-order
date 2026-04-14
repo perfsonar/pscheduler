@@ -144,8 +144,14 @@ pscheduler-tool-snooze
 pscheduler-test-noop
 pscheduler-tool-passthrough
 
-# One archiver
+# Simple archivers
 pscheduler-archiver-bitbucket
+pscheduler-archiver-failer
+
+# Simple context changers
+pscheduler-context-changefail
+pscheduler-context-changenothing
+
 
 # ----- MINIMAL BUILD STOPS HERE -----
 pscheduler-minimal-marker
@@ -270,7 +276,6 @@ pscheduler-tool-umichwpa		--bundle extras
 #
 
 pscheduler-archiver-esmond			--bundle obsolete
-pscheduler-archiver-failer
 pscheduler-archiver-http
 pscheduler-archiver-kafka
 pscheduler-archiver-postgresql
@@ -282,8 +287,6 @@ pscheduler-archiver-udp
 
 
 # Context Changers
-pscheduler-context-changefail
-pscheduler-context-changenothing
 pscheduler-context-linuxnns
 pscheduler-context-linuxvrf
 
