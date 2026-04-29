@@ -7,6 +7,7 @@ ENUMERATE_JSON := enumerate.json
 ENUMERATE_SKELETON := enumerate-skeleton.json
 SPEC_SCHEMA := spec-jsonschema.json
 UI_SCHEMA := spec-uischema.json
+RESULT_SCHEMA := result-jsonschema.json
 
 FILES += \
 	cli-to-spec \
@@ -27,8 +28,13 @@ default: build
 
 
 
-$(ENUMERATE): $(ENUMERATE_SKELETON) $(SPEC_SCHEMA) $(UI_SCHEMA)
-	pscheduler-build-enumeration $^ > $@
+$(ENUMERATE): $(ENUMERATE_SKELETON) $(SPEC_SCHEMA) $(UI_SCHEMA) $(RESULT_SCHEMA)
+	pscheduler-build-enumeration \
+		--plain .=$(ENUMERATE_SKELETON) \
+		--validator .spec.jsonschema=$(SPEC_SCHEMA) \
+		--plain .spec.uischema=$(UI_SCHEMA) \
+		--validator .result.jsonschema=$(RESULT_SCHEMA) \
+		> $@
 	chmod +x $@
 TO_CLEAN += $(ENUMERATE)
 

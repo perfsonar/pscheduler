@@ -2,8 +2,30 @@
 #
 # Build pScheduler enumerators from a skeleton, JSON and UI schemas.
 #
-# Usage: pscheduler-build-enumeration ENUM-JSON VALIDATOR-SCHEMA-JSON UI-SCHEMA-JSON
+#BEGIN-HELP
+# Usage: pscheduler-build-enumeration [ --plain ASSIGN | --validator ASSIGN ... ]
 #
+# Where ASSIGN is of the format LOCATION=FILE, where LOCATION names
+# where in the JSON tree the finished JSON should be added (e.g., . or
+# .foo.bar) and FILE is the path of a file to be read and processed.
+#
+# Options:
+#   --plain ASSIGN      Process assignment as unlatered JSON
+#   --validator ASSIGN  Process assignment as a pScheduler validator
+#
+# Example:  (Typical for a test plugin)
+#     pscheduler-build-enumeration \
+#         --plain .=enumerate-skeleton.json \
+#         --plain .spec.jsonschema=spec-jsonschema.json \
+#         --add .spec.uischema=spec-uischema.json \
+#         --validator .result.jsonschema=spec-uischema.json
+#END-HELP
+#
+
+
+# ----------------------------------------------------------------------
+
+# Utilities
 
 TMPBASE=$(mktemp -d)
 cleanup()
@@ -13,9 +35,10 @@ cleanup()
 trap cleanup EXIT
 
 
-help()
+self_help()
 {
-    echo Usage: $(basename $0) ENUM-JSON VALIDATOR-SCHEMA-JSON
+    sed -n -e '/^#BEGIN-HELP/,/^#END-HELP/{//!p}' $0 \
+        | sed -e 's/^#//'
 }
 
 
@@ -26,89 +49,154 @@ die()
 }
 
 
-if [ "$#" -ne 3 ]
-then
-    help
-    exit 1
-fi
+# Validate a location and fix it up so jq will like it
+fix_location()
+{
+    read LOCATION
+
+    (echo "${LOCATION}" | grep -q -E '^\.([A-Za-z0-9_-]+)?(\.[A-Za-z0-9_-]+)*$') \
+	|| die "${LOCATION}: Invalid location"
+
+    echo "${LOCATION}" \
+	| sed -e 's/\.\([A-Za-z0-9_-]\+\)/."\1"/g'
+}
 
 
-# Skeletal Enumeration
-ENUM="${TMPBASE}/enum"
-jq . "$1" > "${ENUM}" \
-    || die "Could not process enumeration $1"
+# Check to see that an input file exists and is valid JSON
+check_input()
+{
+    read INPUT
+    ERRORS="${TMPBASE}/check_input_errors"
+    jq 'empty' "${INPUT}" 2> "${ERRORS}" \
+	|| die "${INPUT}:" "$(cat ${ERRORS})"
 
-
-# Plugin validator
-
-jq . "$2" > /dev/null \
-    || die "Could not process validator $2"
-
-jq . "$3" > /dev/null \
-    || die "Could not process UI $2"
-UI="$3"
-
-# If local isn't present, use an empty default.
-VALIDATOR_LOCAL="${TMPBASE}/validator-local"
-jq 'if .local == null then {} else .local end' "$2" \
-   > "${VALIDATOR_LOCAL}"
-
-# Do some basic validation on the validator.
-jq '
-    if (.versions | type) != "array"
-    then
-        ("Versions not found in validator\n" | halt_error(1))
-    else
-        empty
-    end' "$2"
-
-VALIDATOR_ARRAY="${TMPBASE}/validator-array"
-jq '.versions' "$2" > "${VALIDATOR_ARRAY}"
-
-
-# Make sure the first element is null
-jq 'if .[0] != null then halt_error(1) else halt_error(0) end' "${VALIDATOR_ARRAY}" > /dev/null 2>&1 \
-   || die "First element in validator must be null."
-
-
-# Plugin validator array, converted to an object
-VALIDATOR="${TMPBASE}/validator"
-jq '[ to_entries[] | .key = (.key | tostring ) ] | from_entries' "${VALIDATOR_ARRAY}" > "${VALIDATOR}"
+    # Echo the path if it was okay
+    echo "${INPUT}"
+}
 
 
 # pScheduler's internal dictionary, with /local merged in
 PS_DICT="${TMPBASE}/psdict"
 pscheduler internal json-dictionary > "${PS_DICT}"
 
-PS_DICT_FULL="${TMPBASE}/psdict-full"
-jq --slurp '
-    .[].local = .[1] | .[0]
-    ' "${PS_DICT}" "${VALIDATOR_LOCAL}" > "${PS_DICT_FULL}"
 
-# Dereferenced validator
-VALIDATOR_DEREF="${TMPBASE}/validator-deref"
-jsonschematool --pretty --dereference "${PS_DICT_FULL}" "${VALIDATOR}" > "${VALIDATOR_DEREF}" \
-    || die "Unable to process $2"
+# ----------------------------------------------------------------------
+
+# Operations
+
+ACCUMULATED="${TMPBASE}/accumulated"
+echo '{}' > "${ACCUMULATED}"
+
+WORK="${TMPBASE}/work"
+
+# Merge JSON unaltered.
+plain()
+{
+    LOCATION=$(echo "$1" | cut -d= -f 1 | fix_location)
+    [ "${LOCATION}" != "." ] \
+	|| LOCATION=""
+
+    INPUT=$(echo "$1" | cut -d= -f 2 | check_input)
+    jq --slurp ".[0]${LOCATION} = .[1] | .[0]" "${ACCUMULATED}" "${INPUT}" > "${WORK}"
+    mv "${WORK}" "${ACCUMULATED}"
+}
 
 
-# Ibid, turned into an array
-VALIDATOR_ARRAY_FINAL="${TMPBASE}/validator-array-final"
-jq '
-      [ to_entries[] | .key = (.key | tonumber) ]
-    | sort_by(.key)
-    | [ .[] | .value ]
-   ' "${VALIDATOR_DEREF}" \
-       > "${VALIDATOR_ARRAY_FINAL}"
+# Dereference a pScheduler validator against the pScheduler dictionary
+validator()
+{
+    LOCATION=$(echo "$1" | cut -d= -f 1)
+    INPUT=$(echo "$1" | cut -d= -f 2 | check_input)
+
+    # If local isn't present, use an empty default.
+    VALIDATOR_LOCAL="${TMPBASE}/validator-local"
+    jq 'if .local == null then {} else .local end' "${INPUT}" \
+       > "${VALIDATOR_LOCAL}"
+
+    # Do some basic validation on the validator.
+    jq --arg name "${INPUT}" '
+       if (.versions | type) != "array"
+       then
+         ("\($name): Versions not found in validator\n" | halt_error(1))
+       else
+         empty
+       end' "${INPUT}"
+
+    VALIDATOR_ARRAY="${TMPBASE}/validator-array"
+    jq '.versions' "${INPUT}" > "${VALIDATOR_ARRAY}"
+
+    # Make sure the first element is null
+    jq 'if .[0] != null then halt_error(1) else halt_error(0) end' "${VALIDATOR_ARRAY}" > /dev/null 2>&1 \
+	|| die "${INPUT}: First element in validator must be null."
+
+    # Plugin validator array, converted to an object
+    VALIDATOR="${TMPBASE}/validator"
+    jq '[ to_entries[] | .key = (.key | tostring ) ] | from_entries' "${VALIDATOR_ARRAY}" > "${VALIDATOR}"
+
+    PS_DICT_FULL="${TMPBASE}/psdict-full"
+    jq --slurp '
+        .[].local = .[1] | .[0]
+    	' "${PS_DICT}" "${VALIDATOR_LOCAL}" > "${PS_DICT_FULL}"
+
+    # Dereferenced validator
+    VALIDATOR_DEREF="${TMPBASE}/validator-deref"
+    jsonschematool --pretty --dereference "${PS_DICT_FULL}" "${VALIDATOR}" > "${VALIDATOR_DEREF}" \
+	|| die "Unable to process ${INPUT}"
+
+    # Ibid, turned into an array
+    VALIDATOR_ARRAY_FINAL="${TMPBASE}/validator-array-final"
+    jq '
+          [ to_entries[] | .key = (.key | tonumber) ]
+    	  | sort_by(.key)
+	  | [ .[] | .value ]
+	  ' "${VALIDATOR_DEREF}" \
+	      > "${VALIDATOR_ARRAY_FINAL}"
+
+    VERSIONED="${TMPBASE}/versioned"
+    jq '{ "versions": . }' "${VALIDATOR_ARRAY_FINAL}" > "${VERSIONED}"
+
+    # Add the dereferenced file
+    plain "${LOCATION}=${VERSIONED}"
+}
 
 
-# Generate the program
+# ----------------------------------------------------------------------
+
+# Validate the arguments
+
+while echo "$1" | grep -q -E '^--'
+do
+    ARG="$1"
+    shift
+    case "${ARG}" in
+	--plain)
+	    plain "$1"
+    	    shift
+	    ;;
+	--validator)
+	    validator "$1"
+    	    shift
+	    ;;
+        --help)
+            self_help
+            exit 0
+            ;;
+        *)
+            self_help 1>&2
+            exit 1
+            ;;
+    esac
+done
+
+if [ "$#" -ne 0 ]
+then
+    self_help 1>&2
+    exit 1
+fi
+
 echo '#!/bin/sh -e'
-echo 'cat <<"EOF"'
-jq --slurp '
-      .[0].spec = {}
-    | .[0].spec.jsonschema = {}
-    | .[0].spec.jsonschema.versions = .[1]
-    | .[0].spec.uischema = .[2]
-    | .[0]
-    ' "${ENUM}" "${VALIDATOR_ARRAY_FINAL}" "${UI}"
+echo 'cat <<-"EOF"'
+cat "${ACCUMULATED}"
 echo 'EOF'
+
+exit 0

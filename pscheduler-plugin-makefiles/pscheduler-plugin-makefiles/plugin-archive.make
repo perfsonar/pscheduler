@@ -17,6 +17,11 @@ FILES += \
 default: build
 
 $(ENUMERATE): $(ENUMERATE_SKELETON) $(SPEC_SCHEMA) $(UI_SCHEMA)
+	pscheduler-build-enumeration \
+		--plain .=$(ENUMERATE_SKELETON) \
+		--validator .spec.jsonschema=$(SPEC_SCHEMA) \
+		--plain .spec.uischema=$(UI_SCHEMA) \
+		> $@
 	pscheduler-build-enumeration $^ > $@
 	chmod +x $@
 TO_CLEAN += $(ENUMERATE)
