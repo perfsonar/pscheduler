@@ -1036,6 +1036,17 @@
 			"jsonschema",
 			"uischema"
 		    ]
+		},
+
+		"ResultSpec": {
+		    "type": "object",
+		    "properties": {
+			"jsonschema": { "$ref": "#/pScheduler/PluginEnumeration/local/SpecJSONSchema" }
+		    },
+		    "additionalProperties": false,
+		    "required": [
+			"jsonschema"
+		    ]
 		}
 	    },
 
@@ -1057,7 +1068,8 @@
                             "normal"
                         ]
                     },
-		    "spec":         { "$ref": "#/pScheduler/PluginEnumeration/local/Spec" }
+		    "spec":         { "$ref": "#/pScheduler/PluginEnumeration/local/Spec" },
+		    "result":       { "$ref": "#/pScheduler/PluginEnumeration/local/ResultSpec" }
                 },
                 "additionalProperties": false,
                 "required": [
