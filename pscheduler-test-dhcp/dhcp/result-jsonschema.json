@@ -1,0 +1,24 @@
+{
+    "#": "This gets merged into every version as #/local.",
+    "local": {},
+
+    "#": "The zeroth element of this is always null since there is no version 0.",
+    "versions": [
+        null,
+
+	{
+            "type": "object",
+            "properties": {
+		"schema":     { "$ref": "#/pScheduler/Cardinal" },
+		"succeeded":  { "$ref": "#/pScheduler/Boolean" },
+		"time":       { "$ref": "#/pScheduler/Duration" },
+		"ip_address": { "$ref": "#/pScheduler/AnyJSON" }
+            },
+	    "additionalProperties": false,
+            "required": [
+		"time",
+		"ip_address"
+            ]
+        }
+    ]
+}

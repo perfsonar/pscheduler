@@ -1,0 +1,28 @@
+{
+    "#": "This gets merged into every version as #/local.",
+    "local": {},
+
+    "#": "The zeroth element of this is always null since there is no version 0.",
+    "versions": [
+        null,
+
+	{
+            "type": "object",
+            "properties": {
+		"schema":     { "$ref": "#/pScheduler/Cardinal" },
+		"succeeded":  { "$ref": "#/pScheduler/Boolean"  },
+		"diags":      { "$ref": "#/pScheduler/String" },
+		"error":      { "$ref": "#/pScheduler/String" },
+		"time":       { "$ref": "#/pScheduler/Duration" },
+		"bytes-sent": { "$ref": "#/pScheduler/Float" },
+		"throughput": { "$ref": "#/pScheduler/Float" }
+            },
+	    "additionalProperties": false,
+            "required": [
+		"succeeded",
+		"time"
+            ]
+        }
+    ]
+}
+

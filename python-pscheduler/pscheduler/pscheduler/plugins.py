@@ -48,13 +48,13 @@ def plugin_invoke(pltype, which, method, argv=[], **kwargs):
 
 # Run the local enumerate
 
-def enumerated_spec_is_valid(proposed, plugin_type, plugin=None, semantic=None):
+def enumerated_spec_is_valid(proposed, plugin_type, enumerate_part, plugin=None, semantic=None):
     '''
     This private function is the meat of plugin_spec_is_valid().
     See comments for how it works.
     '''
 
-    assert callable(semantic)
+    assert semantic is None or callable(semantic)
 
     if not isinstance(proposed, dict):
         return(False, 'Proposed spec is not valid.')
@@ -74,7 +74,7 @@ def enumerated_spec_is_valid(proposed, plugin_type, plugin=None, semantic=None):
     # Give it a quick sanity check.
 
     try:
-        versions = enumeration['spec']['jsonschema']['versions']
+        versions = enumeration[enumerate_part]['jsonschema']['versions']
         if not isinstance(versions, list):
             raise KeyError()
     except KeyError:
@@ -109,13 +109,20 @@ def enumerated_spec_is_valid(proposed, plugin_type, plugin=None, semantic=None):
     # than structure, call that.  Otherwise, all is good.
 
     if semantic is not None:
-        return semantic(proposed)
+        try:
+            return semantic(proposed)
+        except Exception as ex:
+            return (False, f'INTERNAL ERROR: Semantic validator failed: {str(ex)}')
 
     return (True, 'OK')
 
 
 
-def plugin_spec_is_valid(plugin_type, plugin=None, semantic=lambda p: (True, 'OK'), return_if_valid=False):
+def plugin_spec_is_valid(plugin_type,
+                         plugin=None,
+                         enumerate_part='spec',
+                         semantic=lambda p: (True, 'OK'),
+                         return_if_valid=False):
     '''
     This is a fully-fleshed-out {spec,data}-is-valid method for
     plugins that reads a proposed JSON spec from stdin, runs the
@@ -139,7 +146,7 @@ def plugin_spec_is_valid(plugin_type, plugin=None, semantic=lambda p: (True, 'OK
             "error": str(ex)
         })
 
-    valid, message = enumerated_spec_is_valid(proposed, plugin_type, plugin, semantic)
+    valid, message = enumerated_spec_is_valid(proposed, plugin_type, enumerate_part, plugin, semantic)
 
     result = {
         "valid": valid
