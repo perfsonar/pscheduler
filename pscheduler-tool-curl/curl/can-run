@@ -86,8 +86,11 @@ if parsed_url.scheme == 'file':
 
     reasons.extend(file_ok(parsed_url.path))
 
+elif parsed_url.scheme not in [ 'http', 'https', 'ftp' ]:
+
+    reasons.append(f'''URL scheme '{parsed_url.scheme}' is not supported.''')
+
 
 pscheduler.succeed_json(
     { 'can-run': False, 'reasons': reasons } if reasons else { 'can-run': True }
 )
-
