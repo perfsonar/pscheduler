@@ -34,7 +34,6 @@ Requires:	postgresql-plpython3 >= %{_pscheduler_postgresql_version}
 Requires:	postgresql-server  >= %{_pscheduler_postgresql_version}
 Requires:	rpm-post-wrapper
 
-Requires:       pscheduler-rpm
 Requires:       selinux-policy-devel
 
 BuildRequires:	pscheduler-rpm
