@@ -14,11 +14,11 @@ die()
 }
 
 
-TMPBASE=${TMP:=/tmp}/$(basename $0).$$
+TMPBASE=$(mktemp -d)
 
 cleanup()
 {
-    rm -rf $TMPBASE.*
+    rm -rf "${TMPBASE}"
 }
 trap cleanup EXIT
 
@@ -74,20 +74,20 @@ PSQL="psql -q -v ON_ERROR_STOP=1"
 if [ "$(id -u)" = "0" ]
 then
     (echo "${ROLE}" && cat "$@") \
-	| su - "${PG_USER}" -c "${PGOPTIONS} ${PSQL}" 2>$TMPBASE.error
+	| su - "${PG_USER}" -c "${PGOPTIONS} ${PSQL}" 2>"${TMPBASE}/error"
     STATUS=$?
 else
     (echo "${ROLE}" && cat "$@") \
-	| ${PGOPTIONS} ${PSQL} 2>$TMPBASE.error
+	| ${PGOPTIONS} ${PSQL} 2>"${TMPBASE}/error"
     STATUS=$?
 fi
 
 if [ "$STATUS" -ne 0 ]
 then
-    cat $TMPBASE.error 1>&2
+    cat "${TMPBASE}/error" 1>&2
     if ${LOG_ERRORS}
     then
-	logger --priority error --tag "${LOG_TAG}" --file $TMPBASE.error 
+	logger --priority error --tag "${LOG_TAG}" --file "${TMPBASE}/error"
     fi
     exit $STATUS
 fi
