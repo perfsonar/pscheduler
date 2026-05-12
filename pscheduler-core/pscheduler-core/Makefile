@@ -6,7 +6,6 @@
 # The following variables need to be specified when running this
 # Makefile:
 #
-#   ARCHIVEDEFAULTDIR   Where default archivers live
 #   BINDIR              Where binaries should be installed (e.g., /usr/bin)
 #   COMMANDSDIR         Where command programs should be installed
 #   COMMANDSINSTALLED   Where $(COMMANDSDIR) is when installed
@@ -65,10 +64,6 @@ ALL=$(ALLPROGRAMS) $(ALLCOMMANDS) $(ALLINTERNALS) $(RAWBASHCOMPLETION)
 default:  build
 
 %: %.raw
-ifndef ARCHIVEDEFAULTDIR
-	@echo No ARCHIVEDEFAULTDIR specified for build of $@
-	@false
-endif
 ifndef CLASSESINSTALLED
 	@echo No CLASSESINSTALLED specified for build of $@
 	@false
@@ -90,7 +85,6 @@ ifndef TOOLCONFIGDIR
 	@false
 endif
 	sed \
-		-e 's|__ARCHIVE_DEFAULT__|$(ARCHIVEDEFAULTDIR)|g' \
 		-e 's|__COMMANDS__|$(COMMANDSINSTALLED)|g' \
 		-e 's|__CLASSES__|$(CLASSESINSTALLED)|g' \
 		-e 's|__INTERNALS__|$(INTERNALSINSTALLED)|g' \
