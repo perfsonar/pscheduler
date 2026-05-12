@@ -33,6 +33,7 @@ $(SPEC):
 	$(UNIBUILD_ORDER) \
 		| egrep -e '^pscheduler-' \
 		| egrep -ve '^pscheduler-bundle-' \
+		| grep -F -v -x 'pscheduler-rpm' \
 		| sed -e 's/^/Requires: /g' \
 		>> $@
 	cat $(SPEC)-bottom >> $@
