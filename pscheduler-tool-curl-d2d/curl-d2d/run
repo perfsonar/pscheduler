@@ -38,6 +38,8 @@ except KeyError as ex:
     pscheduler.fail('Missing data in input')
 
 
+if source.startswith('gopher:') or dest.startswith('gopher:'):
+    pscheduler.fail('INTERNAL ERROR: Given a gopher: URL when can-run should have refused it.')
 
 
 timeout_iso = input['test']['spec'].get('timeout', 'PT10S')

@@ -48,4 +48,14 @@ except KeyError:
         "reasons": ["Missing data in test specification"]
     })
 
+
+spec = json['spec']
+
+if spec.get('source', '').startswith('gopher:') or spec.get('dest', '').startswith('gopher:'):
+    pscheduler.succeed_json({
+        "can-run": False,
+        "reasons": [ 'Unsupported scheme in source or destination' ]
+    })
+    
+    
 pscheduler.succeed_json({ "can-run": True })
