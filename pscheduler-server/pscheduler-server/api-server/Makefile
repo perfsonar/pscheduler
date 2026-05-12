@@ -68,7 +68,8 @@ ifndef PYTHON
 	@false
 endif
 	$(PYTHON) -m compileall .
-TO_CLEAN += $(CONFIG) $(WSGI) __pycache__
+	$(PYTHON) -m compileall ./pschedulerapiserver
+TO_CLEAN += $(CONFIG) $(WSGI) __pycache__ ./pschedulerapiserver/__pycache__
 
 install: build
 ifndef CONF_D
