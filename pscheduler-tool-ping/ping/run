@@ -6,6 +6,7 @@
 
 import datetime
 import icmperror
+import os
 import pscheduler
 import re
 
@@ -214,7 +215,11 @@ argv.append(str(dest_ip or spec['dest']))
 # Run the test
 #
 
+
 if need_root:
+    # Root does a sudo ping-safe args
+    script_path = os.path.abspath(os.path.dirname(__file__))
+    argv.insert(0, f'{script_path}/ping-safe')
     argv.insert(0, 'sudo')
 
 # Stringify the arguments        
@@ -233,6 +238,7 @@ try:
     log.debug("Starting")
 except KeyError:
     pscheduler.fail("Unable to find start time in input")
+
 
 status, stdout, stderr \
     = pscheduler.run_program(argv, timeout = run_timeout_secs)

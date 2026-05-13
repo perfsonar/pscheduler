@@ -55,20 +55,16 @@ make \
      install
 
 
-# Enable sudo for ping
-
-PING=$(command -v ping)
+# Enable sudo for ping-safe
 
 mkdir -p $RPM_BUILD_ROOT/%{_pscheduler_sudoersdir}
 cat > $RPM_BUILD_ROOT/%{_pscheduler_sudoersdir}/%{name} <<EOF
 #
 # %{name}
 #
-Cmnd_Alias PSCHEDULER_TOOL_PING = ${PING}
-%{_pscheduler_user} ALL = (root) NOPASSWD: ${PING}
+Cmnd_Alias PSCHEDULER_TOOL_PING = %{dest}/ping-safe
+%{_pscheduler_user} ALL = (root) NOPASSWD: %{dest}/ping-safe
 Defaults!PSCHEDULER_TOOL_PING !requiretty
-
-
 EOF
 
 
