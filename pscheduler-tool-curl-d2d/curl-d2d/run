@@ -37,7 +37,7 @@ try:
 except KeyError as ex:
     pscheduler.fail('Missing data in input')
 
-
+# Can-run should have caught this, but just in case...
 if source.startswith('gopher:') or dest.startswith('gopher:'):
     pscheduler.fail('INTERNAL ERROR: Given a gopher: URL when can-run should have refused it.')
 

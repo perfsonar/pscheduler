@@ -54,7 +54,7 @@ spec = json['spec']
 if spec.get('source', '').startswith('gopher:') or spec.get('dest', '').startswith('gopher:'):
     pscheduler.succeed_json({
         "can-run": False,
-        "reasons": [ 'Unsupported scheme in source or destination' ]
+        "reasons": [ 'Will not operate on Gopher URLs.  See https://hackerone.com/reports/3477023.' ]
     })
     
     

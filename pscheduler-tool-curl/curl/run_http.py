@@ -38,6 +38,14 @@ def run(input):
 
     parsed_url = urlparse(source)
 
+    # Can-run should have rejected this, but this is an extra check
+    # just in case.
+    if parsed_url.scheme == 'gopher':
+        return({
+            'succeeded': False,
+            'error': 'Will not operate on Gopher URLs.  See https://hackerone.com/reports/3477023.'
+            })
+
     if parsed_url.scheme == 'file':
         real_path = os.path.realpath(parsed_url.path)
         reasons = file_ok(real_path)
