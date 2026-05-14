@@ -49,13 +49,23 @@ except KeyError:
     })
 
 
+reasons = []
+
 spec = json['spec']
 
 if spec.get('source', '').startswith('gopher:') or spec.get('dest', '').startswith('gopher:'):
-    pscheduler.succeed_json({
-        "can-run": False,
-        "reasons": [ 'Will not operate on Gopher URLs.  See https://hackerone.com/reports/3477023.' ]
-    })
+    reasons.append('Will not operate on Gopher URLs.  See https://hackerone.com/reports/3477023.')
+
+
+if spec.get('dest','') == '-':
+    reasons.append('Will not write to standard output')
+
+
+result = {
+    'can-run': not len(reasons)
+}
+
+if reasons:
+    result['reasons'] = reasons
     
-    
-pscheduler.succeed_json({ "can-run": True })
+pscheduler.succeed_json(result)

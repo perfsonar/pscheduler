@@ -41,6 +41,9 @@ except KeyError as ex:
 if source.startswith('gopher:') or dest.startswith('gopher:'):
     pscheduler.fail('INTERNAL ERROR: Given a gopher: URL when can-run should have refused it.')
 
+if source == '-':
+    pscheduler.fail('INTERNAL ERROR: Given - for dest when can-run should have refused it.')
+
 
 timeout_iso = input['test']['spec'].get('timeout', 'PT10S')
 
