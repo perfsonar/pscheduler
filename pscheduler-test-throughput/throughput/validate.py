@@ -3,7 +3,6 @@
 #
 
 from pscheduler import json_validate
-import json
 
 MAX_SCHEMA = 7
 
@@ -288,7 +287,10 @@ SPEC_SCHEMA = {
                 "single-ended-port": { "$ref": "#/pScheduler/Integer" },
                 "reverse": { "$ref": "#/pScheduler/Boolean" },
                 "reverse-connections": { "$ref": "#/pScheduler/Boolean" },
-                "loopback":    { "$ref": "#/pScheduler/Boolean" }
+                "loopback":    { "$ref": "#/pScheduler/Boolean" },
+                'rdma': { '$ref': '#/pScheduler/Boolean' },
+                'bidirectional': { '$ref': '#/pScheduler/Boolean' },
+                'protocol': { 'type': 'string', 'enum': [ 'rds', 'sctp', 'sdp', 'tcp', 'udp', 'rc', 'uc', 'ud'] },
             },
             "additionalProperties": False,
             "required": [
@@ -296,7 +298,6 @@ SPEC_SCHEMA = {
                 "dest"
             ]
         }
-
     }
 }
 
