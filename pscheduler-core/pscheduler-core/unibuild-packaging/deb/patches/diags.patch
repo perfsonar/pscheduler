@@ -1,8 +1,8 @@
 Index: b/diags.raw
 ===================================================================
---- a/diags.raw	2025-10-01 17:58:12.443085790 +0200
-+++ b/diags.raw	2026-02-15 22:04:48.598670398 +0100
-@@ -231,7 +231,7 @@
+--- a/diags.raw	2026-05-18 11:12:44.339629250 -0400
++++ b/diags.raw	2026-05-18 11:12:53.274707876 -0400
+@@ -219,7 +219,7 @@
  
  
  section "HTTPD Error Log (Last ${LOG_LIMIT} Lines)"
@@ -11,7 +11,7 @@ Index: b/diags.raw
  if [ -r "${LOG}" ]
  then
      tail "-${LOG_LIMIT}" "${LOG}"
-@@ -254,17 +254,11 @@
+@@ -242,17 +242,11 @@
  
  section "PostgreSQL Log (Last ${LOG_LIMIT} Lines)"
  
