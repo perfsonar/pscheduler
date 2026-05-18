@@ -1,0 +1,23 @@
+#!/usr/bin/env python3
+#
+# Determine the duration of the twampy measurement
+#
+
+import datetime
+import sys
+
+import pscheduler
+
+from twampy_defaults import *
+
+json = pscheduler.json_load(exit_on_error=True)['spec']
+
+interval = json.get('packet-interval', DEFAULT_PACKET_INTERVAL)
+count = json.get('packet-count', DEFAULT_PACKET_COUNT)
+packet_timeout = json.get('packet-timeout', DEFAULT_PACKET_TIMEOUT)
+
+pscheduler.succeed_json({
+    "duration": 'PT%dS' % (
+        (interval * count) + packet_timeout + DEFAULT_FUDGE_FACTOR + DEFAULT_CLIENT_SLEEP
+    )
+})

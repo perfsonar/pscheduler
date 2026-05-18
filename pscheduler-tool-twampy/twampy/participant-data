@@ -1,0 +1,37 @@
+#!/usr/bin/env python3
+#
+# Return participant-specific data for a run.
+# STAMP is single-participant (sender only with external reflector),
+# so this is minimal.
+#
+
+import pscheduler
+import sys
+
+from twampy_defaults import *
+from twampy_utils import CLIENT_ROLE, get_role
+
+# Init logging
+log = pscheduler.Log(prefix="tool-twampy", quiet=True)
+
+json = pscheduler.json_load(exit_on_error=True)
+result = {}
+
+try:
+    participant = json['participant']
+except KeyError:
+    pscheduler.fail("Missing participant")
+
+try:
+    test_spec = json.get('test', {}).get('spec', {})
+except (KeyError, AttributeError):
+    test_spec = {}
+
+role = get_role(participant, test_spec)
+
+if role == CLIENT_ROLE:
+    # Nothing special needed for client
+    pass
+
+log.debug("participant-data: %s" % result)
+pscheduler.succeed_json(result)

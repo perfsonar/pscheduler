@@ -1,0 +1,17 @@
+#!/bin/sed -e 1d
+{
+    "schema": 1,
+
+    "name": "twampy",
+    "description": "Measure latency using STAMP (RFC 8762) / TWAMP-Light via Nokia twampy (unauthenticated mode)",
+    "version": "0.1",
+    "tests": [ "latency", "rtt" ],
+
+    "preference": 0,
+
+    "maintainer": {
+        "name": "RE-X Inc.",
+        "email": "perfsonar-developer@internet2.edu",
+        "href": "https://github.com/perfsonar/pscheduler/issues/1624"
+    }
+}

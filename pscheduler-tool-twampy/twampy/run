@@ -1,0 +1,368 @@
+#!/usr/bin/env python3
+#
+# Run a STAMP/TWAMP test using Nokia twampy
+#
+# twampy implements STAMP (RFC 8762) unauthenticated mode.
+# Note: twampy's wire format is also compatible with TWAMP-Light.
+# One-way delay measurements (outbound/inbound) require clock
+# synchronization between sender and reflector (e.g. NTP/PTP).
+# Round-trip delay does not require clock synchronization.
+#
+
+import datetime
+import json
+import math
+import re
+import sys
+import time
+
+import pscheduler
+
+from twampy_defaults import *
+from twampy_utils import CLIENT_ROLE, SERVER_ROLE, get_role, get_config, find_twampy
+
+# Track when this run starts
+start_time = datetime.datetime.now()
+
+# Init logging
+log = pscheduler.Log(prefix="tool-twampy", quiet=True)
+
+# Parse JSON input
+input = pscheduler.json_load(exit_on_error=True)
+try:
+    participant = input['participant']
+    participant_data = input['participant-data']
+    test_spec = input['test']['spec']
+    test_type = input['test']['type']
+    start = pscheduler.iso8601_as_datetime(input['schedule']['start'])
+    duration = pscheduler.iso8601_as_timedelta(input['schedule']['duration'])
+except KeyError as ex:
+    pscheduler.fail("Missing required key in run input: %s" % ex)
+except Exception:
+    pscheduler.fail("Error parsing run input: %s" % sys.exc_info()[0])
+
+# Only supported test types
+assert test_type in ['latency', 'rtt'], 'Unsupported test type "%s"' % test_type
+
+# Determine role
+role = get_role(participant, test_spec)
+
+# Initialize results
+results = {
+    'schema': LATENCY_SCHEMA_VERSION,
+    'succeeded': False
+}
+
+if role == CLIENT_ROLE:
+    # Find twampy command
+    twampy_cmd = find_twampy()
+    if twampy_cmd is None:
+        results['error'] = "twampy command not found"
+        pscheduler.succeed_json(results)
+
+    # Build twampy command arguments
+    # twampy sender <destination> [options]
+    dest = test_spec.get('dest', test_spec.get('destination'))
+    if not dest:
+        results['error'] = "No destination specified"
+        pscheduler.succeed_json(results)
+
+    twampy_args = [twampy_cmd, 'sender', dest]
+
+    # Enable verbose output for per-packet data
+    # Without -v, twampy only prints summary statistics
+    twampy_args.append('--verbose')
+
+    # Packet count
+    count = test_spec.get('packet-count', test_spec.get('count', DEFAULT_PACKET_COUNT))
+    twampy_args.extend(['--count', str(count)])
+
+    # Packet interval (twampy uses milliseconds)
+    try:
+        if test_type == 'latency':
+            interval = float(test_spec.get('packet-interval', DEFAULT_PACKET_INTERVAL))
+        else:  # rtt, ISO8601
+            interval_str = test_spec.get('interval')
+            if interval_str:
+                interval = pscheduler.timedelta_as_seconds(
+                    pscheduler.iso8601_as_timedelta(interval_str)
+                )
+            else:
+                interval = DEFAULT_PACKET_INTERVAL
+    except (KeyError, TypeError):
+        interval = DEFAULT_PACKET_INTERVAL
+
+    # twampy --interval is in milliseconds
+    twampy_args.extend(['--interval', str(int(interval * 1000))])
+
+    # Packet padding / size
+    # RFC 8762 requires minimum 44 bytes for sender packet (14 header + 30 MBZ).
+    # twampy header is 14 bytes, so we need at least 30 bytes of padding.
+    padding = test_spec.get('packet-padding', DEFAULT_MIN_PADDING)
+    if padding < DEFAULT_MIN_PADDING:
+        log.warning("Requested padding %d is below RFC 8762 minimum; using %d",
+                     padding, DEFAULT_MIN_PADDING)
+        padding = DEFAULT_MIN_PADDING
+    twampy_args.extend(['--padding', str(padding)])
+
+    # DSCP / IP TOS
+    if 'ip-tos' in test_spec:
+        twampy_args.extend(['--dscp', str(test_spec['ip-tos'])])
+
+    # Port
+    port = test_spec.get('port', DEFAULT_STAMP_PORT)
+    twampy_args.extend(['--port', str(port)])
+
+    # Source address
+    if 'source' in test_spec:
+        twampy_args.extend(['--source', test_spec['source']])
+
+    # Timeout
+    try:
+        if test_type == 'latency':
+            timeout = float(test_spec.get('packet-timeout', DEFAULT_PACKET_TIMEOUT))
+        else:
+            timeout_str = test_spec.get('timeout')
+            if timeout_str:
+                timeout = pscheduler.timedelta_as_seconds(
+                    pscheduler.iso8601_as_timedelta(timeout_str)
+                )
+            else:
+                timeout = DEFAULT_PACKET_TIMEOUT
+    except (KeyError, TypeError):
+        timeout = DEFAULT_PACKET_TIMEOUT
+
+    if timeout > 0:
+        twampy_args.extend(['--timeout', str(int(timeout * 1000))])
+
+    # Fragmentation control (DF bit)
+    if test_spec.get('fragment', None) is False:
+        twampy_args.append('--do-not-fragment')
+
+    # Force all args to strings
+    twampy_args = [str(x) for x in twampy_args]
+
+    # Wait for scheduled start time
+    log.debug("Sleeping until %s", start)
+    pscheduler.sleep_until(start)
+    log.debug("Starting twampy")
+
+    # Run twampy
+    log.debug("Running command: %s" % " ".join(twampy_args))
+    try:
+        returncode, stdout, stderr = pscheduler.run_program(twampy_args)
+    except OSError as ex:
+        log.error("twampy encountered an OS error: %s" % ex)
+        results['error'] = "The twampy command failed during execution. See server logs for more details."
+        pscheduler.succeed_json(results)
+    except Exception:
+        log.error("twampy failed to complete execution: %s" % sys.exc_info()[0])
+        results['error'] = "The twampy command failed during execution. See server logs for more details."
+        pscheduler.succeed_json(results)
+
+    # Check return code
+    log.debug("twampy returned status %d" % returncode)
+    if returncode:
+        if stderr:
+            twp_error = stderr.strip().replace("\n", ";")
+            results['error'] = "twampy returned an error: %s" % twp_error
+        else:
+            results['error'] = "twampy returned an error status but no message"
+        pscheduler.succeed_json(results)
+
+    # Parse twampy output
+    #
+    # twampy verbose per-packet output (via -v, logged to stderr):
+    #   <timestamp> INFO     Reply from <IP> [rseq=<N> sseq=<N> rtt=<float>ms outbound=<float>ms inbound=<float>ms]
+    #
+    # twampy summary output (always printed to stdout):
+    #   ===============================================================================
+    #   Direction         Min         Max         Avg          Jitter     Loss
+    #   -------------------------------------------------------------------------------
+    #     Outbound:       X.XXms     X.XXms     X.XXms       Xus      X.X%
+    #     Inbound:        X.XXms     X.XXms     X.XXms       Xus      X.X%
+    #     Roundtrip:      X.XXms     X.XXms     X.XXms       Xus      X.X%
+    #   -------------------------------------------------------------------------------
+    #
+    # Note: dp() formats values adaptively: Xms, Xus, X.XXsec, X.Xmin
+
+    results['packets-sent'] = 0
+    results['packets-received'] = 0
+    results['packets-duplicated'] = 0
+    results['packets-reordered'] = 0
+    results['packets-lost'] = 0
+    results['histogram-latency'] = {}
+    results['histogram-ttl'] = {}
+
+    raw_output = test_spec.get('output-raw', DEFAULT_RAW_OUTPUT)
+    if raw_output:
+        results['raw-packets'] = []
+
+    bucket_width = test_spec.get('bucket-width', DEFAULT_BUCKET_WIDTH)
+
+    # Regex for twampy per-packet verbose output (appears in stderr with -v)
+    # Format: "... Reply from <IP> [rseq=N sseq=N rtt=X.XXms outbound=X.XXms inbound=X.XXms]"
+    pkt_regex = re.compile(
+        r'Reply from\s+(\S+)\s+\[rseq=(\d+)\s+sseq=(\d+)\s+'
+        r'rtt=([\d.]+)\s*ms\s+'
+        r'outbound=([\d.]+)\s*ms\s+'
+        r'inbound=([\d.]+)\s*ms\]'
+    )
+
+    # Regex for twampy summary statistics lines
+    # Format: "  Roundtrip:      X.XXms     X.XXms     X.XXms       Xus      X.X%"
+    # Values may use adaptive units: ms, us, sec, min
+    delay_value = r'([\d.]+)\s*(?:ms|us|sec|min)'
+    summary_rt_regex = re.compile(
+        r'Roundtrip:\s+' + delay_value + r'\s+' + delay_value + r'\s+' +
+        delay_value + r'\s+' + delay_value + r'\s+([\d.]+)%'
+    )
+    summary_ob_regex = re.compile(
+        r'Outbound:\s+' + delay_value + r'\s+' + delay_value + r'\s+' +
+        delay_value + r'\s+' + delay_value + r'\s+([\d.]+)%'
+    )
+    summary_ib_regex = re.compile(
+        r'Inbound:\s+' + delay_value + r'\s+' + delay_value + r'\s+' +
+        delay_value + r'\s+' + delay_value + r'\s+([\d.]+)%'
+    )
+
+    roundtrips = []
+    rtts = []
+    outbound_delays = []
+    inbound_delays = []
+    prev_seq = -1
+    rtt_length = test_spec.get('length', DEFAULT_MIN_PADDING + 14)
+    packets_sent = int(count)
+
+    # Combine stdout and stderr for parsing (per-packet goes to stderr via logging)
+    all_output = ""
+    if stdout:
+        all_output += stdout
+    if stderr:
+        all_output += "\n" + stderr
+    all_lines = all_output.split("\n")
+
+    for line in all_lines:
+        # Match per-packet output
+        pkt_match = pkt_regex.search(line)
+        if pkt_match:
+            reply_ip = pkt_match.group(1)
+            rseq = int(pkt_match.group(2))
+            sseq = int(pkt_match.group(3))
+            rtt_ms = float(pkt_match.group(4))
+            outbound_ms = float(pkt_match.group(5))
+            inbound_ms = float(pkt_match.group(6))
+
+            rtt_sec = rtt_ms / 1000.0
+            outbound_sec = outbound_ms / 1000.0
+            inbound_sec = inbound_ms / 1000.0
+
+            results['packets-received'] += 1
+
+            rtts.append(rtt_sec)
+            outbound_delays.append(outbound_sec)
+            inbound_delays.append(inbound_sec)
+
+            # Build roundtrip entry for rtt test type
+            rt = {
+                'seq': sseq,
+                'length': int(rtt_length),
+                'rtt': pscheduler.timedelta_as_iso8601(
+                    datetime.timedelta(seconds=rtt_sec)
+                )
+            }
+            if reply_ip:
+                rt['ip'] = reply_ip
+            roundtrips.append(rt)
+
+            # Delay histogram (outbound = forward one-way delay, T2-T1)
+            # Note: one-way delay accuracy depends on clock synchronization
+            delay_bucket = DELAY_BUCKET_FORMAT % (
+                round(outbound_sec / bucket_width, DELAY_BUCKET_DIGITS) + 0
+            )
+            if delay_bucket in results['histogram-latency']:
+                results['histogram-latency'][delay_bucket] += 1
+            else:
+                results['histogram-latency'][delay_bucket] = 1
+
+            # Raw packets
+            if raw_output:
+                results['raw-packets'].append({
+                    'seq-num': sseq,
+                    'rseq-num': rseq,
+                    'rtt-ms': rtt_ms,
+                    'outbound-ms': outbound_ms,
+                    'inbound-ms': inbound_ms,
+                    'ip': reply_ip,
+                })
+
+            # Reorder detection (based on sender sequence)
+            if sseq < prev_seq:
+                results['packets-reordered'] += 1
+            prev_seq = sseq
+
+            continue
+
+        # Match roundtrip summary line for loss calculation
+        rt_match = summary_rt_regex.search(line)
+        if rt_match:
+            loss_pct = float(rt_match.group(5))
+            results['packets-lost'] = int(round(packets_sent * loss_pct / 100.0))
+            continue
+
+    # Set packets-sent from count parameter
+    results['packets-sent'] = packets_sent
+
+    # Ensure packets-lost is consistent
+    if results['packets-lost'] == 0 and results['packets-received'] < results['packets-sent']:
+        results['packets-lost'] = results['packets-sent'] - results['packets-received']
+
+    # Convert results for rtt schema
+    if test_type == 'rtt':
+        rtt_results = {
+            'schema': 1,
+            'sent': results['packets-sent'],
+            'received': results['packets-received'],
+            'lost': results['packets-lost'],
+            'reorders': results['packets-reordered'],
+            'duplicates': results['packets-duplicated'],
+            'roundtrips': roundtrips
+        }
+        results = rtt_results
+
+        # Calculate stats
+        results['loss'] = 0
+        if results['sent'] > 0:
+            results['loss'] = float(results['sent'] - results['received']) / float(results['sent'])
+
+        if len(rtts) > 0:
+            rtts.sort()
+            results['min'] = pscheduler.timedelta_as_iso8601(
+                datetime.timedelta(seconds=rtts[0])
+            )
+            results['max'] = pscheduler.timedelta_as_iso8601(
+                datetime.timedelta(seconds=rtts[-1])
+            )
+            mean = sum(rtts) / len(rtts)
+            results['mean'] = pscheduler.timedelta_as_iso8601(
+                datetime.timedelta(seconds=mean)
+            )
+            stddev = 0.0
+            if len(rtts) > 1:
+                stddev = math.sqrt(
+                    sum((rtt - mean) ** 2 for rtt in rtts) / (len(rtts) - 1)
+                )
+            results['stddev'] = pscheduler.timedelta_as_iso8601(
+                datetime.timedelta(seconds=stddev)
+            )
+
+    results['succeeded'] = True
+
+elif role == SERVER_ROLE:
+    # STAMP reflector mode
+    # twampy responder runs as a long-lived process.
+    # For now, assume an external reflector is running.
+    results['succeeded'] = True
+
+log.debug("Results: %s" % results)
+pscheduler.succeed_json(results)
