@@ -49,17 +49,15 @@ make \
      install
 
 
-# Enable sudo for traceroute
-
-TRACEROUTE=$(command -v traceroute)
+# Enable sudo for traceroute-safe
 
 mkdir -p $RPM_BUILD_ROOT/%{_pscheduler_sudoersdir}
 cat > $RPM_BUILD_ROOT/%{_pscheduler_sudoersdir}/%{name} <<EOF
 #
 # %{name}
 #
-Cmnd_Alias PSCHEDULER_TOOL_TRACEROUTE = ${TRACEROUTE}
-%{_pscheduler_user} ALL = (root) NOPASSWD: ${TRACEROUTE}
+Cmnd_Alias PSCHEDULER_TOOL_TRACEROUTE = %{dest}/traceroute-safe
+%{_pscheduler_user} ALL = (root) NOPASSWD: %{dest}/traceroute-safe
 Defaults!PSCHEDULER_TOOL_TRACEROUTE !requiretty
 
 

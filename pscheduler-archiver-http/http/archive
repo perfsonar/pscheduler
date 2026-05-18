@@ -134,6 +134,14 @@ def archive(json):
 
     parsed_url = urlparse(url)
 
+    # cURL has a Gopher vulnerability.  Refuse to do that.
+    if parsed_url.scheme == 'gopher':
+        return {
+            'succeeded': False,
+            'error': 'Will not operate on Gopher URLs.  See https://hackerone.com/reports/3477023.'
+        }
+
+
     key = "%s|%s|%s|%s|%s|%s" % (
         parsed_url.scheme,
         parsed_url.hostname,

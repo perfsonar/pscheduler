@@ -1,0 +1,38 @@
+#!/bin/sh -e
+#
+# Run ping as root only if sufficent options have been specified
+#
+# Usage: ping-safe {ping,ping6} [ ARG ... ]
+#
+
+case "$1" in
+    ping|ping6)
+	true
+	;;
+    *)
+	echo 'Cannot run program specified' 1>&2
+	exit 1
+	;;
+esac
+
+DELIMITED=$(echo "$@" | sed -e 's/^/___/; s/\s\+/___/g; s/$/___/')
+
+# Look for ... -i FLOAT ...
+if ! echo "${DELIMITED}" \
+	| sed -e 's/^/___/; s/\s\+/___/g; s/$/___/' \
+	| grep -E -q -e '___-i___[0-9]+(\.[0-9]+)___'
+then
+    echo 'No root-worthy options specified'
+    exit 1
+fi
+
+# Make sure it's < 200 ms
+INTERVAL=$(echo "${DELIMITED}" | sed -e 's/^.*___-i___//; s/___.*$//')
+MS=$(awk -v "TIME=${INTERVAL}" 'BEGIN { print int(TIME * 1000) }')
+if [ "${MS}" -ge 200 ]
+then
+    echo 'No root-worthy options specified'
+    exit 1
+fi
+
+exec "$@"

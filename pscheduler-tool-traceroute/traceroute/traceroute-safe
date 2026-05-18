@@ -1,0 +1,47 @@
+#!/bin/sh -e
+#
+# Run traceroute as root only if sufficent options have been specified
+#
+# Usage: traceroute-safe traceroute [ ARG ... ]
+#
+
+case "$1" in
+    traceroute)
+	true
+	;;
+    *)
+	echo 'Cannot run program specified' 1>&2
+	exit 1
+	;;
+esac
+
+DELIMITED=$(echo "$@" | sed -e 's/^/___/; s/\s\+/___/g; s/$/___/')
+
+NEEDS_ROOT=false
+
+
+# Look for ... -t NUMBER ... for IP TOS
+
+if echo "${DELIMITED}" \
+	| sed -e 's/^/___/; s/\s\+/___/g; s/$/___/' \
+	| grep -E -q -e '___-t___[0-9]+___'
+then
+    NEEDS_ROOT=true
+fi
+
+# Look for ... -I or -T ... for ICMP or TCP probes
+
+if echo "${DELIMITED}" \
+	| sed -e 's/^/___/; s/\s\+/___/g; s/$/___/' \
+	| grep -E -q -e '___-[IT]___'
+then
+    NEEDS_ROOT=true
+fi
+
+if ! ${NEEDS_ROOT}
+then
+    echo 'No root-worthy options specified' 1>&2
+    exit 1
+fi
+
+exec "$@"

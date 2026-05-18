@@ -95,7 +95,6 @@ The pScheduler server
 %define dsn_file %{db_config_dir}/database-dsn
 %define pgpass_file %{db_config_dir}/pgpassfile
 %define default_archives %{_pscheduler_sysconfdir}/archives
-%define rpm_macros %{_pscheduler_rpmmacroprefix}%{name}
 
 %define configurables_file %{_pscheduler_sysconfdir}/configurables.conf
 
@@ -155,9 +154,9 @@ make -C daemons \
      DSNFILE=%{dsn_file} \
      LOGDIR=%{_pscheduler_log_dir} \
      PGDATABASE=%{database_name} \
-     PGPASSFILE=%{_pscheduler_database_pgpass_file} \
+     PGPASSFILE=%{pgpass_file} \
      PGSERVICE=postgresql.service \
-     PGUSER=%{_pscheduler_database_user} \
+     PGUSER=%{db_user} \
      PSUSER=%{_pscheduler_user} \
      ARCHIVERDEFAULTDIR=%{archiver_default_dir} \
      STORAGEDIR=%{storage_dir} \
@@ -208,22 +207,6 @@ do
     touch "$RPM_BUILD_ROOT/${FILE}"
     chmod 440 "$RPM_BUILD_ROOT/${FILE}"
 done
-
-# RPM Macros
-mkdir -p $(dirname $RPM_BUILD_ROOT/%{rpm_macros})
-cat > $RPM_BUILD_ROOT/%{rpm_macros} <<EOF
-# %{name} %{version}
-
-# Archiver
-%%_pscheduler_archiver_default_dir %{archiver_default_dir}
-
-# Database
-%%_pscheduler_database_user %{db_user}
-%%_pscheduler_database_name %{db_user}
-%%_pscheduler_database_dsn_file %{dsn_file}
-%%_pscheduler_database_password_file %{password_file}
-%%_pscheduler_database_pgpass_file %{pgpass_file}
-EOF
 
 %define profile_d %{_sysconfdir}/profile.d
 
@@ -607,7 +590,6 @@ systemctl reload-or-try-restart postgresql
 %{_pscheduler_datadir}/*
 %attr(400,-,-)%verify(user group mode) %{db_config_dir}/*
 %{_pscheduler_internals}/*
-%{rpm_macros}
 %{profile_d}/*
 
 #
@@ -628,7 +610,7 @@ systemctl reload-or-try-restart postgresql
 #
 # API Server
 #
-%defattr(-,%{_pscheduler_user},%{_pscheduler_group},-)
+%defattr(-,root,root,-)
 %license LICENSE
 %{api_dir}
 %config(noreplace) %{api_httpd_conf}

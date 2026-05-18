@@ -59,6 +59,12 @@ class TestPsurl(PschedTestBase):
         # TODO: Would need a web server to test this
         pass
 
+    def test_url_gopher(self):
+        """Make sure Gopher URLs are rejected"""
+        self.assertEqual(
+            url_get("gopher://gopher.hole", throw=False)[0],
+            400
+        )
 
     def test_url_get_bind(self):
         """See if binding works"""
