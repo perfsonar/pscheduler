@@ -2,7 +2,7 @@
 
 # Make sure ping can send raw packets without being root.
 
-PING=/usr/bin/ping
+PING=$(type ping | sed -e 's/.*\s\+//')
 
 if [ -x "${PING}" ]
 then
