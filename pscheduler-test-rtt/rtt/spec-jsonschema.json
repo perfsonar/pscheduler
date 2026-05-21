@@ -14,7 +14,7 @@
         {
             "type": "object",
             "properties": {
-                "schema":            { "$ref": "#/pScheduler/Cardinal", "enum": [ 1 ] },
+                "schema":            { "enum": [ 1 ], "type": "integer" },
                 "count":             { "$ref": "#/pScheduler/Cardinal" },
                 "dest":              { "$ref": "#/pScheduler/Host" },
 		"#": "There is no dest-node because this is a one-participant test.",
@@ -41,7 +41,7 @@
         {
             "type": "object",
             "properties": {
-                "schema":            { "$ref": "#/pScheduler/Cardinal", "enum": [ 2 ] },
+                "schema":            { "enum": [ 2 ], "type": "integer" },
                 "count":             { "$ref": "#/pScheduler/Cardinal" },
                 "dest":              { "$ref": "#/pScheduler/Host" },
                 "#": "There is no dest-node because this is a one-participant test.",
@@ -70,7 +70,7 @@
         {
             "type": "object",
             "properties": {
-                "schema":            { "$ref": "#/pScheduler/Cardinal", "enum": [ 3 ] },
+                "schema":            { "enum": [ 3 ], "type": "integer" },
                 "count":             { "$ref": "#/pScheduler/Cardinal" },
                 "dest":              { "$ref": "#/pScheduler/Host" },
                 "#": "There is no dest-node because this is a one-participant test.",
@@ -100,7 +100,7 @@
 	{
             "type": "object",
             "properties": {
-                "schema":            { "$ref": "#/pScheduler/Cardinal", "enum": [ 4 ] },
+                "schema":            { "enum": [ 4 ], "type": "integer" },
                 "count":             { "$ref": "#/pScheduler/Cardinal" },
                 "dest":              { "$ref": "#/pScheduler/Host" },
                 "#": "There is no dest-node because this is a one-participant test.",

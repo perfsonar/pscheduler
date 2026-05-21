@@ -9,7 +9,7 @@
         {
             "type": "object",
             "properties": {
-                "schema":       { "$ref": "#/pScheduler/Cardinal" },
+                "schema":       { "enum": [ 1 ], "type": "integer" },
                 "source":       { "$ref": "#/pScheduler/Host" },
                 "source-node":  { "$ref": "#/pScheduler/Host" },
                 "dest":         { "$ref": "#/pScheduler/Host" },
@@ -24,7 +24,7 @@
 	{
             "type": "object",
             "properties": {
-                "schema":       { "$ref": "#/pScheduler/Cardinal", "enum": [ 2 ] },
+                "schema":       { "enum": [ 2 ], "type": "integer" },
                 "source":       { "$ref": "#/pScheduler/Host" },
                 "source-node":  { "$ref": "#/pScheduler/Host" },
                 "dest":         { "$ref": "#/pScheduler/Host" },

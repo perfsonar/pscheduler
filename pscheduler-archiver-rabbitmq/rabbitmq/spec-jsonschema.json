@@ -9,7 +9,7 @@
         {
             "type": "object",
             "properties": {
-                "schema":       {" type": "integer", "enum": [ 1 ] },
+                "schema":       { "type": "integer", "enum": [ 1 ] },
                 "_url":         { "$ref": "#/pScheduler/String" },
                 "exchange":     { "$ref": "#/pScheduler/String" },
                 "routing-key":  { "$ref": "#/pScheduler/String" },
@@ -24,7 +24,7 @@
         {
             "type": "object",
             "properties": {
-                "schema":              {" type": "integer", "enum": [ 2 ] },
+                "schema":              { "type": "integer", "enum": [ 2 ] },
                 "_url":                { "$ref": "#/pScheduler/String" },
                 "exchange":            { "$ref": "#/pScheduler/String" },
                 "routing-key":         { "anyOf": [
@@ -44,7 +44,7 @@
         {
             "type": "object",
             "properties": {
-                "schema":              {" type": "integer", "enum": [ 2 ] },
+                "schema":              { "type": "integer", "enum": [ 2 ] },
                 "_url":                { "$ref": "#/pScheduler/String" },
                 "exchange":            { "$ref": "#/pScheduler/String" },
                 "timeout":             { "$ref": "#/pScheduler/Duration" },

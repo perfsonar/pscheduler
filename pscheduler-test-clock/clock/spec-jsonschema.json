@@ -9,7 +9,7 @@
 	{
             "type": "object",
             "properties": {
-		"schema":            { "$ref": "#/pScheduler/Cardinal" },
+		"schema":            { "enum": [ 1 ], "type": "integer" },
 		"dest":              { "$ref": "#/pScheduler/URLHostPort" },
 		"source":            { "$ref": "#/pScheduler/URLHostPort" },
 		"timeout":           { "$ref": "#/pScheduler/Duration" }
@@ -23,7 +23,7 @@
 	{
             "type": "object",
             "properties": {
-		"schema":            { "$ref": "#/pScheduler/Cardinal" },
+		"schema":            { "enum": [ 2 ], "type": "integer" },
 		"dest":              { "$ref": "#/pScheduler/URLHostPort" },
 		"source":            { "$ref": "#/pScheduler/URLHostPort" },
 		"source-node":       { "$ref": "#/pScheduler/URLHostPort" },

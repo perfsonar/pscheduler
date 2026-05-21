@@ -9,7 +9,7 @@
 	{
             "type": "object",
             "properties": {
-		"schema":              { "$ref": "#/pScheduler/Cardinal", "enum": [ 1 ] },
+		"schema":              { "enum": [ 1 ], "type": "integer" },
 		"query":               { "$ref": "#/pScheduler/URL" },
 		"nameserver":          { "$ref": "#/pScheduler/Host" },
 		"host":                { "$ref": "#/pScheduler/Host" },

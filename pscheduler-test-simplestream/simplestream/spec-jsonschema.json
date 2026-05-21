@@ -9,7 +9,7 @@
 	{
             "type": "object",
             "properties": {
-                "schema":         {" type": "integer", "enum": [ 1 ] },
+                "schema":         { "type": "integer", "enum": [ 1 ] },
                 "dawdle":         { "$ref": "#/pScheduler/Duration" },
                 "fail":           { "$ref": "#/pScheduler/Probability" },
                 "dest":           { "$ref": "#/pScheduler/Host" },
@@ -27,7 +27,7 @@
 	{
             "type": "object",
             "properties": {
-                "schema":         {" type": "integer", "enum": [ 2 ] },
+                "schema":         { "type": "integer", "enum": [ 2 ] },
                 "dawdle":         { "$ref": "#/pScheduler/Duration" },
                 "fail":           { "$ref": "#/pScheduler/Probability" },
                 "ip-version":     { "$ref": "#/pScheduler/ip-version" },
@@ -46,7 +46,7 @@
 	{
             "type": "object",
             "properties": {
-                "schema":         {" type": "integer", "enum": [ 3 ] },
+                "schema":         { "type": "integer", "enum": [ 3 ] },
                 "dawdle":         { "$ref": "#/pScheduler/Duration" },
                 "fail":           { "$ref": "#/pScheduler/Probability" },
                 "ip-version":     { "$ref": "#/pScheduler/ip-version" },

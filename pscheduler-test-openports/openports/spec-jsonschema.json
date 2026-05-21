@@ -20,7 +20,7 @@
 	{
             "type": "object",
             "properties": {
-                "schema":         { "$ref": "#/pScheduler/Cardinal" },
+                "schema":         { "enum": [ 1 ], "type": "integer" },
                 "network":        { "$ref": "#/local/HostOrCIDR" },
                 "source":         { "$ref": "#/pScheduler/Host" },
                 "services":       { "$ref": "#/pScheduler/Boolean" },

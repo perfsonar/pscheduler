@@ -9,7 +9,7 @@
 	{
 	    "type": "object",
 	    "properties": {
-		"schema": { "$ref": "#/pScheduler/Cardinal" },
+		"schema": { "enum": [ 1 ], "type": "integer" },
 		"ident": { "$ref": "#/pScheduler/String" },
 		"facility": {
 		    "type": "string",
