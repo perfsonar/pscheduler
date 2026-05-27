@@ -46,7 +46,7 @@ def run(input):
             'error': 'Will not operate on Gopher URLs.  See https://hackerone.com/reports/3477023.'
             })
 
-    if parsed_url.scheme == 'file':
+    if parsed_url.scheme.lower() == 'file':
         real_path = os.path.realpath(parsed_url.path)
         reasons = file_ok(real_path)
         if reasons:

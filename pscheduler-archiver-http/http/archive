@@ -143,7 +143,7 @@ def archive(json):
 
 
     key = "%s|%s|%s|%s|%s|%s" % (
-        parsed_url.scheme,
+        parsed_url.scheme.lower(),
         parsed_url.hostname,
         '' if parsed_url.port is None else parsed_url.port,
         '' if bind is None else bind,
