@@ -75,7 +75,7 @@ def run(input):
     curl.setopt(pycurl.URL, str(source))
     curl.setopt(pycurl.HTTPHEADER, [header + ': ' + value for header, value in headers.items()])
     curl.setopt(curl.REDIR_PROTOCOLS,
-                pycurl.PROTO_HTTP | pycurl.PROTO_HTTPS | pycurl.PROTO_FTP | pycurl.PROTO_FILE)
+                pycurl.PROTO_HTTP | pycurl.PROTO_HTTPS | pycurl.PROTO_FTP)
 
     # TODO: This test doesn't have bind but needs one.
     # curl.setopt(pycurl.INTERFACE, str(bind))
