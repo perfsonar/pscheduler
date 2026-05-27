@@ -39,7 +39,10 @@ class PycURLRunner(object):
         if bind is not None:
             self.curl.setopt(pycurl.INTERFACE, str(bind))
 
-        self.curl.setopt(pycurl.FOLLOWLOCATION, allow_redirects)
+        if allow_redirects:
+            self.curl.setopt(pycurl.FOLLOWLOCATION, True)
+            curl.setopt(curl.REDIR_PROTOCOLS,
+                        pycurl.PROTO_FTP | pycurl.PROTO_FTPS | pycurl.PROTO_HTTP | pycurl.PROTO_HTTPS)
 
         if headers is not None:            
             self.curl.setopt(pycurl.HTTPHEADER, [
