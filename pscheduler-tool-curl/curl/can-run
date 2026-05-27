@@ -86,7 +86,7 @@ if parsed_url.scheme == 'file':
 
     reasons.extend(file_ok(parsed_url.path))
 
-elif parsed_url.scheme == 'gopher':
+elif parsed_url.scheme.lower() == 'gopher':
 
     # This gets a specific reason
     reasons.append('Will not operate on Gopher URLs.  See https://hackerone.com/reports/3477023.')

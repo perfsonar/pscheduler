@@ -40,7 +40,7 @@ def run(input):
 
     # Can-run should have rejected this, but this is an extra check
     # just in case.
-    if parsed_url.scheme == 'gopher':
+    if parsed_url.scheme.lower() == 'gopher':
         return({
             'succeeded': False,
             'error': 'Will not operate on Gopher URLs.  See https://hackerone.com/reports/3477023.'

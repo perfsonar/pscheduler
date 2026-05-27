@@ -64,7 +64,7 @@ class PycURLRunner(object):
         """Fetch the URL"""
 
         try:
-            if self.url.startswith('gopher:'):
+            if self.url.lower().startswith('gopher:'):
                 raise pycurl.error(400, 'Will not operate on Gopher URLs.  See https://hackerone.com/reports/3477023.')
 
             self.curl.perform()
