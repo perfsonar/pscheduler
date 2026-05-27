@@ -22,7 +22,6 @@ $(ENUMERATE): $(ENUMERATE_SKELETON) $(SPEC_SCHEMA) $(UI_SCHEMA)
 		--validator .spec.jsonschema=$(SPEC_SCHEMA) \
 		--plain .spec.uischema=$(UI_SCHEMA) \
 		> $@
-	pscheduler-build-enumeration $^ > $@
 	chmod +x $@
 TO_CLEAN += $(ENUMERATE)
 
