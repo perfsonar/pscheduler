@@ -91,7 +91,7 @@ elif parsed_url.scheme.lower() == 'gopher':
     # This gets a specific reason
     reasons.append('Will not operate on Gopher URLs.  See https://hackerone.com/reports/3477023.')
 
-elif parsed_url.scheme.lower() not in [ 'http', 'https', 'ftp' ]:
+elif parsed_url.scheme.lower() not in [ 'http', 'https', 'ftp', 'ftps' ]:
 
     reasons.append(f'''URL scheme '{parsed_url.scheme}' is not supported.''')
 
