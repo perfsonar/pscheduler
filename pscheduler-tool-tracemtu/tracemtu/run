@@ -58,7 +58,6 @@ if min_mtu is None:
         'diags': ''
     })
 
-
 # Success
 pscheduler.succeed_json({
     'succeeded': True,

@@ -3,7 +3,7 @@
 # Validator for any test spec
 #
 
-
+import ipaddress
 import pscheduler
 
 from validate import check_spec_semantics

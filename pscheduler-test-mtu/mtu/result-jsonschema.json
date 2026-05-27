@@ -11,15 +11,13 @@
             "properties": {
 		"schema":     { "$ref": "#/pScheduler/Cardinal" },
 		"succeeded":  { "$ref": "#/pScheduler/Boolean" },
-		"time":       { "$ref": "#/pScheduler/Duration" },
-		"#": "TODO: This should be something that can be validated.",
-		"ip_address": { "$ref": "#/pScheduler/AnyJSON" }
+		"mtu":        { "$ref": "#/pScheduler/Cardinal" }
             },
-	    "additionalProperties": false,
             "required": [
-		"time",
-		"ip_address"
-            ]
+		"succeeded",
+		"mtu"
+            ],
+	    "additionalProperties": false
         }
     ]
 }

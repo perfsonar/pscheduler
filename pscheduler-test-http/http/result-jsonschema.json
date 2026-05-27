@@ -1,32 +1,23 @@
-#
-# Validator for "http" Test
-#
-
-# IMPORTANT:
-#
-# When making changes to the JSON schemas in this file, corresponding
-# changes MUST be made in 'spec-format' and 'result-format' to make
-# them capable of formatting the new specifications and results.
-
-# TODO: _ for sensitive values
-
-from pscheduler import json_validate
-
-MAX_SCHEMA = 2
-
-RESULT_SCHEMA = {
+{
+    "#": "This gets merged into every version as #/local.",
     "local": {
-
         "headers": {
             "type": "object",
             "patternProperties": {
-                # Regex is per https://tools.ietf.org/html/rfc7230#section-3.2
-                "^[!#\$%&'*+\-.\^`|~0-9A-Za-z]+$": { "$ref": "#/pScheduler/String" }
+                "#": "Regex is per https://tools.ietf.org/html/rfc7230#section-3.2",
+                "^[!#\\$%&'*+\\-.\\^`|~0-9A-Za-z]+$": { "$ref": "#/pScheduler/String" }
             },
-            "additionalProperties": False
-        },
+            "additionalProperties": false
+        }
+    },
 
-        "v1" : {
+    "#": "The zeroth element of this is always null since there is no version 0.",
+    "#": "TODO: _ for sensitive values",
+
+    "versions": [
+        null,
+
+        {
             "type": "object",
             "properties": {
                 "schema":     { "type": "integer", "enum": [ 1 ] },
@@ -38,12 +29,12 @@ RESULT_SCHEMA = {
             },
             "required": [
                 "succeeded",
-                "time",
+                "time"
             ],
-            "additionalProperties": False
+            "additionalProperties": false
         },
 
-        "v2" : {
+	{
             "type": "object",
             "properties": {
                 "schema":     { "type": "integer", "enum": [ 2 ] },
@@ -54,30 +45,16 @@ RESULT_SCHEMA = {
                 "found":      { "$ref": "#/pScheduler/Boolean" },
                 "status":     { "$ref": "#/pScheduler/Cardinal" },
                 "headers":    { "$ref": "#/local/headers" },
-                "content":    { "$ref": "#/pScheduler/String" },
+                "content":    { "$ref": "#/pScheduler/String" }
             },
             "required": [
                 "schema",
                 "succeeded",
-                "time",
+                "time"
             ],
-            "additionalProperties": False
+            "additionalProperties": false
         }
 
-    }
+
+    ]
 }
-
-
-def result_is_valid(json):
-
-    # Build a temporary structure with a reference that points
-    # directly at the validator for the specified version of the
-    # schema.  Using oneOf or anyOf results in error messages that are
-    # difficult to decipher.
-
-    temp_schema = {
-        "local": RESULT_SCHEMA["local"],
-        "$ref":"#/local/v%d" % json.get("schema", 1)
-    }
-
-    return json_validate(json, temp_schema, max_schema=MAX_SCHEMA)

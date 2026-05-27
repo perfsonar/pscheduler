@@ -13,7 +13,7 @@
 		"data":      { "$ref": "#/pScheduler/AnyJSON" },
 		"succeeded": { "$ref": "#/pScheduler/Boolean" }
             },
-            "additionalProperties": False,
+            "additionalProperties": false,
             "required": [
 		"data",
 		"succeeded"

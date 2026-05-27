@@ -19,10 +19,7 @@ FILES += \
 	spec-is-valid \
 	spec-to-cli
 
-
-MODULES += \
-	validate
-
+MODULES +=
 
 default: build
 
@@ -65,8 +62,11 @@ ifndef DESTDIR
 endif
 	mkdir -p $(DESTDIR)
 	install -m 555 $(FILES) $(DESTDIR)
+ifneq ($(PYS),)
 	install -m 444 $(PYS) $(DESTDIR)
 	cp -r __pycache__ $(DESTDIR)
+endif
+
 
 
 clean:

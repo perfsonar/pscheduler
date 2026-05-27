@@ -15,7 +15,6 @@
 import pscheduler
 
 
-
 TEMPLATE = '''
 {% if _mime_type == 'text/plain' %}
 

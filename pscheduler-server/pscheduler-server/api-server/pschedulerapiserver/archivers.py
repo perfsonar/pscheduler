@@ -29,7 +29,8 @@ def archivers_name(name):
     return json_query("SELECT json FROM archiver"
                       " WHERE available AND name = %s",
                       [name], single=True,
-                      not_found_message=f'No archiver "{name}" is available.'
+                      not_found_message=f'No archiver "{name}" is available.',
+                      sanitize=False
                       )
 
 

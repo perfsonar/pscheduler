@@ -28,7 +28,8 @@ def contexts_name(name):
     return json_query("SELECT json FROM context"
                       " WHERE available AND name = %s",
                       [name], single=True,
-                      not_found_message=f'No context "{name}" is available.'
+                      not_found_message=f'No context "{name}" is available.',
+                      sanitize=False
                       )
 
 

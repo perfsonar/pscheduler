@@ -3,15 +3,7 @@
 # Format a result
 #
 
-#!/usr/bin/env python3
-#
-# Format a result
-#
-
 import pscheduler
-
-from validate import result_is_valid
-from validate import MAX_SCHEMA
 
 TEMPLATE = '''
 {% if _mime_type == 'text/plain' %}
@@ -31,4 +23,4 @@ Duration ... {{ unspec(result.duration) }}
 {% endif %}
 '''
 
-pscheduler.result_format_method(TEMPLATE, max_schema=MAX_SCHEMA, validator=result_is_valid)
+pscheduler.result_format_method(TEMPLATE)

@@ -5,8 +5,6 @@
 
 import pscheduler
 
-from validate import result_is_valid
-from validate import MAX_SCHEMA
 
 TEMPLATE = '''
 {% macro rtt_stat(iso) -%}
@@ -97,4 +95,4 @@ None
 {% endif %}
 '''
 
-pscheduler.result_format_method(TEMPLATE, max_schema=MAX_SCHEMA, validator=result_is_valid)
+pscheduler.result_format_method(TEMPLATE)

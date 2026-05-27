@@ -18,9 +18,6 @@
 
 import pscheduler
 
-from validate import result_is_valid
-from validate import MAX_SCHEMA
-
 # This is a Jinja2 template with the contents of the test
 # specification provided as variables.
 #
@@ -61,4 +58,4 @@ Translated ..... {{ result.translated }}
 {% endif %}
 '''
 
-pscheduler.result_format_method(TEMPLATE, max_schema=MAX_SCHEMA, validator=result_is_valid)
+pscheduler.result_format_method(TEMPLATE)

@@ -30,12 +30,12 @@ def ok_json(data=None, sanitize=True):
     return Response(text + '\n',
                     mimetype='application/json')
 
-def ok_json_sanitize_checked(data, required_key=None):
+def ok_json_sanitize_checked(data, required_key=None, sanitize=True):
     provided_key = arg_string("key")
-    if required_key is None or provided_key is None:
-        # No keys, sanitize.
-        sanitize = True
-    elif provided_key == required_key:
+    if (required_key is None or provided_key is None):
+        # No keys, sanitize unless directed otherwise in the arguments..
+        pass
+    elif (provided_key == required_key) or not sanitize:
         # Key matches what task expects
         sanitize = False
     else:

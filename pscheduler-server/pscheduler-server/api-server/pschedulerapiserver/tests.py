@@ -29,7 +29,8 @@ def tests_name(name):
     return json_query("SELECT json FROM test"
                       " WHERE available AND name = %s",
                       [name], single=True,
-                      not_found_message=f'No test "{name}" is available.'
+                      not_found_message=f'No test "{name}" is available.',
+                      sanitize=False
                       )
 
 
