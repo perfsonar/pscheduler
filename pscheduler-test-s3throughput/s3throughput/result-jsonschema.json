@@ -1,0 +1,32 @@
+{
+    "#": "This gets merged into every version as #/local.",
+    "local": {},
+
+    "#": "The zeroth element of this is always null since there is no version 0.",
+    "versions": [
+        null,
+
+	{
+            "type": "object",
+            "properties": {
+                "schema":              { "type": "integer", "enum": [ 1 ] },
+                "succeeded":           { "$ref": "#/pScheduler/Boolean" },
+	        "error":               { "$ref": "#/pScheduler/String" },
+	        "diags":               { "$ref": "#/pScheduler/String" },
+	        "loops":               { "$ref": "#/pScheduler/String" },
+	        "average_put_time":    { "$ref": "#/pScheduler/Float" },
+	        "average_get_time":    { "$ref": "#/pScheduler/Float" },
+	        "average_delete_time": { "$ref": "#/pScheduler/Float" },
+                "time" :               { "$ref": "#/pScheduler/Duration" }    
+	    },
+            "required": [
+                "succeeded",
+	        "average_put_time",
+	        "average_get_time",
+	        "average_delete_time"
+            ],
+	    "additionalProperties": false
+        }
+
+    ]
+}

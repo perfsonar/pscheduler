@@ -9,16 +9,17 @@
 	{
             "type": "object",
             "properties": {
-		"schema":     { "enum": [ 1 ], "type": "integer" },
+		"schema":     { "$ref": "#/pScheduler/Cardinal" },
 		"succeeded":  { "$ref": "#/pScheduler/Boolean" },
 		"error":      { "$ref": "#/pScheduler/String" },
 		"diags":      { "$ref": "#/pScheduler/String" },
 		"time":       { "$ref": "#/pScheduler/Duration" },
 		"data":       { "type": "array",
-				"items": { "$ref": "#/pScheduler/SNMPResultList" } 
+				"items": { "$ref": "#/pScheduler/SNMPResult" } 
                               }
             },
             "required": [
+		"schema",
 		"succeeded",
 		"data",
 		"time"
