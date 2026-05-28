@@ -17,7 +17,7 @@ def result_is_valid(json):
     schema = {
         "type": "object",
         "properties": {
-            "schema":     { "$ref": "#/pScheduler/Cardinal" },
+            "schema":     { "enum": [ 1 ], "type": "integer" },
             "succeeded":  { "$ref": "#/pScheduler/Boolean" },
             "error":      { "$ref": "#/pScheduler/String" },
             "diags":      { "$ref": "#/pScheduler/String" },
@@ -27,7 +27,6 @@ def result_is_valid(json):
                           },
             },
         "required": [
-            "schema",
             "succeeded",
             "data",
             "time",

@@ -9,7 +9,7 @@
                 "address":   { "$ref": "#/pScheduler/String" },
                 "frequency": { "type": "number" },
                 "quality":   { "type": "number" },
-                "bitrates":  { "type": "array", "items": { "type": "number" } },
+                "bitrates":  { "type": "array", "items": { "$ref": "#/pScheduler/Cardinal" } },
                 "encrypted": { "$ref": "#/pScheduler/Boolean" },
                 "channel":   { "$ref": "#/pScheduler/Cardinal" },
                 "mode":      { "$ref": "#/pScheduler/String" }
@@ -26,7 +26,7 @@
                 "mode"
             ],
             "additionalProperties": false
-        }    
+        }
     },
 
     "#": "The zeroth element of this is always null since there is no version 0.",
@@ -39,7 +39,7 @@
                 "schema":     { "type": "integer", "enum": [ 1 ] },
                 "succeeded":  { "$ref": "#/pScheduler/Boolean" },
                 "time":       { "$ref": "#/pScheduler/Duration" },
-		"ssid_list":  { "type": "array", "items": { "local": "#/local/ssid_info" } }
+		"ssid_list":  { "type": "array", "items": { "$ref": "#/local/ssid_info" } }
             },
             "required": [
                 "succeeded",
