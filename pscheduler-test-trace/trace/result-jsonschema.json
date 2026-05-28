@@ -1,0 +1,48 @@
+{
+    "#": "This gets merged into every version as #/local.",
+    "local": {
+        "hop": {
+            "type": "object",
+            "properties": {
+                "ip": { "$ref": "#/pScheduler/IPAddress" },
+                "hostname": { "$ref": "#/pScheduler/Host" },
+                "rtt": { "$ref": "#/pScheduler/Duration" },
+                "as": { "$ref": "#/pScheduler/AS" },
+                "error": { "$ref": "#/pScheduler/icmp-error" },
+                "mtu":     { "$ref": "#/pScheduler/Cardinal" }
+            },
+            "required": [
+            ]
+        },
+
+        "hoparray": {
+            "type": "array",
+            "items": { "$ref": "#/local/hop" }
+        }
+    },
+
+    "#": "The zeroth element of this is always null since there is no version 0.",
+    "versions": [
+        null,
+
+	{
+            "type": "object",
+            "properties": {
+		"schema": { "$ref": "#/pScheduler/Cardinal" },
+		"paths": {
+                    "type": "array",
+                    "items": { "$ref": "#/local/hoparray" }
+                },
+		"succeeded": { "$ref": "#/pScheduler/Boolean" },
+		"error": { "$ref": "#/pScheduler/String" },
+		"diags": { "$ref": "#/pScheduler/String" }
+            },
+            "required": [
+		"paths",
+		"succeeded"
+            ],
+	    "additionalProperties": false
+        }
+
+    ]
+}

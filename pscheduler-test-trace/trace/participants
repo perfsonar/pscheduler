@@ -10,11 +10,6 @@ json = pscheduler.plugin_spec_is_valid('test', return_if_valid=True)
 
 null_reason = None
 
-valid, message = spec_is_valid(json)
-
-if not valid:
-    pscheduler.fail(message)
-
 source = json.get("source-node", json.get("source", None))
 if source is None:
     null_reason = "No source specified"

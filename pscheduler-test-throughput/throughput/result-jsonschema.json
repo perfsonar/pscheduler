@@ -1,0 +1,134 @@
+{
+    "#": "This gets merged into every version as #/local.",
+    "local": {
+        "throughput-data": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "throughput-bits": {
+                    "description": "Summarized view of the overall sender throughput rate in bits/second",
+                    "type": "number"
+                },
+                "throughput-bytes": {
+                    "description": "Summarized view of the overall sender throughput rate in bytes/second",
+                    "type": "number"
+                    },
+                "receiver-throughput-bits": {
+                    "description": "Summarized view of the overall sender throughput rate in bits/second",
+                    "type": "number"
+                    },
+                "sent": {
+                    "description": "Number of packets sent",
+                    "type": ["integer", "null"]
+                    },
+                "lost": {
+                    "description": "Summarized view of the overall lost packets",
+                    "type": ["integer", "null"]
+                    },
+                "jitter": {
+                    "description": "Jitter reported",
+                    "type": ["number", "null"]
+                    },
+                "stream-id": {
+                    "description": "The ID of the stream, most relevant when running parallel streams",
+                    "type": ["string", "integer"]
+                    },
+                "start": {
+                    "description": "The relative start time of this reporting interval, relative to the start of the test",
+                    "type": "number"
+                    },
+                "end": {
+                    "description": "The relative end time of this reporting interval, relative to the start of the test",
+                    "type": "number"
+                    },
+                "rtt": {
+                    "description": "The RTT of the request",
+                    "type": ["number", "null"]
+                    },
+                "tcp-window-size": {
+                    "description": "The TCP window size at this point in time",
+                    "type": ["integer", "null"]
+                    },
+                "retransmits": {
+                    "description": "The number of retransmitted packets during this window",
+                    "type": ["integer", "null"]
+                    },
+                "omitted": {
+                    "description": "Whether this interval was omitted for the summary",
+                    "$ref": "#/pScheduler/Boolean"
+                    }
+                }
+            }
+        },
+
+    "#": "The zeroth element of this is always null since there is no version 0.",
+    "versions": [
+        null,
+
+	{        
+	    "title": "pScheduler Throughput Response Schema",
+	    "type": "object",
+	    "additionalProperties": false,
+	    "required": ["succeeded", "diags", "intervals", "summary"],
+	    "properties": {           
+		"schema": { "$ref": "#/pScheduler/Cardinal" },
+		"succeeded": {
+		    "description": "Indicates if the test ran successfully",
+		    "type": "boolean"
+		},
+		"error": {
+		    "description": "Error message from the underlying tool",
+		    "type": "string"
+		},
+		"diags": {
+		    "description": "Raw output from the underlying tool",
+		    "type": "string"
+		},
+		"mss": {
+		    "description": "The max segment size reported by the tool",
+		    "type": "integer"
+		},
+		"mtu": {
+		    "description": "The MTU reported by the tool",
+		    "type": "integer"
+		},
+		"tcp-window-size": {
+		    "description": "The tcp window size used by the tool",
+		    "type": "integer"
+		},
+		"requested-tcp-window-size": {
+		    "description": "The tcp window size used by the tool",
+		    "type": "integer"
+		},
+		"intervals": {
+		    "description": "The breakdown of intervals of the test",
+		    "type": "array",
+		    "items": {
+			"type": "object",
+			"properties": {
+			    "streams": {
+				"description": "An array of information about each of the streams during this interval",
+				"type": "array",
+				"items": { "$ref": "#/local/throughput-data" }
+                            },
+			    "summary": { "$ref": "#/local/throughput-data" }                        
+			}
+                    }
+		},
+		"summary": {
+		    "description": "An object containing summaries of each stream and the test as a whole",
+		    "type": "object",
+		    "properties": {
+			"streams": {
+			    "description": "An array of objects containing summarized information for all streams for a given start/end period",
+			    "type": "array",
+			    "items": { "$ref": "#/local/throughput-data" }
+			},
+			"summary": {"$ref": "#/local/throughput-data"}
+                    }
+		}
+            }
+	}
+
+    ]
+}

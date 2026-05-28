@@ -3,6 +3,9 @@
 # Format a result
 #
 
+# TODO: This is duplicated between here and result-jsconschema.json because
+# the this method  doesn't use templates.
+
 import pscheduler
 import sys
 import math

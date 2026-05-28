@@ -4,7 +4,7 @@
 
 import pscheduler
 
-json = pscheduler.plugin_spec_is_valid('test', return_if_valid=True)
+spec = pscheduler.plugin_spec_is_valid('test', return_if_valid=True)
 
 result = pscheduler.speccli_build_args(spec, 
                                        strings=[
