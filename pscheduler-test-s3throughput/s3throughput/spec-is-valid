@@ -25,7 +25,7 @@ except ValueError as ex:
 
 valid, message = spec_is_valid(json)
 
-scheme = urlparse(json["url"]).scheme
+scheme = urlparse(json["url"]).scheme.lower()
 if scheme != "http" and scheme != "https":
     valid = False
     message = "Invalid URL scheme"

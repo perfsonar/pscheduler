@@ -39,7 +39,10 @@ class PycURLRunner(object):
         if bind is not None:
             self.curl.setopt(pycurl.INTERFACE, str(bind))
 
-        self.curl.setopt(pycurl.FOLLOWLOCATION, allow_redirects)
+        if allow_redirects:
+            self.curl.setopt(pycurl.FOLLOWLOCATION, True)
+            self.curl.setopt(pycurl.REDIR_PROTOCOLS,
+                        pycurl.PROTO_FTP | pycurl.PROTO_FTPS | pycurl.PROTO_HTTP | pycurl.PROTO_HTTPS)
 
         if headers is not None:            
             self.curl.setopt(pycurl.HTTPHEADER, [
@@ -64,7 +67,7 @@ class PycURLRunner(object):
         """Fetch the URL"""
 
         try:
-            if self.url.startswith('gopher:'):
+            if self.url.lower().startswith('gopher:'):
                 raise pycurl.error(400, 'Will not operate on Gopher URLs.  See https://hackerone.com/reports/3477023.')
 
             self.curl.perform()
