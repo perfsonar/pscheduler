@@ -8,8 +8,7 @@
         "bucket-width": {
             "type": "number",
             "exclusiveMinimum": 0.0,
-            "exclusiveMaximum": 1.0,
-            "default": ".001"
+            "exclusiveMaximum": 1.0
         }
     },
 
