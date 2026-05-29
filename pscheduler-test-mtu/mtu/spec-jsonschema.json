@@ -9,11 +9,36 @@
         {
             "type": "object",
             "properties": {
-                "schema":       { "enum": [ 1 ], "type": "integer" },
-                "source":       { "$ref": "#/pScheduler/Host" },
-                "source-node":  { "$ref": "#/pScheduler/Host" },
-                "dest":         { "$ref": "#/pScheduler/Host" },
-                "port":         { "$ref": "#/pScheduler/IPPort" }
+                "schema": {
+		    "enum": [ 1 ],
+		    "type": "integer",
+		    "title": "Schema Version",
+		    "description": "Schema version of the specification for this test"
+		},
+                "source": {
+		    "$ref": "#/pScheduler/Host",
+		    "title": "Source",
+		    "description": "Origin point for the test",
+		    "hint": "ps.example.org"
+		},
+                "source-node": {
+		    "$ref": "#/pScheduler/Host",
+                    "title": "Source Node",
+                    "description": "perfSONAR node for origin point for the test",
+		    "hint": "ps.example.org"
+		},
+                "dest": {
+		    "$ref": "#/pScheduler/Host",
+                    "title": "Destination",
+                    "description": "Destination point for the test",
+		    "hint": "ps.example.net"
+		},
+                "port": {
+		    "$ref": "#/pScheduler/IPPort",
+                    "title": "Port",
+                    "description": "Port number to use for the test",
+		    "hint": "12345"
+		}
             },
             "required": [
                 "dest"
@@ -24,12 +49,42 @@
 	{
             "type": "object",
             "properties": {
-                "schema":       { "enum": [ 2 ], "type": "integer" },
-                "source":       { "$ref": "#/pScheduler/Host" },
-                "source-node":  { "$ref": "#/pScheduler/Host" },
-                "dest":         { "$ref": "#/pScheduler/Host" },
-                "ip-version":   { "$ref": "#/pScheduler/ip-version" },
-                "port":         { "$ref": "#/pScheduler/IPPort" }
+                "schema": {
+		    "enum": [ 2 ],
+		    "type": "integer",
+		    "title": "Schema Version",
+		    "description": "Schema version of the specification for this test"
+		},
+                "source": {
+		    "$ref": "#/pScheduler/Host",
+		    "title": "Source",
+		    "description": "Origin point for the test",
+		    "hint": "ps.example.org"
+		},
+                "source-node": {
+		    "$ref": "#/pScheduler/Host",
+                    "title": "Source Node",
+                    "description": "perfSONAR node for origin point for the test",
+		    "hint": "ps.example.org"
+		},
+                "dest": {
+		    "$ref": "#/pScheduler/Host",
+                    "title": "Destination",
+                    "description": "Destination point for the test",
+		    "hint": "ps.example.net"
+		},
+		"ip-version": {
+		    "$ref": "#/pScheduler/ip-version",
+                    "title": "IP Version",
+                    "description": "What version of the IP protocol to use for the test (4 or 6)",
+		    "hint": "ps.example.net"
+		},
+                "port": {
+		    "$ref": "#/pScheduler/IPPort",
+                    "title": "Port",
+                    "description": "Port number to use for the test",
+		    "hint": "12345"
+		}
             },
             "required": [
 		"schema",
