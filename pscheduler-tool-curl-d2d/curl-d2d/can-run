@@ -53,7 +53,7 @@ reasons = []
 
 spec = json['spec']
 
-if spec.get('source', '').startswith('gopher:') or spec.get('dest', '').startswith('gopher:'):
+if spec.get('source', '').lower().startswith('gopher:') or spec.get('dest', '').lower().startswith('gopher:'):
     reasons.append('Will not operate on Gopher URLs.  See https://hackerone.com/reports/3477023.')
 
 

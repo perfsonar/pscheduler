@@ -65,6 +65,10 @@ class TestPsurl(PschedTestBase):
             url_get("gopher://gopher.hole", throw=False)[0],
             400
         )
+        self.assertEqual(
+            url_get("GoPhEr://gopher.hole", throw=False)[0],
+            400
+        )
 
     def test_url_get_bind(self):
         """See if binding works"""
