@@ -1,0 +1,44 @@
+#!/usr/bin/env python3
+#
+# Return participant-specific data for a run
+#
+
+import packaging.version
+import pscheduler
+import qperf_utils
+
+json = pscheduler.json_load(exit_on_error=True)
+result = {
+    'schema': 3
+}
+
+
+# Provide the local qperf version
+
+status, out, err = pscheduler.run_program(['qperf', '--version'], timeout=2)
+if status != 0:
+    pscheduler.fail(f'Unable to run qperf: {err}')
+
+try:
+    version_text = out.split()[1]
+    version = packaging.version.Version(version_text)
+except (IndexError, packaging.version.InvalidVersion) as ex:
+    pscheduler.fail(str(ex))
+
+result['qperf-version'] = str(version)
+
+
+try:
+    participant = json['participant']
+except KeyError:
+    pscheduler.fail('Missing participant')
+
+config = qperf_utils.get_config()
+
+if participant in [0, 1]:
+    result['port'] = config['port']
+    result['data_port'] = config['data_port']
+else:
+    pscheduler.fail('Invalid participant number for this test')
+
+pscheduler.succeed_json(result)

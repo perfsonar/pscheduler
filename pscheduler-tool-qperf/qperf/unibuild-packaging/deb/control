@@ -1,0 +1,16 @@
+Source: pscheduler-tool-qperf
+Section: net
+Priority: optional
+Maintainer: perfSONAR developers <debian@perfsonar.net>
+Build-Depends: debhelper (>= 10), python3
+Standards-Version: 3.9.8
+Homepage: https://github.com/perfsonar/pscheduler
+Vcs-Git: git://github.com/perfsonar/pscheduler
+Vcs-Browser: https://github.com/perfsonar/pscheduler
+
+Package: pscheduler-tool-qperf
+Architecture: all
+Depends: ${misc:Depends}, python3, python3-pscheduler (>= 4.4.0~), python3-packaging,
+ pscheduler-server (>= 4.4.0~), pscheduler-test-throughput, qperf
+Description: pScheduler qperf tool
+ qperf tool class for pScheduler
