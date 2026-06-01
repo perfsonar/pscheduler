@@ -1089,7 +1089,7 @@
             "Archiver": {
                 "type": "object",
                 "properties": {
-		    "schema":       { "type": "integer", "const": 1 },
+		    "schema":       { "type": "integer", "minimum": 1 },
                     "name":         { "$ref": "#/pScheduler/String" },
                     "label":        { "$ref": "#/pScheduler/String" },
                     "description":  { "$ref": "#/pScheduler/String" },
