@@ -18,7 +18,7 @@
 	{
             "type": "object",
             "properties": {
-                "schema":      { "type": "integer", "enum": [ 1 ] },
+                "schema":      { "type": "integer", "const": 1 },
                 "algorithm":   { "$ref": "#/pScheduler/String" },
                 "as":          { "$ref": "#/pScheduler/Boolean" },
                 "dest-port":   { "$ref": "#/pScheduler/IPPort" },
@@ -45,7 +45,7 @@
         {
             "type": "object",
             "properties": {
-                "schema":      { "type": "integer", "enum": [ 2 ] },
+                "schema":      { "type": "integer", "const": 2 },
                 "algorithm":   { "$ref": "#/pScheduler/String" },
                 "as":          { "$ref": "#/pScheduler/Boolean" },
                 "dest-port":   { "$ref": "#/pScheduler/IPPort" },

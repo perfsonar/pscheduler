@@ -21,7 +21,8 @@
             "properties": {
                 "schema": {
                     "description": "The version of the schema",
-                    "$ref": "#/pScheduler/Cardinal"
+                    "type": "integer",
+		    "const": 1
                 },
                 "source": {
                     "description": "The address of the entity sending packets in this test",
@@ -97,7 +98,8 @@
             "properties": {
                 "schema": {
                     "description": "The version of the schema",
-                    "$ref": "#/pScheduler/Cardinal"
+		    "type": "integer",
+		    "const": 2
                 },
                 "source": {
                     "description": "The address of the entity sending packets in this test",
@@ -169,7 +171,10 @@
                 }
 
             },
-            "required": ["dest"]
+            "required": [
+		"schema",
+		"dest"
+	    ]
         }
     ]
 }

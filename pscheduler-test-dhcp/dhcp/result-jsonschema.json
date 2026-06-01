@@ -9,7 +9,7 @@
 	{
             "type": "object",
             "properties": {
-		"schema":     { "$ref": "#/pScheduler/Cardinal" },
+		"schema": { "type": "integer", "const": 1 },
 		"succeeded":  { "$ref": "#/pScheduler/Boolean" },
 		"time":       { "$ref": "#/pScheduler/Duration" },
 		"#": "TODO: This should be something that can be validated.",

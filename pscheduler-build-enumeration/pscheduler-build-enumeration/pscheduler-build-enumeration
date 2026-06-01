@@ -125,9 +125,59 @@ validator()
     VALIDATOR_ARRAY="${TMPBASE}/validator-array"
     jq '.versions' "${INPUT}" > "${VALIDATOR_ARRAY}"
 
-    # Make sure the first element is null
+    # Make sure the zeroth element is null
     jq 'if .[0] != null then halt_error(1) else halt_error(0) end' "${VALIDATOR_ARRAY}" > /dev/null 2>&1 \
 	|| die "${INPUT}: First element in validator must be null."
+
+    # Make sure all elements have a correctly-numbered schema enum
+    jq --arg name "${INPUT}" '
+      [ to_entries[]
+        | select(.key > 0)
+        | select( (.value.properties.schema.type != "integer")
+                  or (.value.properties.schema.const != .key)
+                )
+        | .key
+      ]
+      | join(", ")
+      | if (length > 0)
+        then
+          ("\($name): Schema(s) \(.) are incorrect:\nShould be { \"type\": \"integer\", \"const\": N }\n"
+           | halt_error(1))
+        else
+          empty
+        end
+    ' "${VALIDATOR_ARRAY}"
+
+    # Make sure element 1 *does have* a required schema
+    jq --arg name "${INPUT}" '
+      [
+          ((.[1].required) // [])[]
+        | select(. == "schema")
+      ]
+      | if (length > 0)
+        then
+          ("\($name): Version 1 has a required \"schema\" property\n" | halt_error(1))
+        else
+          empty
+        end
+   ' "${VALIDATOR_ARRAY}"
+
+    # Make sure elements 2+ *do* have a required schema
+
+    jq --arg name "${INPUT}" '
+      [ to_entries[]
+        | select((.key > 1) and ([((.value.required) // [])[] | select(. == "schema")] | (length == 0)))
+        | "  Version \(.key) does not require the schema property\n"
+      ]
+      | join("")
+      | if (length > 0)
+        then
+          ( "\($name):\n\(.)" | halt_error(1))
+        else
+          empty
+        end
+    ' "${VALIDATOR_ARRAY}"
+
 
     # Plugin validator array, converted to an object
     VALIDATOR="${TMPBASE}/validator"

@@ -36,7 +36,7 @@
 	{
             "type": "object",
             "properties": {
-                "schema":     { "type": "integer", "enum": [ 1 ] },
+                "schema":     { "type": "integer", "const": 1 },
                 "succeeded":  { "$ref": "#/pScheduler/Boolean" },
                 "time":       { "$ref": "#/pScheduler/Duration" },
 		"ssid_list":  { "type": "array", "items": { "$ref": "#/local/ssid_info" } }

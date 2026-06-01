@@ -9,7 +9,7 @@
         {
             "type": "object",
             "properties": {
-                "schema": { "type": "integer", "enum": [ 1 ] },
+                "schema": { "type": "integer", "const": 1 },
                 "_url": { "$ref": "#/pScheduler/URL" },
                 "op": {
                     "type": "string",
@@ -28,7 +28,7 @@
         {
             "type": "object",
             "properties": {
-                "schema": { "type": "integer", "enum": [ 2 ] },
+                "schema": { "type": "integer", "const": 2 },
                 "_url": { "$ref": "#/pScheduler/URL" },
                 "op": {
                     "type": "string",
@@ -54,7 +54,7 @@
         {
             "type": "object",
             "properties": {
-                "schema": { "type": "integer", "enum": [ 3 ] },
+                "schema": { "type": "integer", "const": 3 },
                 "_url": { "$ref": "#/pScheduler/URL" },
                 "op": {
                     "type": "string",
@@ -81,7 +81,7 @@
         {
             "type": "object",
             "properties": {
-                "schema": { "type": "integer", "enum": [ 4 ] },
+                "schema": { "type": "integer", "const": 4 },
                 "_url": { "$ref": "#/pScheduler/URL" },
                 "op": {
                     "type": "string",

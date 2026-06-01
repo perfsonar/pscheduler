@@ -71,7 +71,7 @@
 	    "additionalProperties": false,
 	    "required": ["succeeded", "diags", "intervals", "summary"],
 	    "properties": {           
-		"schema": { "$ref": "#/pScheduler/Cardinal" },
+		"schema": { "type": "integer", "const": 1 },
 		"succeeded": {
 		    "description": "Indicates if the test ran successfully",
 		    "type": "boolean"

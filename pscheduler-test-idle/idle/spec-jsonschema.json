@@ -9,7 +9,7 @@
 	{
             "type": "object",
             "properties": {
-		"schema":           { "type": "integer", "enum": [ 1 ] },
+		"schema":           { "type": "integer", "const": 1 },
 		"duration":         { "$ref": "#/pScheduler/Duration" },
 		"host":             { "$ref": "#/pScheduler/Host" },
 		"host-node":        { "$ref": "#/pScheduler/URLHostPort" },
@@ -25,7 +25,7 @@
 	{
             "type": "object",
             "properties": {
-		"schema":           { "type": "integer", "enum": [ 2 ] },
+		"schema":           { "type": "integer", "const": 2 },
 		"duration":         { "$ref": "#/pScheduler/Duration" },
 		"host":             { "type": "array",
                                       "items": { "$ref": "#/pScheduler/Host" },

@@ -33,7 +33,8 @@
             "properties": {
 		"schema": {
                     "description": "The version of the schema",
-                    "$ref": "#/pScheduler/Cardinal"
+                    "type": "integer",
+		    "const": 1
 		},
 		"succeeded": {
                     "description": "Indicates if the test ran successfully",

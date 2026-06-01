@@ -23,8 +23,7 @@
                 "schema": {
                     "description": "The version of the schema",
                     "type": "integer",
-                    "enum": [ 1 ]
-		    
+                    "const": 1		    
                 },
                 "source": {
                     "description": "The address of the entity sending packets in this test",
@@ -98,8 +97,7 @@
                 "schema": {
                     "description": "The version of the schema",
                     "type": "integer",
-                    "enum": [ 2 ]
-		    
+                    "const": 2		   
                 },
                 "source": {
                     "description": "The address of the entity sending packets in this test",
@@ -177,8 +175,7 @@
                 "schema": {
                     "description": "The version of the schema",
                     "type": "integer",
-                    "enum": [ 3 ]
-		    
+                    "const": 3		    
                 },
                 "source": {
                     "description": "The address of the entity sending packets in this test",
@@ -260,7 +257,7 @@
                 "schema": {
                     "description": "The version of the schema",
                     "type": "integer",
-                    "enum": [ 4 ]
+                    "const": 4
                 },
                 "source": {
                         "description": "The address of the entity sending packets in this test",

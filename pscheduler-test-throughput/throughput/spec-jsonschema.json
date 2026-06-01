@@ -32,7 +32,7 @@
             "title": "pScheduler Throughput Specification Schema",
             "type": "object",
             "properties": {
-                "schema":      { "type": "integer", "enum": [ 1 ] },
+                "schema":      { "type": "integer", "const": 1 },
                 "source":      { "$ref": "#/pScheduler/Host" },
                 "source-node": { "$ref": "#/pScheduler/URLHostPort" },
                 "dest":        { "$ref": "#/pScheduler/Host" },
@@ -65,7 +65,7 @@
             "title": "pScheduler Throughput Specification Schema",
             "type": "object",
             "properties": {
-                "schema":      { "type": "integer", "enum": [ 2 ] },
+                "schema":      { "type": "integer", "const": 2 },
                 "source":      { "$ref": "#/pScheduler/Host" },
                 "source-node": { "$ref": "#/pScheduler/URLHostPort" },
                 "dest":        { "$ref": "#/pScheduler/Host" },
@@ -103,7 +103,7 @@
             "title": "pScheduler Throughput Specification Schema",
             "type": "object",
             "properties": {
-                "schema":      { "type": "integer", "enum": [ 3 ] },
+                "schema":      { "type": "integer", "const": 3 },
                 "source":      { "$ref": "#/pScheduler/Host" },
                 "source-node": { "$ref": "#/pScheduler/URLHostPort" },
                 "dest":        { "$ref": "#/pScheduler/Host" },
@@ -142,7 +142,7 @@
             "title": "pScheduler Throughput Specification Schema",
             "type": "object",
             "properties": {
-                "schema":      { "type": "integer", "enum": [ 4 ] },
+                "schema":      { "type": "integer", "const": 4 },
                 "source":      { "$ref": "#/pScheduler/Host" },
                 "source-node": { "$ref": "#/pScheduler/URLHostPort" },
                 "dest":        { "$ref": "#/pScheduler/Host" },
@@ -183,7 +183,7 @@
             "title": "pScheduler Throughput Specification Schema",
             "type": "object",
             "properties": {
-                "schema":      { "type": "integer", "enum": [ 5 ] },
+                "schema":      { "type": "integer", "const": 5 },
                 "source":      { "$ref": "#/pScheduler/Host" },
                 "source-node": { "$ref": "#/pScheduler/URLHostPort" },
                 "dest":        { "$ref": "#/pScheduler/Host" },
@@ -225,7 +225,7 @@
             "title": "pScheduler Throughput Specification Schema",
             "type": "object",
             "properties": {
-                "schema":      { "type": "integer", "enum": [ 6 ] },
+                "schema":      { "type": "integer", "const": 6 },
                 "source":      { "$ref": "#/pScheduler/Host" },
                 "source-node": { "$ref": "#/pScheduler/URLHostPort" },
                 "dest":        { "$ref": "#/pScheduler/Host" },
@@ -268,7 +268,7 @@
             "title": "pScheduler Throughput Specification Schema",
             "type": "object",
             "properties": {
-                "schema":      { "type": "integer", "enum": [ 7 ] },
+                "schema":      { "type": "integer", "const": 7 },
                 "source":      { "$ref": "#/pScheduler/Host" },
                 "source-node": { "$ref": "#/pScheduler/URLHostPort" },
                 "dest":        { "$ref": "#/pScheduler/Host" },

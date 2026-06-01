@@ -10,8 +10,8 @@
             "type": "object",
             "properties": {
                 "schema": {
-		    "enum": [ 1 ],
 		    "type": "integer",
+		    "const": 1,
 		    "title": "Schema Version",
 		    "description": "Schema version of the specification for this test"
 		},
@@ -50,8 +50,8 @@
             "type": "object",
             "properties": {
                 "schema": {
-		    "enum": [ 2 ],
 		    "type": "integer",
+		    "const": 2,
 		    "title": "Schema Version",
 		    "description": "Schema version of the specification for this test"
 		},

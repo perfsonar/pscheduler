@@ -9,7 +9,7 @@
 	{
 	    "type": "object",
 	    "properties": {
-		"schema": { "enum": [ 1 ], "type": "integer" },
+		"schema": { "type": "integer", "const": 1 },
 		"url": { "$ref": "#/pScheduler/URL" },
 		"bind": { "$ref": "#/pScheduler/Host" },
 		"_auth-token": { "$ref": "#/pScheduler/String" },

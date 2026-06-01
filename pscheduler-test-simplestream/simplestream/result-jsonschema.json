@@ -9,7 +9,7 @@
 	{
             "type": "object",
             "properties": {
-		"schema":         { "$ref": "#/pScheduler/Cardinal" },
+		"schema":        { "type": "integer", "const": 1 },
 		"dawdled":       { "$ref": "#/pScheduler/Duration" },
 		"elapsed-time":  { "$ref": "#/pScheduler/Duration" },
 		"received":      { "$ref": "#/pScheduler/String" },

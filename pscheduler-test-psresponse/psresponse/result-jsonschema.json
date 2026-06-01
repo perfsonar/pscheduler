@@ -9,7 +9,7 @@
 	{
             "type": "object",
             "properties": {
-                "schema":     { "type": "integer", "enum": [ 1 ] },
+                "schema":     { "type": "integer", "const": 1 },
                 "succeeded":  { "$ref": "#/pScheduler/Boolean" },
                 "reason":     { "$ref": "#/pScheduler/String" },
                 "time":       {

@@ -33,7 +33,7 @@
 	{
             "type": "object",
             "properties": {
-		"schema":    { "enum": [ 1 ], "type": "integer" },
+		"schema":    { "type": "integer", "const": 1 },
 		"host":      { "$ref": "#/pScheduler/Host" },
 		"host-node": { "$ref": "#/pScheduler/Host" },
 		"network":   { "$ref": "#/pScheduler/IPCIDR" },

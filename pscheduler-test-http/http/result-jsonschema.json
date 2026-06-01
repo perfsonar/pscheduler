@@ -20,7 +20,7 @@
         {
             "type": "object",
             "properties": {
-                "schema":     { "type": "integer", "enum": [ 1 ] },
+                "schema":     { "type": "integer", "const": 1 },
                 "succeeded":  { "$ref": "#/pScheduler/Boolean" },
                 "error":      { "$ref": "#/pScheduler/String" },
                 "diags":      { "$ref": "#/pScheduler/String" },
@@ -37,7 +37,7 @@
 	{
             "type": "object",
             "properties": {
-                "schema":     { "type": "integer", "enum": [ 2 ] },
+                "schema":     { "type": "integer", "const": 2 },
                 "succeeded":  { "$ref": "#/pScheduler/Boolean" },
                 "error":      { "$ref": "#/pScheduler/String" },
                 "diags":      { "$ref": "#/pScheduler/String" },

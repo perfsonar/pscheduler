@@ -9,7 +9,7 @@
 	{
             "type": "object",
             "properties": {
-		"schema":            { "enum": [ 1 ], "type": "integer" },
+		"schema":            { "type": "integer", "const": 1 },
 		"dest":              { "$ref": "#/pScheduler/URLHostPort" },
 		"source":            { "$ref": "#/pScheduler/URLHostPort" },
 		"timeout":           { "$ref": "#/pScheduler/Duration" }
@@ -23,13 +23,14 @@
 	{
             "type": "object",
             "properties": {
-		"schema":            { "enum": [ 2 ], "type": "integer" },
+		"schema":            { "type": "integer", "const": 2 },
 		"dest":              { "$ref": "#/pScheduler/URLHostPort" },
 		"source":            { "$ref": "#/pScheduler/URLHostPort" },
 		"source-node":       { "$ref": "#/pScheduler/URLHostPort" },
 		"timeout":           { "$ref": "#/pScheduler/Duration" }
             },
             "required": [
+		"schema",
 		"dest"
             ],
 	    "additionalProperties": false
