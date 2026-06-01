@@ -44,7 +44,7 @@
         {
             "type": "object",
             "properties": {
-                "schema":              { "type": "integer", "enum": [ 2 ] },
+                "schema":              { "type": "integer", "enum": [ 3 ] },
                 "_url":                { "$ref": "#/pScheduler/String" },
                 "exchange":            { "$ref": "#/pScheduler/String" },
                 "timeout":             { "$ref": "#/pScheduler/Duration" },
