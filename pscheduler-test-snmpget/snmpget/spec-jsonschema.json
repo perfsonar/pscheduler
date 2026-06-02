@@ -23,9 +23,7 @@
             "enum": ["tcp", "udp"]
         },
         "SNMPv1Spec": {
-            "type": "object",
             "properties": {
-                "schema":       { "$ref": "#/pScheduler/Cardinal" },
                 "host":         { "$ref": "#/pScheduler/Host" },
                 "host-node":    { "$ref": "#/pScheduler/Host" },
                 "dest":         { "$ref": "#/pScheduler/Host" },
@@ -51,9 +49,8 @@
         },
 
         "SNMPv3Spec": {
-            "type": "object",
             "properties": {
-                "schema":       { "$ref": "#/pScheduler/Cardinal" },
+                "schema":       { "type": "integer", "const": 1 },
                 "host":         { "$ref": "#/pScheduler/Host" },
                 "host-node":    { "$ref": "#/pScheduler/Host" },
                 "dest":         { "$ref": "#/pScheduler/Host" },
@@ -82,15 +79,7 @@
                 "polls"
             ],
             "additionalProperties": false
-        },
-
-        "SNMPSpec": {
-            "oneOf": [
-                { "$ref": "#/local/SNMPv1Spec" },
-                { "$ref": "#/local/SNMPv3Spec" }
-            ]
-        }
-        
+        }        
     },
 
     "#": "The zeroth element of this is always null since there is no version 0.",
@@ -98,7 +87,13 @@
         null,
 
 	{
-	    "$ref": "#/local/SNMPSpec"
+	    "properties": {
+		"schema": { "type": "integer", "const": 1 }
+	    },
+	    "oneOf": [
+		{ "$ref": "#/local/SNMPv1Spec" },
+                { "$ref": "#/local/SNMPv3Spec" }
+	    ]
 	}
     ]
 }

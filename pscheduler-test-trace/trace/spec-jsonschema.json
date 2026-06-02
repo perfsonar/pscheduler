@@ -66,6 +66,7 @@
                 "wait":        { "$ref": "#/pScheduler/Duration" }
             },
             "required": [
+		"schema",
                 "dest"
             ]
         }

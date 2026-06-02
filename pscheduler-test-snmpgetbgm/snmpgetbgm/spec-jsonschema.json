@@ -1,10 +1,6 @@
 {
     "#": "This gets merged into every version as #/local.",
     "local": {
-	"VersionNumber": {
-            "type": "string",
-            "enum": [ "1", "2c", "3"]
-        },
         "AuthProtocol": {
             "type": "string",
             "enum": [ "MD5", "SHA"]
@@ -24,11 +20,10 @@
         "SNMPv1Spec": {
             "type": "object",
             "properties": {
-                "schema":       { "$ref": "#/pScheduler/Cardinal" },
                 "host":         { "$ref": "#/pScheduler/Host" },
                 "host-node":    { "$ref": "#/pScheduler/Host" },
                 "dest":         { "$ref": "#/pScheduler/Host" },
-                "version":      { "$ref": "#/local/VersionNumber"},
+                "version":      { "type": "string", "enum": [ "1", "2c" ] },
                 "_community":   { "$ref": "#/pScheduler/String"},
                 "period":       { "$ref": "#/pScheduler/Integer" },
                 "polls":        { "$ref": "#/pScheduler/Integer" },
@@ -50,11 +45,10 @@
         "SNMPv3Spec": {
             "type": "object",
             "properties": {
-                "schema":       { "$ref": "#/pScheduler/Cardinal" },
                 "host":         { "$ref": "#/pScheduler/Host" },
                 "host-node":    { "$ref": "#/pScheduler/Host" },
                 "dest":         { "$ref": "#/pScheduler/Host" },
-                "version":      { "$ref": "#/local/VersionNumber"},
+                "version":      { "type": "string", "const": "3" },
                 "period":       { "$ref": "#/pScheduler/Integer" },
                 "polls":        { "$ref": "#/pScheduler/Integer" },
                 "oid":          { "type": "array", 
@@ -74,7 +68,9 @@
                 "version",
                 "dest",
                 "oid",
-                "polls"
+                "polls",
+		"auth-protocol",
+		"_auth-key"
             ]
         }
     },
@@ -84,11 +80,13 @@
         null,
 
 	{
+	    "properties": {
+		"schema": { "type": "integer", "const": 1 }
+	    },
 	    "oneOf": [
 		{ "$ref": "#/local/SNMPv1Spec" },
 		{ "$ref": "#/local/SNMPv3Spec" }
-            ],
-            "additionalProperties": false
+            ]
 	}
     ]
 }

@@ -33,7 +33,10 @@ if format == 'text/plain':
                 print('Sequence number: %s\t' % item['seq_num'])
             except KeyError:
                 pass
-            print('Timestamp: %s\t' % item['timestamp'])
+            try:
+                print('Timestamp: %s\t' % item['timestamp'])
+            except KeyError:
+                pass
             try:
                 print('Type: %s\t' % item['type'])
                 print('Value: %s\t' % item['value'])

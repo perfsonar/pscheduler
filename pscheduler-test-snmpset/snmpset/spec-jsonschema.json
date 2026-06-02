@@ -24,7 +24,6 @@
         "SNMPv1Spec": {
             "type": "object",
             "properties": {
-                "schema":       { "$ref": "#/pScheduler/Cardinal" },
                 "host":         { "$ref": "#/pScheduler/Host" },
                 "host-node":    { "$ref": "#/pScheduler/Host" },
                 "dest":         { "$ref": "#/pScheduler/Host" },
@@ -46,7 +45,6 @@
         "SNMPv3Spec": {
             "type": "object",
             "properties": {
-                "schema":       { "$ref": "#/pScheduler/Cardinal" },
                 "host":         { "$ref": "#/pScheduler/Host" },
                 "host-node":    { "$ref": "#/pScheduler/Host" },
                 "dest":         { "$ref": "#/pScheduler/Host" },
@@ -77,6 +75,9 @@
         null,
 
 	{
+	    "properties": {
+		"schema": { "type": "integer", "const": 1 }
+	    },
             "oneOf": [
 		{ "$ref": "#/local/SNMPv1Spec" },
 		{ "$ref": "#/local/SNMPv3Spec" }

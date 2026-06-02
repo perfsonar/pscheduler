@@ -9,7 +9,7 @@
 	{
             "type": "object",
             "properties": {
-		"schema":     { "$ref": "#/pScheduler/Cardinal" },
+		"schema":     { "type": "integer", "const": 1 },
 		"succeeded":  { "$ref": "#/pScheduler/Boolean" },
 		"error":      { "$ref": "#/pScheduler/String" },
 		"diags":      { "$ref": "#/pScheduler/String" },

@@ -28,7 +28,7 @@
 	{
             "type": "object",
             "properties": {
-		"schema": { "$ref": "#/pScheduler/Cardinal" },
+		"schema": { "type": "integer", "const": 1 },
 		"paths": {
                     "type": "array",
                     "items": { "$ref": "#/local/hoparray" }

@@ -1,0 +1,30 @@
+{
+    "result": {
+	"schema": 1,
+	"succeeded": true,
+	"time": "PT0.5S",
+	"data": [
+	    {
+		"type": "Integer",
+		"value": 123
+	    }
+	]
+    },
+    "spec": {
+	"schema": 1,
+	"dest": "example.net",
+	"version": "2c",
+	"oidargs": [
+	    {
+		"oid": "sysLocation.0",
+		"type": "s",
+		"value": "Ann Arbor"
+	    },
+	    {
+		"oid": "sysContact.0",
+		"type": "s", "value": "John"
+	    }
+	],
+	"_community": "public"
+    }
+}

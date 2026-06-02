@@ -19,7 +19,6 @@
                               }
             },
             "required": [
-		"schema",
 		"succeeded",
 		"data",
 		"time"
