@@ -21,7 +21,6 @@
 	"v2c": {
             "type": "object",
             "properties": {
-                "schema": { "$ref": "#/pScheduler/Cardinal" },
                 "dest": { "$ref": "#/pScheduler/String" },
                 "_community": { "$ref": "#/pScheduler/String" },
                 "trap-oid": { "$ref": "#/pScheduler/SNMPOID" },
@@ -47,7 +46,6 @@
         "v3": {
             "type": "object",
             "properties": {
-                "schema": { "$ref": "#/pScheduler/Cardinal" },
                 "dest": { "$ref": "#/pScheduler/String" },
                 "security-name":   { "$ref": "#/pScheduler/String" },
                 "auth-protocol":   { "$ref": "#/local/AuthProtocol" },
@@ -81,6 +79,9 @@
         null,
 
 	{
+	    "properties": {
+		"schema": { "type": "integer", "const": 1 }
+	    },
 	    "oneOf": [
 		{ "$ref": "#/local/v2c" },
 		{ "$ref": "#/local/v3" }
