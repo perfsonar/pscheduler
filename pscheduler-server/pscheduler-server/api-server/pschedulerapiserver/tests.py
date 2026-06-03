@@ -20,7 +20,8 @@ from .response import *
 @application.route("/tests", methods=['GET'])
 def tests():
     return json_query("SELECT json FROM test"
-                      " WHERE available ORDER BY name", [])
+                      " WHERE available ORDER BY name", [],
+                      sanitize=False)
 
 
 # Test <name>

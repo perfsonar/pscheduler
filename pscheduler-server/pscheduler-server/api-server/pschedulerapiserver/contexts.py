@@ -19,7 +19,8 @@ from .response import *
 # All contexts
 @application.route("/contexts", methods=['GET'])
 def contexts():
-    return json_query("SELECT json FROM context WHERE available ORDER BY NAME")
+    return json_query("SELECT json FROM context WHERE available ORDER BY NAME",
+                      sanitize=False)
 
 
 # Context <name>

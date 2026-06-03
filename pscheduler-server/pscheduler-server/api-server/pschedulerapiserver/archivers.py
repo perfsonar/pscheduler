@@ -20,7 +20,8 @@ from .response import *
 @application.route("/archivers", methods=['GET'])
 def archivers():
     return json_query("SELECT json FROM archiver"
-                      " WHERE available ORDER BY NAME")
+                      " WHERE available ORDER BY NAME",
+                      sanitize=False)
 
 
 # Archiver <name>
