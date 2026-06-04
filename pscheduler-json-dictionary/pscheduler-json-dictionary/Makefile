@@ -31,6 +31,7 @@ INTERNALS := \
 
 TESTS := ./tests
 test: $(JSON) $(TESTS)
+	jq 'empty' $(JSON)
 	./run-tests --prefix pScheduler "$(JSON)" "$(TESTS)"
 
 
