@@ -108,6 +108,11 @@ arg_deref_group.add_argument('--dereference', '-d',
 
 arg_output_group = arg_parser.add_argument_group('Output-Related Arguments')
 
+arg_output_group.add_argument('--annotations', '-n',
+                        help='Do special processing of annotations.  See the manual page.',
+                        action='store_true',
+                        dest='annotations', default=False)
+
 arg_output_group.add_argument('--pretty', '-p',
                         help='Format the output for humans',
                         action='store_true',
@@ -348,6 +353,30 @@ def dereference(data):
     return new_data
 
 
+# -----------------------------------------------------------------------------
+
+# Annotations
+
+def annotations(data):
+
+    if isinstance(data, dict):
+        if 'x-description-append' in data:
+            data['description'] = \
+                data.get('description','') \
+                + ('  ' if 'description' in data else '') \
+                + data['x-description-append']
+            del data['x-description-append']
+        return dict([ (key, annotations(value)) for key, value in data.items() ])
+
+    elif isinstance(data, list):
+        return [ annotations(item) for item in data ]
+
+    else:
+        return data
+
+    assert False, 'Should not be reached'
+
+
 
 # -----------------------------------------------------------------------------
 
@@ -415,6 +444,9 @@ for source in args.remaining:
 merged = merge(inputs)
 
 result = dereference(merged) if args.dereference else merged
+
+if args.annotations:
+    result = annotations(result)
 
 # Make output
 

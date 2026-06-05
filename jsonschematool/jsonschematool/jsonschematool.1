@@ -57,6 +57,17 @@ Leave unresolved references unchanged and don't complain about them.
 Resolve all references to their definitions
 
 .TP
+.BI --annotations
+When dereferencing, the contents of
+.B description
+will have the contents of the referenced item's
+.B x-description-append
+appended if present.  If not present, the referenced item's
+.B x-description-append
+will become the value of
+.B description.
+
+.TP
 .BI --pretty
 Format JSON output for human consumption
 
