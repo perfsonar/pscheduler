@@ -18,7 +18,7 @@
 	{
             "type": "object",
             "properties": {
-		"schema":       { "type": "integer", "const": 1 },
+		"schema":       { "$ref": "#/pScheduler/Schema", "const": 1 },
 		"host":         { "$ref": "#/pScheduler/Host" },
 		"host-node":    { "$ref": "#/pScheduler/Host" },
 		"url":          { "$ref": "#/pScheduler/URL" },
@@ -34,7 +34,7 @@
 	{
             "type": "object",
             "properties": {
-		"schema":       { "type": "integer", "const": 2 },
+		"schema":       { "$ref": "#/pScheduler/Schema", "const": 2 },
 		"host":         { "$ref": "#/pScheduler/Host" },
 		"host-node":    { "$ref": "#/pScheduler/Host" },
 		"url":          { "$ref": "#/pScheduler/URL" },
@@ -53,7 +53,7 @@
 	{
             "type": "object",
             "properties": {
-		"schema":         { "type": "integer", "const": 3 },
+		"schema":         { "$ref": "#/pScheduler/Schema", "const": 3 },
 		"host":           { "$ref": "#/pScheduler/Host" },
 		"host-node":      { "$ref": "#/pScheduler/Host" },
 		"ip-version":     { "$ref": "#/pScheduler/ip-version" },
@@ -73,7 +73,7 @@
 	{
             "type": "object",
             "properties": {
-		"schema":         { "type": "integer", "const": 4 },
+		"schema":         { "$ref": "#/pScheduler/Schema", "const": 4 },
 		"host":           { "$ref": "#/pScheduler/Host" },
 		"host-node":      { "$ref": "#/pScheduler/Host" },
 		"ip-version":     { "$ref": "#/pScheduler/ip-version" },

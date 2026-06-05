@@ -21,7 +21,7 @@
 	    "type": "object",
 
             "properties": {
-                "schema":             { "type": "integer", "const": 1 },
+                "schema":             { "$ref": "#/pScheduler/Schema", "const": 1 },
                 "_dsn":               { "$ref": "#/pScheduler/String" },
                 "table":              { "$ref": "#/local/PostgreSQLIdentifier" },
                 "column":             { "$ref": "#/local/PostgreSQLIdentifier" },

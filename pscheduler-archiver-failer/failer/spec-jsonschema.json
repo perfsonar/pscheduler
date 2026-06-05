@@ -9,7 +9,7 @@
 	{
             "type": "object",
             "properties": {
-                "schema": { "type": "integer", "const": 1 },
+                "schema": { "$ref": "#/pScheduler/Schema", "const": 1 },
                 "delay": { "$ref": "#/pScheduler/Duration" },
                 "fail": { "$ref": "#/pScheduler/Probability" },
                 "retry": { "$ref": "#/pScheduler/Probability" }
@@ -20,7 +20,7 @@
         {
             "type": "object",
             "properties": {
-                "schema": { "type": "integer", "const": 2 },
+                "schema": { "$ref": "#/pScheduler/Schema", "const": 2 },
                 "delay": { "$ref": "#/pScheduler/Duration" },
                 "fail": { "$ref": "#/pScheduler/Probability" },
                 "retry": { "$ref": "#/pScheduler/Probability" },

@@ -50,7 +50,6 @@
 
         "SNMPv3Spec": {
             "properties": {
-                "schema":       { "type": "integer", "const": 1 },
                 "host":         { "$ref": "#/pScheduler/Host" },
                 "host-node":    { "$ref": "#/pScheduler/Host" },
                 "dest":         { "$ref": "#/pScheduler/Host" },
@@ -88,7 +87,7 @@
 
 	{
 	    "properties": {
-		"schema": { "type": "integer", "const": 1 }
+		"schema": { "$ref": "#/pScheduler/Schema", "const": 1 }
 	    },
 	    "oneOf": [
 		{ "$ref": "#/local/SNMPv1Spec" },

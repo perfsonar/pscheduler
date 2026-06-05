@@ -9,7 +9,7 @@
         {
             "type": "object",
             "properties": {
-                "schema": { "type": "integer", "const": 1 },
+                "schema": { "$ref": "#/pScheduler/Schema", "const": 1 },
                 "_url": { "$ref": "#/pScheduler/URL" },
                 "op": {
                     "type": "string",
@@ -28,7 +28,7 @@
         {
             "type": "object",
             "properties": {
-                "schema": { "type": "integer", "const": 2 },
+                "schema": { "$ref": "#/pScheduler/Schema", "const": 2 },
                 "_url": { "$ref": "#/pScheduler/URL" },
                 "op": {
                     "type": "string",
@@ -54,7 +54,7 @@
         {
             "type": "object",
             "properties": {
-                "schema": { "type": "integer", "const": 3 },
+                "schema": { "$ref": "#/pScheduler/Schema", "const": 3 },
                 "_url": { "$ref": "#/pScheduler/URL" },
                 "op": {
                     "type": "string",
@@ -81,7 +81,7 @@
         {
             "type": "object",
             "properties": {
-                "schema": { "type": "integer", "const": 4 },
+                "schema": { "$ref": "#/pScheduler/Schema", "const": 4 },
                 "_url": { "$ref": "#/pScheduler/URL" },
                 "op": {
                     "type": "string",

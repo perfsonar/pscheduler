@@ -9,7 +9,7 @@
 	{
 	    "type": "object",
 	    "properties": {
-		"schema": { "type": "integer", "const": 1 },
+		"schema": { "$ref": "#/pScheduler/Schema", "const": 1 },
 		"namespace": {
 		    "type": "string",
 		    "#": "These have to be valid as filenames, and Linux is pretty",

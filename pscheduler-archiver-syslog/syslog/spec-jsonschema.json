@@ -9,7 +9,7 @@
 	{
 	    "type": "object",
 	    "properties": {
-		"schema": { "type": "integer", "const": 1 },
+		"schema": { "$ref": "#/pScheduler/Schema", "const": 1 },
 		"ident": { "$ref": "#/pScheduler/String" },
 		"facility": {
 		    "type": "string",

@@ -76,7 +76,7 @@
 
 	{
 	    "properties": {
-		"schema": { "type": "integer", "const": 1 }
+		"schema": { "$ref": "#/pScheduler/Schema", "const": 1 }
 	    },
             "oneOf": [
 		{ "$ref": "#/local/SNMPv1Spec" },

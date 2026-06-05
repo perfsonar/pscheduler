@@ -20,7 +20,7 @@
 	{
             "type": "object",
             "properties": {
-                "schema":         { "type": "integer", "const": 1 },
+                "schema":         { "$ref": "#/pScheduler/Schema", "const": 1 },
                 "network":        { "$ref": "#/local/HostOrCIDR" },
                 "source":         { "$ref": "#/pScheduler/Host" },
                 "services":       { "$ref": "#/pScheduler/Boolean" },

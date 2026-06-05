@@ -21,7 +21,7 @@
             "properties": {
                 "schema": {
                     "description": "The version of the schema",
-                    "type": "integer",
+                    "$ref": "#/pScheduler/Schema",
 		    "const": 1
                 },
                 "source": {
@@ -98,7 +98,7 @@
             "properties": {
                 "schema": {
                     "description": "The version of the schema",
-		    "type": "integer",
+		    "$ref": "#/pScheduler/Schema",
 		    "const": 2
                 },
                 "source": {

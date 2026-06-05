@@ -9,7 +9,7 @@
         {
             "type": "object",
             "properties": {
-                "schema":      { "type": "integer", "const": 1 },
+                "schema":      { "$ref": "#/pScheduler/Schema", "const": 1 },
                 "source":      { "$ref": "#/pScheduler/Host" },
                 "source-node": { "$ref": "#/pScheduler/Host" },
                 "dest":        { "$ref": "#/pScheduler/Host" },

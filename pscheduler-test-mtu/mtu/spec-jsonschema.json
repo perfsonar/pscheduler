@@ -10,7 +10,7 @@
             "type": "object",
             "properties": {
                 "schema": {
-		    "type": "integer",
+		    "$ref": "#/pScheduler/Schema",
 		    "const": 1,
 		    "title": "Schema Version",
 		    "description": "Schema version of the specification for this test"
@@ -50,7 +50,7 @@
             "type": "object",
             "properties": {
                 "schema": {
-		    "type": "integer",
+		    "$ref": "#/pScheduler/Schema",
 		    "const": 2,
 		    "title": "Schema Version",
 		    "description": "Schema version of the specification for this test"

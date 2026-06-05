@@ -9,7 +9,7 @@
         {
             "type": "object",
             "properties": {
-		"schema": { "type": "integer", "const": 1 },
+		"schema": { "$ref": "#/pScheduler/Schema", "const": 1 },
                 "bind": { "$ref": "#/pScheduler/Host" },
                 "host": { "$ref": "#/pScheduler/Host" },
                 "ip-version": { "$ref": "#/pScheduler/ip-version" },

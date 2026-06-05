@@ -9,7 +9,7 @@
         {
             "type": "object",
             "properties": {
-                "schema": { "type": "integer", "const": 1 },
+                "schema": { "$ref": "#/pScheduler/Schema", "const": 1 },
                 "topic": {"$ref": "#/pScheduler/String"},
                 "server": {"$ref": "#/pScheduler/String"}
             },
@@ -20,7 +20,7 @@
         {
             "type": "object",
             "properties": {
-                "schema": { "type": "integer", "const": 2 },
+                "schema": { "$ref": "#/pScheduler/Schema", "const": 2 },
                 "topic": {"$ref": "#/pScheduler/String"},
                 "server": {"$ref": "#/pScheduler/String"},
                 "archiver-id": {"$ref": "#/pScheduler/String"},
