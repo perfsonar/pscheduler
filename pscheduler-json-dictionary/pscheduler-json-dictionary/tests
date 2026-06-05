@@ -67,9 +67,6 @@ HostName	true	"quack.example.org"
 HostName	false	"quack.example!org"
 HostName	false	12.34
 
-HostNamePort	true	"quack.example.org:1234"
-HostNamePort	false	"quack.example.org:beef"
-
 Integer		true	52
 Integer		false	3.1415
 Integer		false	"NotAnInteger"

@@ -5,15 +5,45 @@
 
         "#": "JSON Types",
 
-        "AnyJSON": { },
+        "AnyJSON": {
+	    "x-description-append": "This can be any valid JSON.",
+	    "examples": [ { "foo": "bar" }, "perfSONAR", true, 97, null ],
+	    "x-invalid-message": "'%s' is not valid JSON.",
+	    "x-info": [
+		{
+		    "title": "JSON",
+		    "href": "https://www.json.org"
+		}
+	    ]
+	},
 
         "Array": { "type": "array" },
+
+	"ASNumber": {
+	    "type": "integer",
+	    "minimum": 1,
+	    "maximum": 4294967294,
+	    "x-description-append": "This can be any autonomous system numeber in [0..4294967294].",
+	    "examples": [ 64500, 4200000000 ],
+	    "x-invalid-message": "'%s' is not a valid AS number.",
+	    "x-info": [
+		{
+		    "title": "Autonomous System Numbers",
+		    "href": "https://www.iana.org/assignments/as-numbers/as-numbers.xhtml"
+		}
+	    ]
+	},
 
         "AS": {
             "type": "object",
             "properties": {
-                "number": { "$ref": "#/pScheduler/Cardinal" },
-                "owner": { "type": "string" }
+                "number": {
+		    "$ref": "#/pScheduler/ASNumber"
+		},
+                "owner": {
+		    "type": "string",		    
+		    "description": "The owner of the AS"
+		}
             },
             "additionalProperties": false,
             "required": [ "number" ]
@@ -23,7 +53,10 @@
 
         "Cardinal": {
             "type": "integer",
-            "minimum": 1
+            "minimum": 1,
+	    "x-description-append": "Any positive integer is valid.",
+	    "examples": [ 1 ],
+	    "x-invalid-message": "'%s' is not a positive integer."
         },
 
         "CardinalList": {
@@ -31,16 +64,12 @@
             "items": { "$ref": "#/pScheduler/Cardinal" }
         },
 
-	"#": "This is any cardinal number reperesented as a string",
-	"CardinalString": {
-            "type": "string",
-	    "pattern": "^[1-9]\\d*$"
-        },
-
-
         "CardinalZero": {
             "type": "integer",
-            "minimum": 0
+            "minimum": 0,
+	    "x-description-append": "Zero or any positive integer is valid.",
+	    "examples": [ 1 ],
+	    "x-invalid-message": "This must be zero or any positive integer."
         },
 
         "CardinalZeroList": {
@@ -67,20 +96,48 @@
             "#": "Modified not to accept repeats (e.g., R5PT1M), which we don't support.",
             "#": "Modified not to accept months or years, which are inexact.",
             "pattern": "^P(?:\\d+(?:\\.\\d+)?W)?(?:\\d+(?:\\.\\d+)?D)?(?:T(?:\\d+(?:\\.\\d+)?H)?(?:\\d+(?:\\.\\d+)?M)?(?:\\d+(?:\\.\\d+)?S)?)?$",
-            "x-invalid-message": "'%s' is not a valid ISO 8601 duration."
+	    "title": "Duration",
+	    "x-description-append": "This can be any valid ISO 8601 duration not involving months or years, which are inexact.",
+	    "examples": [ "PT10S", "PT45.67S", "PT1H30M" ],
+            "x-invalid-message": "'%s' is not a valid ISO 8601 duration.",
+	    "x-info": [
+		{
+		    "title": "ISO 8601 Durations",
+		    "href": "https://en.wikipedia.org/wiki/ISO_8601#Durations"
+		}
+	    ]
         },
 
-        "Email": { "type": "string", "format": "email" },
+        "Email": {
+	    "type": "string",
+	    "format": "email",
+	    "x-description-append": "This can be any valid email address.",
+	    "examples": [ "alice@example.com" ],
+	    "x-invalid-message": "'%s' is not a valid email address."
+	},
 
         "Float": {
-            "type": "number"
+            "type": "number",
+	    "x-description-append": "This can be any floating-point number.",
+	    "examples": [ 3.1415, 6.022e23, 86 ],
+	    "x-invalid-message": "'%s' is not a valid floating-point number."
         },
 
         "GeographicPosition": {
             "type": "string",
             "#": "ISO 6709",
             "#": "Source:  https://svn.apache.org/repos/asf/abdera/abdera2/common/src/main/java/org/apache/abdera2/common/geo/IsoPosition.java",
-            "pattern": "^(([+-]\\d{2})(\\d{2})?(\\d{2})?(\\.\\d+)?)(([+-]\\d{3})(\\d{2})?(\\d{2})?(\\.\\d+)?)([+-]\\d+(\\.\\d+)?)?$"
+            "pattern": "^(([+-]\\d{2})(\\d{2})?(\\d{2})?(\\.\\d+)?)(([+-]\\d{3})(\\d{2})?(\\d{2})?(\\.\\d+)?)([+-]\\d+(\\.\\d+)?)?$",
+	    "x-description-append": "This can be any ISO 6709 geographic position.",
+	    "#": "These coordinates are the boardwalk at Rehoboth Beach, Delaware, USA.",
+	    "examples": [ "+38.7166753292509-75.07609107912923" ],
+	    "x-invalid-message": "'%s' is not a valid ISO 6709 geographic position.",
+	    "x-info": [
+		{
+		    "title": "ISO 6709",
+		    "href": "https://en.wikipedia.org/wiki/ISO_6709"
+		}
+	    ]
         },
 
         "Host": {
@@ -98,16 +155,18 @@
             "#": "This is derived from the pattern in the JSONSchema module",
             "#": "but allows the first element to begin with an underscore.",
             "#": "See #1514.",
-            "pattern": "^[A-Za-z0-9_][A-Za-z0-9\\-]{0,62}(\\.[A-Za-z0-9][A-Za-z0-9\\-]{0,62})*\\.?$"
+            "pattern": "^[A-Za-z0-9_][A-Za-z0-9\\-]{0,62}(\\.[A-Za-z0-9][A-Za-z0-9\\-]{0,62})*\\.?$",
+	    "examples": [ "host.example.edu" ],
+	    "x-description-append": "Any hostname as described in RFCs 952, 1123 or 2181 is valid.",
+	    "x-invalid-message": "'%s' is not a valid hostname."
         },
 
-        "HostNamePort": {
-            "#": "Note that this will cover valid IPv4 addresses, too.",
-            "type": "string",
-            "pattern": "^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\\-]*[a-zA-Z0-9])\\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\\-]*[A-Za-z0-9])(:[0-9]+)?$"
-        },
-
-        "Integer": { "type": "integer" },
+        "Integer": {
+	    "type": "integer",
+	    "examples": [ 5 ],
+	    "x-description-append": "Any integer is valid.",
+	    "x-invalid-message": "'%s' is not a valid integer."
+	},
 
         "IPAddress": {
             "#": "#1526: Need a single regex",
@@ -221,7 +280,17 @@
         "IPTOS": {
             "type": "integer",
             "minimum": 0,
-            "maximum": 255
+            "maximum": 255,
+	    "title": "TOS",
+	    "description": "IP type of service.",
+	    "examples": [ 0, 42 ],
+	    "x-description-append": "Any value in [0..255] is valid.",
+	    "x-info": [
+		{
+		    "title": "RFC 1349",
+		    "href": "https://datatracker.ietf.org/doc/html/rfc1349"
+		}
+	    ]
         },
 
         "JQTransformSpecification": {
@@ -240,20 +309,32 @@
             "required": [ "script" ]
         },
 
-        "Number": { "type": "number" },
+        "Number": {
+	    "type": "number",
+	    "x-description-append": "Any number is valid."
+	},
 
         "POSIXCronSpecification": {
             "type": "string",
             "#": "POSIX-standard spec.  This was generated by",
             "#": "scripts/posix-cron-regex; see that for commentary.",
             "pattern": "^(\\*|((([0-5]?\\d)|(([0-5]?\\d)-([0-5]?\\d)))(,(([0-5]?\\d)|(([0-5]?\\d)-([0-5]?\\d))))*))\\s+(\\*|(((([01]?\\d)|2[0-3])|((([01]?\\d)|2[0-3])-(([01]?\\d)|2[0-3])))(,((([01]?\\d)|2[0-3])|((([01]?\\d)|2[0-3])-(([01]?\\d)|2[0-3]))))*))\\s+(\\*|((((0?[1-9])|([12]\\d)|(3[01]))|(((0?[1-9])|([12]\\d)|(3[01]))-((0?[1-9])|([12]\\d)|(3[01]))))(,(((0?[1-9])|([12]\\d)|(3[01]))|(((0?[1-9])|([12]\\d)|(3[01]))-((0?[1-9])|([12]\\d)|(3[01])))))*))\\s+(\\*|((((0?[1-9])|(1[0-2]))|(((0?[1-9])|(1[0-2]))-((0?[1-9])|(1[0-2]))))(,(((0?[1-9])|(1[0-2]))|(((0?[1-9])|(1[0-2]))-((0?[1-9])|(1[0-2])))))*))\\s+(\\*|(([0-6]|([0-6]-[0-6]))(,([0-6]|([0-6]-[0-6])))*))$",
-            "x-invalid-message": "'%s' is not a valid cron specification."
+            "x-invalid-message": "'%s' is not a valid cron specification.",
+	    "x-description-append": "Any POSIX crontab specification is valid.",
+	    "x-info": [
+		{
+		    "title": "Cron",
+		    "href": "https://en.wikipedia.org/wiki/Cron#Overview"
+		}
+	    ]
         },
 
         "Probability": {
             "type": "number",
             "minimum": 0.0,
-            "maximum": 1.0
+            "maximum": 1.0,
+	    "x-invalid-message": "Value must be in [0.0..1.0].",
+	    "x-description-append": "Any value in [0.0..1.0] is valid."
         },
 
         "RetryPolicy": {
@@ -264,14 +345,26 @@
         "RetryPolicyEntry": {
             "type": "object",
             "properties": {
-                "attempts": {"$ref": "#/pScheduler/Cardinal" },
+                "attempts": { "$ref": "#/pScheduler/Cardinal" }, 
                 "wait": {"$ref": "#/pScheduler/Duration" }
             },
             "additionalProperties": false,
             "required": [ "attempts", "wait" ]
         },
 
-        "String": { "type": "string" },
+	"Schema": {
+	    "type": "integer",
+	    "minimum": 1,
+	    "title": "Schema",
+	    "description": "Schema version.",
+	    "x-description-append": "This can be any positive integer.",
+	    "x-invalid-message": "'%s' is not a valid schema number."
+	},
+
+        "String": {
+	    "type": "string",
+	    "x-description-append": "Any string is valid."
+	},
 
         "StringList": {
             "type": "array",
