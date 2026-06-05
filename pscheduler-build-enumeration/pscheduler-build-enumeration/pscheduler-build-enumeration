@@ -133,7 +133,7 @@ validator()
     jq --arg name "${INPUT}" '
       [ to_entries[]
         | select(.key > 0)
-        | select( (.value.properties.schema.type != "integer")
+        | select( ( (.value.properties.schema.type != "integer") and (.value.properties.schema."$ref" != "#/pScheduler/Schema") )
                   or (.value.properties.schema.const != .key)
                 )
         | .key
@@ -190,7 +190,7 @@ validator()
 
     # Dereferenced validator
     VALIDATOR_DEREF="${TMPBASE}/validator-deref"
-    jsonschematool --pretty --dereference "${PS_DICT_FULL}" "${VALIDATOR}" > "${VALIDATOR_DEREF}" \
+    jsonschematool --pretty --dereference --annotations "${PS_DICT_FULL}" "${VALIDATOR}" > "${VALIDATOR_DEREF}" \
 	|| die "Unable to process ${INPUT}"
 
     # Ibid, turned into an array
