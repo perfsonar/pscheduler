@@ -14,7 +14,8 @@
 		    "const": 1
 		},
 		"duration": {
-		    "$ref": "#/pScheduler/Duration"
+		    "$ref": "#/pScheduler/Duration",
+		    "description": "How long to be idle."
 		},
 		"host": {
 		    "$ref": "#/pScheduler/Host",

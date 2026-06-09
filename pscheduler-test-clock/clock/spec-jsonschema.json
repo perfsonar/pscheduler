@@ -9,10 +9,26 @@
 	{
             "type": "object",
             "properties": {
-		"schema":            { "$ref": "#/pScheduler/Schema", "const": 1 },
-		"dest":              { "$ref": "#/pScheduler/URLHostPort" },
-		"source":            { "$ref": "#/pScheduler/URLHostPort" },
-		"timeout":           { "$ref": "#/pScheduler/Duration" }
+
+		"schema": {
+		    "$ref": "#/pScheduler/Schema",
+		    "const": 1
+		},
+		"dest": {
+		    "$ref": "#/pScheduler/URLHostPort",
+		    "title": "Destination",
+		    "description": "Destination pScheduler host."
+		},
+		"source": {
+		    "$ref": "#/pScheduler/URLHostPort",
+		    "title": "Source",
+		    "description": "Source pScheduler host."
+		},
+		"timeout": {
+		    "$ref": "#/pScheduler/Duration",
+		    "title": "Timeout",
+		    "description": "Timeout for clock state request."
+		}
             },
             "required": [
 		"dest"
@@ -23,11 +39,32 @@
 	{
             "type": "object",
             "properties": {
-		"schema":            { "$ref": "#/pScheduler/Schema", "const": 2 },
-		"dest":              { "$ref": "#/pScheduler/URLHostPort" },
-		"source":            { "$ref": "#/pScheduler/URLHostPort" },
-		"source-node":       { "$ref": "#/pScheduler/URLHostPort" },
-		"timeout":           { "$ref": "#/pScheduler/Duration" }
+
+		"schema": {
+		    "$ref": "#/pScheduler/Schema",
+		    "const": 2
+		},
+		"dest": {
+		    "$ref": "#/pScheduler/URLHostPort",
+		    "title": "Destination",
+		    "description": "Destination pScheduler host."
+		},
+		"source": {
+		    "$ref": "#/pScheduler/URLHostPort",
+		    "title": "Source",
+		    "description": "Source pScheduler host."
+		},
+		"source-node": {
+		    "$ref": "#/pScheduler/URLHostPort",
+		    "title": "Source Node",
+		    "description": "Source pScheduler host, if different."
+
+		},
+		"timeout": {
+		    "$ref": "#/pScheduler/Duration",
+                    "title": "Timeout",
+                    "description": "Timeout for clock state request."
+		}
             },
             "required": [
 		"schema",
