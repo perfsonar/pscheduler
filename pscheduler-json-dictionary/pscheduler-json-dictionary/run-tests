@@ -108,4 +108,6 @@ with open(args.TESTS) as tests:
             errors = True
 
 
+# TODO: Make sure all 'examples' values validate against their type.
+
 exit(1 if errors else 0)

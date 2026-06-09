@@ -41,7 +41,7 @@
 		    "$ref": "#/pScheduler/ASNumber"
 		},
                 "owner": {
-		    "type": "string",		    
+		    "$ref": "#/pScheduler/String",
 		    "description": "The owner of the AS"
 		}
             },
@@ -55,7 +55,7 @@
             "type": "integer",
             "minimum": 1,
 	    "x-description-append": "Any positive integer is valid.",
-	    "examples": [ 1 ],
+	    "examples": [ 5, 2, 19 ],
 	    "x-invalid-message": "'%s' is not a positive integer."
         },
 
@@ -68,7 +68,7 @@
             "type": "integer",
             "minimum": 0,
 	    "x-description-append": "Zero or any positive integer is valid.",
-	    "examples": [ 1 ],
+	    "examples": [ 0, 1, 5, 19 ],
 	    "x-invalid-message": "This must be zero or any positive integer."
         },
 
@@ -98,7 +98,7 @@
             "pattern": "^P(?:\\d+(?:\\.\\d+)?W)?(?:\\d+(?:\\.\\d+)?D)?(?:T(?:\\d+(?:\\.\\d+)?H)?(?:\\d+(?:\\.\\d+)?M)?(?:\\d+(?:\\.\\d+)?S)?)?$",
 	    "title": "Duration",
 	    "x-description-append": "This can be any valid ISO 8601 duration not involving months or years, which are inexact.",
-	    "examples": [ "PT10S", "PT45.67S", "PT1H30M" ],
+	    "examples": [ "PT10S", "PT45.67S", "PT1H30M", "P1D", "P2D3H37M" ],
             "x-invalid-message": "'%s' is not a valid ISO 8601 duration.",
 	    "x-info": [
 		{
@@ -112,7 +112,7 @@
 	    "type": "string",
 	    "format": "email",
 	    "x-description-append": "This can be any valid email address.",
-	    "examples": [ "alice@example.com" ],
+	    "examples": [ "alice@example.com", "bob@example.net", "charlie@example.edu" ],
 	    "x-invalid-message": "'%s' is not a valid email address."
 	},
 
@@ -141,11 +141,15 @@
         },
 
         "Host": {
-            "#": "#1526: Need a single regex",
-            "anyOf": [
+	    "#1526 WAS anyOf": [
                 { "$ref": "#/pScheduler/HostName" },
                 { "$ref": "#/pScheduler/IPAddress" }
-            ]
+	    ],
+	    "type": "string",
+	    "pattern": "(^[A-Za-z0-9_][A-Za-z0-9\\-]{0,62}(\\.[A-Za-z0-9][A-Za-z0-9\\-]{0,62})*\\.?$)|(^((25[0-5]|(2[0-4]|1\\d|[1-9]|)\\d)\\.?\\b){4}$)|(^((?:[0-9A-Fa-f]{1,4}:){7}[0-9A-Fa-f]{1,4}|(?:[0-9A-Fa-f]{1,4}:){1,7}:|:(?::[0-9A-Fa-f]{1,4}){1,7}|(?:[0-9A-Fa-f]{1,4}:){1,6}:[0-9A-Fa-f]{1,4}|(?:[0-9A-Fa-f]{1,4}:){1,5}(?::[0-9A-Fa-f]{1,4}){1,2}|(?:[0-9A-Fa-f]{1,4}:){1,4}(?::[0-9A-Fa-f]{1,4}){1,3}|(?:[0-9A-Fa-f]{1,4}:){1,3}(?::[0-9A-Fa-f]{1,4}){1,4}|(?:[0-9A-Fa-f]{1,4}:){1,2}(?::[0-9A-Fa-f]{1,4}){1,5}|[0-9A-Fa-f]{1,4}:(?:(?::[0-9A-Fa-f]{1,4}){1,6})|:(?:(?::[0-9A-Fa-f]{1,4}){1,6}))$)",
+	    "x-description-append": "Any hostname, FQDN, IPv4 address or IPv6 address is valid.",
+	    "x-invalid-message": "Invalid host name.",
+	    "examples": [ "host.example.net", "198.51.100.45", "2001:db8::c0de" ]
         },
 
         "HostName": {
@@ -156,29 +160,60 @@
             "#": "but allows the first element to begin with an underscore.",
             "#": "See #1514.",
             "pattern": "^[A-Za-z0-9_][A-Za-z0-9\\-]{0,62}(\\.[A-Za-z0-9][A-Za-z0-9\\-]{0,62})*\\.?$",
-	    "examples": [ "host.example.edu" ],
+	    "examples": [ "host.example.net" ],
 	    "x-description-append": "Any hostname as described in RFCs 952, 1123 or 2181 is valid.",
-	    "x-invalid-message": "'%s' is not a valid hostname."
+	    "x-invalid-message": "'%s' is not a valid hostname.",
+	    "x-info": [
+		{
+		    "title": "RFC 952",
+		    "href": "https://datatracker.ietf.org/doc/html/rfc952"
+		},
+		{
+		    "title": "RFC 1123",
+		    "href": "https://datatracker.ietf.org/doc/html/rfc1123"
+		},
+		{
+		    "title": "RFC 2181",
+		    "href": "https://datatracker.ietf.org/doc/html/rfc2181"
+		}
+	    ]
         },
 
         "Integer": {
 	    "type": "integer",
-	    "examples": [ 5 ],
+	    "examples": [ 5, -17, 0 ],
 	    "x-description-append": "Any integer is valid.",
 	    "x-invalid-message": "'%s' is not a valid integer."
 	},
 
         "IPAddress": {
-            "#": "#1526: Need a single regex",
-            "oneOf": [
+            "#1526 WAS: oneOf": [
                 { "type": "string", "format": "ipv4" },
                 { "type": "string", "format": "ipv6" }
-            ]
+            ],
+	    "type": "string",
+	    "#": "Source: https://www.ditig.com/validating-ipv4-and-ipv6-addresses-with-regexp",
+            "pattern": "(^((25[0-5]|(2[0-4]|1\\d|[1-9]|)\\d)\\.?\\b){4}$)|(^((?:[0-9A-Fa-f]{1,4}:){7}[0-9A-Fa-f]{1,4}|(?:[0-9A-Fa-f]{1,4}:){1,7}:|:(?::[0-9A-Fa-f]{1,4}){1,7}|(?:[0-9A-Fa-f]{1,4}:){1,6}:[0-9A-Fa-f]{1,4}|(?:[0-9A-Fa-f]{1,4}:){1,5}(?::[0-9A-Fa-f]{1,4}){1,2}|(?:[0-9A-Fa-f]{1,4}:){1,4}(?::[0-9A-Fa-f]{1,4}){1,3}|(?:[0-9A-Fa-f]{1,4}:){1,3}(?::[0-9A-Fa-f]{1,4}){1,4}|(?:[0-9A-Fa-f]{1,4}:){1,2}(?::[0-9A-Fa-f]{1,4}){1,5}|[0-9A-Fa-f]{1,4}:(?:(?::[0-9A-Fa-f]{1,4}){1,6})|:(?:(?::[0-9A-Fa-f]{1,4}){1,6}))$)",
+	    "x-description-append": "Any IPv4 or IPv6 address is valid.",
+	    "x-invalid-message": "Invalid IPv4 or IPv6 address",
+	    "examples": [ "198.51.100.45", "2001:db8::bead:cafe" ]
         },
 
-        "IPv4": { "type": "string", "format": "ipv4" },
+        "IPv4": {
+	    "type": "string",
+	    "format": "ipv4",
+	    "x-description-append": "Any IPv4 address is valid.",
+	    "x-invalid-message": "Invalid IPv4 address.",
+	    "examples": [ "198.51.100.45", "192.0.2.68", "203.0.113.99" ]
+	},
 
-        "IPv6": { "type": "string", "format": "ipv6" },
+        "IPv6": {
+	    "type": "string",
+	    "format": "ipv6",
+	    "x-description-append": "Any IPv6 address is valid.",
+	    "x-invalid-message": "Invalid IPv6 address.",
+	    "examples": [ "2001:db8::beef:cafe", "3fff:0123:4567:89ab:cdef:0000:1b4d:c0de" ]
+	},
 
         "IPv6RFC2732": {
             "#": "IPv6 address with optional port, formatted per RFC 2732",
@@ -345,8 +380,17 @@
         "RetryPolicyEntry": {
             "type": "object",
             "properties": {
-                "attempts": { "$ref": "#/pScheduler/Cardinal" }, 
-                "wait": {"$ref": "#/pScheduler/Duration" }
+                "attempts": {
+		    "$ref": "#/pScheduler/Cardinal",
+		    "title": "Attempts",
+		    "description": "How many times to try.",
+		    "examples": [ "5" ]
+		}, 
+                "wait": {
+		    "$ref": "#/pScheduler/Duration",
+		    "title": "Wait",
+		    "description": "How long to wait between tries."
+		}
             },
             "additionalProperties": false,
             "required": [ "attempts", "wait" ]
@@ -363,7 +407,8 @@
 
         "String": {
 	    "type": "string",
-	    "x-description-append": "Any string is valid."
+	    "x-description-append": "Any string is valid.",
+	    "examples": [ "xyzzy", "foo", "bar", "baz" ]
 	},
 
         "StringList": {
@@ -400,7 +445,9 @@
         "Timestamp": {
             "type": "string",
             "#": "ISO 8601.  Source: https://gist.github.com/philipashlock/8830168",
-            "pattern": "^([\\+-]?\\d{4}(?!\\d{2}\\b))((-?)((0[1-9]|1[0-2])(\\3([12]\\d|0[1-9]|3[01]))?|W([0-4]\\d|5[0-2])(-?[1-7])?|(00[1-9]|0[1-9]\\d|[12]\\d{2}|3([0-5]\\d|6[1-6])))([T\\s]((([01]\\d|2[0-3])((:?)[0-5]\\d)?|24\\:?00)([\\.,]\\d+(?!:))?)?(\\17[0-5]\\d([\\.,]\\d+)?)?([zZ]|([\\+-])([01]\\d|2[0-3]):?([0-5]\\d)?)?)?)?$"
+            "pattern": "^([\\+-]?\\d{4}(?!\\d{2}\\b))((-?)((0[1-9]|1[0-2])(\\3([12]\\d|0[1-9]|3[01]))?|W([0-4]\\d|5[0-2])(-?[1-7])?|(00[1-9]|0[1-9]\\d|[12]\\d{2}|3([0-5]\\d|6[1-6])))([T\\s]((([01]\\d|2[0-3])((:?)[0-5]\\d)?|24\\:?00)([\\.,]\\d+(?!:))?)?(\\17[0-5]\\d([\\.,]\\d+)?)?([zZ]|([\\+-])([01]\\d|2[0-3]):?([0-5]\\d)?)?)?)?$",
+	    "x-description-append": "Any ISO 8601 timestamp is valid.",
+	    "examples": [ "2050-05-04T12:34:56-05:00" ]
         },
 
         "TimestampAbsoluteRelative": {
@@ -415,10 +462,25 @@
             ],
 
             "type": "string",
-            "pattern": "(^([\\+-]?\\d{4}(?!\\d{2}\\b))((-?)((0[1-9]|1[0-2])(\\4([12]\\d|0[1-9]|3[01]))?|W([0-4]\\d|5[0-2])(-?[1-7])?|(00[1-9]|0[1-9]\\d|[12]\\d{2}|3([0-5]\\d|6[1-6])))([T\\s]((([01]\\d|2[0-3])((:?)[0-5]\\d)?|24\\:?00)([\\.,]\\d+(?!:))?)?(\\18[0-5]\\d([\\.,]\\d+)?)?([zZ]|([\\+-])([01]\\d|2[0-3]):?([0-5]\\d)?)?)?)?$)|(^[\\+-@]?P(?:\\d+(?:\\.\\d+)?W)?(?:\\d+(?:\\.\\d+)?D)?(?:T(?:\\d+(?:\\.\\d+)?H)?(?:\\d+(?:\\.\\d+)?M)?(?:\\d+(?:\\.\\d+)?S)?)?$)"
+            "pattern": "(^([\\+-]?\\d{4}(?!\\d{2}\\b))((-?)((0[1-9]|1[0-2])(\\4([12]\\d|0[1-9]|3[01]))?|W([0-4]\\d|5[0-2])(-?[1-7])?|(00[1-9]|0[1-9]\\d|[12]\\d{2}|3([0-5]\\d|6[1-6])))([T\\s]((([01]\\d|2[0-3])((:?)[0-5]\\d)?|24\\:?00)([\\.,]\\d+(?!:))?)?(\\18[0-5]\\d([\\.,]\\d+)?)?([zZ]|([\\+-])([01]\\d|2[0-3]):?([0-5]\\d)?)?)?)?$)|(^[\\+-@]?P(?:\\d+(?:\\.\\d+)?W)?(?:\\d+(?:\\.\\d+)?D)?(?:T(?:\\d+(?:\\.\\d+)?H)?(?:\\d+(?:\\.\\d+)?M)?(?:\\d+(?:\\.\\d+)?S)?)?$)",
+	    "x-description-append": "Any absolute timestamp (\"2050-05-04T12:34:56-05:00\") or relative duration (\"-PT3H\") is valid.",
+	    "x-invalid-message": "'%s' is not a valid absolute or relative timestamp"
         },
 
-        "URL": { "type": "string", "format": "uri" },
+        "URL": {
+	    "type": "string",
+	    "format": "uri",
+	    "x-description-append": "Any uniform resource identifier (URI) is valid.",
+	    "examples": [ "https://www.example.org" ],
+	    "x-invalid-message": "'%s' is not a valid URI.",
+	    "x-info": [
+		{
+		    "title": "Uniform Resource Identifiers",
+		    "href": "https://datatracker.ietf.org/doc/html/rfc3986"
+		}
+
+	    ]
+	},
 
         "URLHostPort": {
             "#": "Any valid host/port pair as found in a URI per RFC 2396",
@@ -427,17 +489,39 @@
                 { "$ref": "#/pScheduler/IPv6RFC2732" }
             ],
             "type": "string",
-            "pattern": "(^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\\-]*[a-zA-Z0-9])\\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\\-]*[A-Za-z0-9])(:[0-9]+)?$)|(^\\[(([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|:((:[0-9a-fA-F]{1,4}){1,7}|:)|fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|::(ffff(:0{1,4}){0,1}:){0,1}((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])|([0-9a-fA-F]{1,4}:){1,4}:((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]))\\](:[0-9]+)?$)"
+            "pattern": "(^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\\-]*[a-zA-Z0-9])\\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\\-]*[A-Za-z0-9])(:[0-9]+)?$)|(^\\[(([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|:((:[0-9a-fA-F]{1,4}){1,7}|:)|fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|::(ffff(:0{1,4}){0,1}:){0,1}((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])|([0-9a-fA-F]{1,4}:){1,4}:((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]))\\](:[0-9]+)?$)",
+	    "x-description-append": "Any host:port is valid.",
+	    "examples": [ "www.example.org:20165" ],
+	    "x-invalid-message": "'%s' is not a valid host:port.",
+	    "x-info": [
+		{
+		    "title": "RFC 3896 - Authority",
+		    "href": "https://datatracker.ietf.org/doc/html/rfc3986#section-3.2"
+		}
+
+	    ]
         },
 
         "UUID": {
             "type": "string",
-            "pattern": "^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}$"
+            "pattern": "^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}$",
+	    "x-description-append": "Any UUID is valid.",
+	    "x-invalid-message": "'%s' is not a valid UUID.",
+	    "examples": [ "01234567-89ab-cdef-0123-456789abcdef" ],
+	    "x-info": [
+		{
+		    "title": "Universally-Unique Identifiers",
+		    "href": "https://datatracker.ietf.org/doc/html/rfc9562"
+		}
+	    ]
         },
 
         "Version": {
             "type": "string",
-            "pattern": "^[0-9]+(\\.[0-9]+)*[A-Za-z0-9-+]*$"
+            "pattern": "^[0-9]+(\\.[0-9]+)*[A-Za-z0-9-+]*$",
+	    "x-description-append": "Any dotted version number plus arbitrary alphanumerics, hyphens or plusses is valid.",
+            "x-invalid-message": "'%s' is not a valid version number.",
+            "examples": [ "1.2.3", "1.2", "1.7beta", "2.8-a7" ]
         },
 
         "#": "Compound Types",
@@ -647,7 +731,7 @@
         },
 
         "SNMPOID": {
-            "# #1526: WAS: anyOf": [
+            "#1526: WAS: anyOf": [
                 { "$ref": "#/pScheduler/SNMPNumericOID" },
                 { "$ref": "#/pScheduler/SNMPAlphaNumOID"}
             ],

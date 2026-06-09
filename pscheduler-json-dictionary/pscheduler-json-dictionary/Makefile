@@ -7,12 +7,22 @@ NAME := json-dictionary
 default: build
 
 JSON := $(NAME).json
+
+COMPACTED := $(NAME)-compacted.json
+TO_CLEAN += $(COMPACTED)
+
 PICKLED := $(NAME).pickled
 TO_CLEAN += $(PICKLED)
 
 
+%-compacted.json: %.json
+	jq --compact-output \
+		'walk(if type == "object" then with_entries(select(.key | test("^#") | not)) else . end)' \
+		"$<" > "$@"
+
+
 PICKLER := ./pickle-json
-%.pickled: %.json $(PICKLER)
+%.pickled: %-compacted.json $(PICKLER)
 	$(PICKLER) < $< > $@
 
 json-dictionary: json-dictionary.raw
@@ -35,10 +45,10 @@ test: $(JSON) $(TESTS)
 	./run-tests --prefix pScheduler "$(JSON)" "$(TESTS)"
 
 
-build: test $(PICKLED) $(INTERNALS)
+build: test $(COMPACTED) $(PICKLED) $(INTERNALS)
 
 
-
+INSTALLED_DICTIONARY := $(INSTALLED_DATADIR)/$(JSON)
 install: build
 ifndef INTERNALSDIR
 	@echo No INTERNALSDIR specified for installation
@@ -51,7 +61,7 @@ endif
 	mkdir -p $(INTERNALSDIR)
 	install -m 555 $(INTERNALS) $(INTERNALSDIR)
 	mkdir -p $(INSTALLED_DATADIR)
-	install -m 444 $(JSON) $(INSTALLED_DATADIR)
+	install -m 444 $(COMPACTED) "$(INSTALLED_DATADIR)/$(JSON)"
 	install -m 444 $(PICKLED) $(INSTALLED_DATADIR)
 
 
