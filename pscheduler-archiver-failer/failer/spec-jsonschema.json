@@ -10,9 +10,21 @@
             "type": "object",
             "properties": {
                 "schema": { "$ref": "#/pScheduler/Schema", "const": 1 },
-                "delay": { "$ref": "#/pScheduler/Duration" },
-                "fail": { "$ref": "#/pScheduler/Probability" },
-                "retry": { "$ref": "#/pScheduler/Probability" }
+                "delay": {
+		    "$ref": "#/pScheduler/Duration",
+		    "title": "Delay",
+		    "description": "How long to delay before completing."
+		},
+                "fail": {
+		    "$ref": "#/pScheduler/Probability",
+		    "title": "Fail",
+		    "description": "Probability that any attempt will fail."
+		},
+                "retry": {
+		    "$ref": "#/pScheduler/Probability",
+		    "title": "Retry",
+		    "description": "Probability that a retry will be requested after a failure."
+		}
             },
             "additionalProperties": false
         },
@@ -21,10 +33,26 @@
             "type": "object",
             "properties": {
                 "schema": { "$ref": "#/pScheduler/Schema", "const": 2 },
-                "delay": { "$ref": "#/pScheduler/Duration" },
-                "fail": { "$ref": "#/pScheduler/Probability" },
-                "retry": { "$ref": "#/pScheduler/Probability" },
-                "badly": { "$ref": "#/pScheduler/Boolean" }
+		"delay": {
+		    "$ref": "#/pScheduler/Duration",
+		    "title": "Delay",
+		    "description": "How long to delay before completing."
+		},
+                "fail": {
+		    "$ref": "#/pScheduler/Probability",
+		    "title": "Fail",
+		    "description": "Probability that any attempt will fail."
+		},
+		"badly": {
+		    "$ref": "#/pScheduler/Boolean",
+		    "title": "Fail Badly",
+		    "description": "When failing, fail badly with an internal error."
+		},
+                "retry": {
+		    "$ref": "#/pScheduler/Probability",
+		    "title": "Retry",
+		    "description": "Probability that a retry will be requested after a failure."
+		}
             },
             "required": [
                 "schema"

@@ -15,6 +15,7 @@
 		},
 		"duration": {
 		    "$ref": "#/pScheduler/Duration",
+		    "title": "Duration",
 		    "description": "How long to be idle."
 		},
 		"host": {
@@ -24,6 +25,7 @@
 		},
 		"host-node": {
 		    "$ref": "#/pScheduler/URLHostPort",
+		    "title": "Host Node",
 		    "description": "The pScheduler node to contact for the host."
 		},
 		"parting-comment": {
@@ -52,6 +54,7 @@
 		},
 		"duration": {
 		    "$ref": "#/pScheduler/Duration",
+		    "title": "Duration",
 		    "description": "How long to be idle."
 		},
 		"host": {
