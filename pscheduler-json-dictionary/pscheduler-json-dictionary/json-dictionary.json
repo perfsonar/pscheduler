@@ -1263,7 +1263,7 @@
                     "tests",
                     "preference",
                     "maintainer",
-		    "json-forms-compatible",
+		    "json-forms-compatible"
                 ]
             },
 
