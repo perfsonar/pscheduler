@@ -119,7 +119,7 @@
                 "deadline":          { "$ref": "#/pScheduler/Duration" },
                 "timeout":           { "$ref": "#/pScheduler/Duration" },
                 "port":              { "$ref": "#/pScheduler/IPPort" },
-                "protocol":          { "$ref": "#/pScheduler/String" }
+                "protocol":          { "$ref": "#/local/protocol" }
             },
             "required": [
                 "schema",
