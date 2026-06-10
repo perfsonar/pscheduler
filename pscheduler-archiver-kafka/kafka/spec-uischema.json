@@ -2,9 +2,108 @@
     "#": "The zeroth element of this is always null since there is no version 0.",
     "versions": [
         null,
-
-        { },
-
-        { }
+        {
+            "type": "VerticalLayout",
+            "elements": [
+                {
+                    "type": "Control",
+                    "scope": "#/properties/topic",
+                    "customComponent": "ps-input-text"
+                },
+                {
+                    "type": "Control",
+                    "scope": "#/properties/server",
+                    "customComponent": "ps-input-text"
+                }
+            ]
+        },
+        {
+            "type": "VerticalLayout",
+            "elements": [
+                {
+                    "type": "Control",
+                    "scope": "#/properties/topic",
+                    "customComponent": "ps-input-text"
+                },
+                {
+                    "type": "Control",
+                    "scope": "#/properties/server",
+                    "customComponent": "ps-input-text"
+                },
+                {
+                    "type": "Control",
+                    "scope": "#/properties/archiver-id",
+                    "customComponent": "ps-input-text"
+                },
+                {
+                    "type": "Control",
+                    "scope": "#/properties/retry-policy",
+                    "options": {
+                        "detail": {
+                            "type": "HorizontalLayout",
+                            "elements": [
+                                {
+                                    "type": "Control",
+                                    "scope": "#/properties/wait",
+                                    "customComponent": "ps-input-text"
+                                },
+                                {
+                                    "type": "Control",
+                                    "scope": "#/properties/attempts",
+                                    "customComponent": "ps-input-number"
+                                }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "type": "Control",
+                    "scope": "#/properties/kafka-retries",
+                    "customComponent": "ps-input-number"
+                },
+                {
+                    "type": "Control",
+                    "scope": "#/properties/security-protocol",
+                    "customComponent": "ps-select"
+                },
+                {
+                    "type": "Group",
+                    "rule": {
+                        "effect": "SHOW",
+                        "condition": {
+                            "scope": "#/properties/security-protocol",
+                            "schema": {"const": "SSL"}
+                        }
+                    },
+                    "elements": [
+                        {
+                            "type": "Control",
+                            "scope": "#/properties/_ssl-key",
+                            "customComponent": "ps-input-text"
+                        },
+                        {
+                            "type": "Control",
+                            "scope": "#/properties/_ssl-cert",
+                            "customComponent": "ps-input-text"
+                        },
+                        {
+                            "type": "Control",
+                            "scope": "#/properties/_ssl-cacert",
+                            "customComponent": "ps-input-text"
+                        },
+                        {
+                            "type": "Control",
+                            "scope": "#/properties/_ssl-password",
+                            "customComponent": "ps-input-text"
+                        },
+                        {
+                            "type": "Control",
+                            "scope": "#/properties/ssl-checkhostname",
+                            "customComponent": "ps-input-checkbox"
+                        }
+                    ]
+                }
+            ]
+        }
     ]
 }

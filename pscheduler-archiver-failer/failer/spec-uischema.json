@@ -2,9 +2,55 @@
     "#": "The zeroth element of this is always null since there is no version 0.",
     "versions": [
         null,
-
-        { },
-
-        { }
+        {
+            "type": "VerticalLayout",
+            "elements": [
+                {
+                    "type": "Control",
+                    "scope": "#/properties/fail",
+                    "customComponent": "ps-input-number"
+                },
+                {
+                    "type": "Control",
+                    "scope": "#/properties/delay",
+                    "customComponent": "ps-input-text"
+                },
+                {
+                    "type": "Control",
+                    "scope": "#/properties/retry",
+                    "customComponent": "ps-input-number"
+                }
+            ]
+        },
+        {
+            "type": "VerticalLayout",
+            "elements": [
+                {
+                    "type": "HorizontalLayout",
+                    "elements": [
+                        {
+                            "type": "Control",
+                            "scope": "#/properties/fail",
+                            "customComponent": "ps-input-number"
+                        },
+                        {
+                            "type": "Control",
+                            "scope": "#/properties/delay",
+                            "customComponent": "ps-input-text"
+                        },
+                        {
+                            "type": "Control",
+                            "scope": "#/properties/retry",
+                            "customComponent": "ps-input-number"
+                        },
+                        {
+                            "type": "Control",
+                            "scope": "#/properties/badly",
+                            "customComponent": "ps-input-checkbox"
+                        }
+                    ]
+                }
+            ]
+        }
     ]
 }
