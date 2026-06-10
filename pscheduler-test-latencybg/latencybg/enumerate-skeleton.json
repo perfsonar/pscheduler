@@ -10,5 +10,6 @@
 	"href": "http://www.perfsonar.net"
     },
 
-    "scheduling-class": "background-multi"
+    "scheduling-class": "background-multi",
+    "json-forms-compatible": true
 }

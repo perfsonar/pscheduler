@@ -9,5 +9,7 @@
         "name": "perfSONAR Development Team",
 	"email": "perfsonar-developer@internet2.edu",
 	"href": "http://www.perfsonar.net"
-    }
+    },
+
+    "json-forms-compatible": true
 }

@@ -10,5 +10,6 @@
 	"email": "perfsonar-developer@internet2.edu",
 	"href": "http://www.perfsonar.net"
     },
-    "scheduling-class": "normal"
+    "scheduling-class": "normal",
+    "json-forms-compatible": true
 }

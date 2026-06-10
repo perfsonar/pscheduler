@@ -1206,6 +1206,7 @@
                     "description":  { "$ref": "#/pScheduler/String" },
                     "version":      { "$ref": "#/pScheduler/Version" },
                     "maintainer":   { "$ref": "#/pScheduler/Maintainer" },
+                    "json-forms-compatible":   { "$ref": "#/pScheduler/Boolean" },
                     "scheduling-class": {
                         "type": "string",
                         "enum": [
@@ -1225,6 +1226,7 @@
                     "description",
                     "version",
                     "maintainer",
+		    "json-forms-compatible",
                     "scheduling-class",
 		    "spec"
                 ]
@@ -1241,6 +1243,7 @@
                     "tests":        { "$ref": "#/pScheduler/StringList" },
                     "preference":        { "$ref": "#/pScheduler/Integer" },
                     "maintainer":   { "$ref": "#/pScheduler/Maintainer" },
+		    "json-forms-compatible":   { "$ref": "#/pScheduler/Boolean" },
                     "scheduling-class": {
                         "type": "string",
                         "enum": [
@@ -1259,7 +1262,8 @@
                     "version",
                     "tests",
                     "preference",
-                    "maintainer"
+                    "maintainer",
+		    "json-forms-compatible",
                 ]
             },
 
@@ -1272,6 +1276,7 @@
                     "description":  { "$ref": "#/pScheduler/String" },
                     "version":      { "$ref": "#/pScheduler/Version" },
                     "maintainer":   { "$ref": "#/pScheduler/Maintainer" },
+		    "json-forms-compatible":   { "$ref": "#/pScheduler/Boolean" },
 		    "spec":         { "$ref": "#/pScheduler/PluginEnumeration/local/Spec" }
                 },
                 "additionalProperties": false,
@@ -1294,6 +1299,7 @@
                     "description":  { "$ref": "#/pScheduler/String" },
                     "version":      { "$ref": "#/pScheduler/Version" },
                     "maintainer":   { "$ref": "#/pScheduler/Maintainer" },
+		    "json-forms-compatible":   { "$ref": "#/pScheduler/Boolean" },
 		    "spec":         { "$ref": "#/pScheduler/PluginEnumeration/local/Spec" }
                 },
                 "additionalProperties": false,
@@ -1303,6 +1309,7 @@
                     "description",
                     "version",
                     "maintainer",
+		    "json-forms-compatible",
 		    "spec"
                 ]
             }
