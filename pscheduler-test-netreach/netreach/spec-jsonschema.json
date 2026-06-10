@@ -1,16 +1,9 @@
 {
     "#": "This gets merged into every version as #/local.",
     "local": {
-	"NegativeInteger": {
-            "type": "integer",
-            "maximum": -1
-        },
-
         "NonzeroInteger": {
-            "oneOf": [
-                { "$ref": "#/pScheduler/Cardinal" },
-                { "$ref": "#/local/NegativeInteger" }
-            ]
+	    "type": "integer",
+	    "not": { "const": 0 }
         },
 
         "GatewayHost": {
