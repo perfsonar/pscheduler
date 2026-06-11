@@ -2,122 +2,21 @@
     "#": "The zeroth element of this is always null since there is no version 0.",
     "versions": [
         null,
-
-        { },
-
-        { },
-
         {
-	    "type": "VerticalLayout",
+            "type": "VerticalLayout",
             "elements": [
-                {
-                    "type": "Control",
-                    "scope": "#/properties/schema",
-                    "customComponent": "dropdown-single-select"
-                },
-                {
-                    "type": "Control",
-                    "scope": "#/properties/source",
-                    "customComponent": "input-text-autocomplete"
-                },
-                {
-                    "type": "Control",
-                    "scope": "#/properties/source-node",
-                    "customComponent": "input-text-autocomplete"		    
-                },
-                {
-                    "type": "Control",
-                    "scope": "#/properties/dest",
-                    "customComponent": "input-text-autocomplete"
-                },
-                {
-                    "type": "Control",
-                    "scope": "#/properties/dest-node",
-                    "customComponent": "input-text-autocomplete"
-                },
-                {
-                    "type": "Control",
-                    "scope": "#/properties/packet-count",
-                    "customComponent": "input-number"
-                },
-                {
-                    "type": "Control",
-                    "scope": "#/properties/packet-interval",
-                    "customComponent": "input-number"
-                },
-                {
-                    "type": "Control",
-                    "scope": "#/properties/packet-timeout",
-                    "customComponent": "input-number"
-                },
-                {
-                    "type": "Control",
-                    "scope": "#/properties/packet-padding",
-                    "customComponent": "input-number"
-                },
-                {
-                    "type": "Control",
-                    "scope": "#/properties/ctrl-port",
-                    "customComponent": "input-number"
-                },
-                {
-                    "type": "Control",
-                    "scope": "#/properties/ip-tos",
-                    "customComponent": "input-number"
-                },
-                {
-                    "type": "Control",
-                    "scope": "#/properties/ip-version",
-                    "customComponent": "dropdown-single-select"
-                },
-                {
-                    "type": "Control",
-                    "scope": "#/properties/bucket-width",
-                    "customComponent": "input-number"
-                },
-                {
-                    "type": "Control",
-                    "scope": "#/properties/output-raw",
-                    "customComponent": "input-checkbox"
-                },
-                {
-                    "type": "Control",
-                    "scope": "#/properties/flip",
-                    "customComponent": "input-checkbox"
-                },
-                {
-                    "type": "Control",
-                    "scope": "#/properties/reverse",
-                    "customComponent": "input-checkbox"
-                },
-                {
-                    "type": "Control",
-                    "scope": "#/properties/traverse-nat",
-                    "customComponent": "input-checkbox"
-                }
-            ]
-	},
-
-        {
-	    "type": "VerticalLayout",
-            "elements": [
-                {
-                    "type": "Control",
-                    "scope": "#/properties/schema",
-                    "customComponent": "dropdown-single-select"
-                },
                 {
                     "type": "HorizontalLayout",
                     "elements": [
                         {
                             "type": "Control",
                             "scope": "#/properties/source",
-                            "customComponent": "input-text-autocomplete"
+                            "customComponent": "ps-input-text"
                         },
                         {
                             "type": "Control",
                             "scope": "#/properties/dest",
-                            "customComponent": "input-text-autocomplete"
+                            "customComponent": "ps-input-text"
                         }
                     ]
                 },
@@ -127,19 +26,19 @@
                         {
                             "type": "Control",
                             "scope": "#/properties/source-node",
-                            "customComponent": "input-text-autocomplete"
+                            "customComponent": "ps-input-text"
                         },
                         {
                             "type": "Control",
                             "scope": "#/properties/dest-node",
-                            "customComponent": "input-text-autocomplete"
+                            "customComponent": "ps-input-text"
                         }
                     ]
                 },
                 {
                     "type": "Control",
-                    "scope": "#/properties/protocol",
-                    "customComponent": "input-text"
+                    "scope": "#/properties/data-ports",
+                    "customComponent": "ps-input-text"
                 },
                 {
                     "type": "HorizontalLayout",
@@ -147,17 +46,17 @@
                         {
                             "type": "Control",
                             "scope": "#/properties/packet-count",
-                            "customComponent": "input-number"
+                            "customComponent": "ps-input-number"
                         },
                         {
                             "type": "Control",
                             "scope": "#/properties/packet-interval",
-                            "customComponent": "input-number"
+                            "customComponent": "ps-input-number"
                         },
                         {
                             "type": "Control",
                             "scope": "#/properties/packet-timeout",
-                            "customComponent": "input-number"
+                            "customComponent": "ps-input-number"
                         }
                     ]
                 },
@@ -167,52 +66,377 @@
                         {
                             "type": "Control",
                             "scope": "#/properties/packet-padding",
-                            "customComponent": "input-number"
+                            "customComponent": "ps-input-number"
                         },
                         {
                             "type": "Control",
                             "scope": "#/properties/ctrl-port",
-                            "customComponent": "input-number"
+                            "customComponent": "ps-input-number"
                         },
                         {
                             "type": "Control",
                             "scope": "#/properties/ip-tos",
-                            "customComponent": "input-number"
+                            "customComponent": "ps-input-number"
                         }
                     ]
-                },
-                {
-                    "type": "Control",
-                    "scope": "#/properties/ip-version",
-                    "customComponent": "dropdown-single-select"
-                },
-                {
-                    "type": "Control",
-                    "scope": "#/properties/bucket-width",
-                    "customComponent": "input-number"
                 },
                 {
                     "type": "HorizontalLayout",
                     "elements": [
                         {
                             "type": "Control",
-                            "scope": "#/properties/output-raw",
-                            "customComponent": "input-checkbox"
+                            "scope": "#/properties/ip-version",
+                            "customComponent": "ps-select"
+                        },
+                        {
+                            "type": "Control",
+                            "scope": "#/properties/bucket-width",
+                            "customComponent": "ps-input-number"
                         },
                         {
                             "type": "Control",
                             "scope": "#/properties/flip",
-                            "customComponent": "input-checkbox"
+                            "customComponent": "ps-input-checkbox"
+                        },
+                        {
+                            "type": "Control",
+                            "scope": "#/properties/output-raw",
+                            "customComponent": "ps-input-checkbox"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "type": "VerticalLayout",
+            "elements": [
+                {
+                    "type": "HorizontalLayout",
+                    "elements": [
+                        {
+                            "type": "Control",
+                            "scope": "#/properties/source",
+                            "customComponent": "ps-input-text"
+                        },
+                        {
+                            "type": "Control",
+                            "scope": "#/properties/dest",
+                            "customComponent": "ps-input-text"
+                        }
+                    ]
+                },
+                {
+                    "type": "HorizontalLayout",
+                    "elements": [
+                        {
+                            "type": "Control",
+                            "scope": "#/properties/source-node",
+                            "customComponent": "ps-input-text"
+                        },
+                        {
+                            "type": "Control",
+                            "scope": "#/properties/dest-node",
+                            "customComponent": "ps-input-text"
+                        }
+                    ]
+                },
+                {
+                    "type": "Control",
+                    "scope": "#/properties/data-ports",
+                    "customComponent": "ps-input-text"
+                },
+                {
+                    "type": "HorizontalLayout",
+                    "elements": [
+                        {
+                            "type": "Control",
+                            "scope": "#/properties/packet-count",
+                            "customComponent": "ps-input-number"
+                        },
+                        {
+                            "type": "Control",
+                            "scope": "#/properties/packet-interval",
+                            "customComponent": "ps-input-number"
+                        },
+                        {
+                            "type": "Control",
+                            "scope": "#/properties/packet-timeout",
+                            "customComponent": "ps-input-number"
+                        }
+                    ]
+                },
+                {
+                    "type": "HorizontalLayout",
+                    "elements": [
+                        {
+                            "type": "Control",
+                            "scope": "#/properties/packet-padding",
+                            "customComponent": "ps-input-number"
+                        },
+                        {
+                            "type": "Control",
+                            "scope": "#/properties/ctrl-port",
+                            "customComponent": "ps-input-number"
+                        },
+                        {
+                            "type": "Control",
+                            "scope": "#/properties/ip-tos",
+                            "customComponent": "ps-input-number"
+                        }
+                    ]
+                },
+                {
+                    "type": "HorizontalLayout",
+                    "elements": [
+                        {
+                            "type": "Control",
+                            "scope": "#/properties/ip-version",
+                            "customComponent": "ps-select"
+                        },
+                        {
+                            "type": "Control",
+                            "scope": "#/properties/bucket-width",
+                            "customComponent": "ps-input-number"
+                        },
+                        {
+                            "type": "Control",
+                            "scope": "#/properties/output-raw",
+                            "customComponent": "ps-input-checkbox"
+                        },
+                        {
+                            "type": "Control",
+                            "scope": "#/properties/flip",
+                            "customComponent": "ps-input-checkbox"
                         },
                         {
                             "type": "Control",
                             "scope": "#/properties/reverse",
-                            "customComponent": "input-checkbox"
+                            "customComponent": "ps-input-checkbox"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "type": "VerticalLayout",
+            "elements": [
+                {
+                    "type": "HorizontalLayout",
+                    "elements": [
+                        {
+                            "type": "Control",
+                            "scope": "#/properties/source",
+                            "customComponent": "ps-input-text"
+                        },
+                        {
+                            "type": "Control",
+                            "scope": "#/properties/dest",
+                            "customComponent": "ps-input-text"
+                        }
+                    ]
+                },
+                {
+                    "type": "HorizontalLayout",
+                    "elements": [
+                        {
+                            "type": "Control",
+                            "scope": "#/properties/source-node",
+                            "customComponent": "ps-input-text"
+                        },
+                        {
+                            "type": "Control",
+                            "scope": "#/properties/dest-node",
+                            "customComponent": "ps-input-text"
+                        }
+                    ]
+                },
+                {
+                    "type": "HorizontalLayout",
+                    "elements": [
+                        {
+                            "type": "Control",
+                            "scope": "#/properties/packet-count",
+                            "customComponent": "ps-input-number"
+                        },
+                        {
+                            "type": "Control",
+                            "scope": "#/properties/packet-interval",
+                            "customComponent": "ps-input-number"
+                        },
+                        {
+                            "type": "Control",
+                            "scope": "#/properties/packet-timeout",
+                            "customComponent": "ps-input-number"
+                        }
+                    ]
+                },
+                {
+                    "type": "HorizontalLayout",
+                    "elements": [
+                        {
+                            "type": "Control",
+                            "scope": "#/properties/packet-padding",
+                            "customComponent": "ps-input-number"
+                        },
+                        {
+                            "type": "Control",
+                            "scope": "#/properties/ctrl-port",
+                            "customComponent": "ps-input-number"
+                        },
+                        {
+                            "type": "Control",
+                            "scope": "#/properties/ip-tos",
+                            "customComponent": "ps-input-number"
+                        }
+                    ]
+                },
+                {
+                    "type": "HorizontalLayout",
+                    "elements": [
+                        {
+                            "type": "Control",
+                            "scope": "#/properties/ip-version",
+                            "customComponent": "ps-select"
+                        },
+                        {
+                            "type": "Control",
+                            "scope": "#/properties/bucket-width",
+                            "customComponent": "ps-input-number"
+                        },
+                        {
+                            "type": "Control",
+                            "scope": "#/properties/output-raw",
+                            "customComponent": "ps-input-checkbox"
+                        },
+                        {
+                            "type": "Control",
+                            "scope": "#/properties/flip",
+                            "customComponent": "ps-input-checkbox"
+                        },
+                        {
+                            "type": "Control",
+                            "scope": "#/properties/reverse",
+                            "customComponent": "ps-input-checkbox"
                         },
                         {
                             "type": "Control",
                             "scope": "#/properties/traverse-nat",
-                            "customComponent": "input-checkbox"
+                            "customComponent": "ps-input-checkbox"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "type": "VerticalLayout",
+            "elements": [
+                {
+                    "type": "HorizontalLayout",
+                    "elements": [
+                        {
+                            "type": "Control",
+                            "scope": "#/properties/source",
+                            "customComponent": "ps-input-text"
+                        },
+                        {
+                            "type": "Control",
+                            "scope": "#/properties/dest",
+                            "customComponent": "ps-input-text"
+                        }
+                    ]
+                },
+                {
+                    "type": "HorizontalLayout",
+                    "elements": [
+                        {
+                            "type": "Control",
+                            "scope": "#/properties/source-node",
+                            "customComponent": "ps-input-text"
+                        },
+                        {
+                            "type": "Control",
+                            "scope": "#/properties/dest-node",
+                            "customComponent": "ps-input-text"
+                        }
+                    ]
+                },
+                {
+                    "type": "Control",
+                    "scope": "#/properties/protocol",
+                    "customComponent": "ps-input-text"
+                },
+                {
+                    "type": "HorizontalLayout",
+                    "elements": [
+                        {
+                            "type": "Control",
+                            "scope": "#/properties/packet-count",
+                            "customComponent": "ps-input-number"
+                        },
+                        {
+                            "type": "Control",
+                            "scope": "#/properties/packet-interval",
+                            "customComponent": "ps-input-number"
+                        },
+                        {
+                            "type": "Control",
+                            "scope": "#/properties/packet-timeout",
+                            "customComponent": "ps-input-number"
+                        }
+                    ]
+                },
+                {
+                    "type": "HorizontalLayout",
+                    "elements": [
+                        {
+                            "type": "Control",
+                            "scope": "#/properties/packet-padding",
+                            "customComponent": "ps-input-number"
+                        },
+                        {
+                            "type": "Control",
+                            "scope": "#/properties/ctrl-port",
+                            "customComponent": "ps-input-number"
+                        },
+                        {
+                            "type": "Control",
+                            "scope": "#/properties/ip-tos",
+                            "customComponent": "ps-input-number"
+                        }
+                    ]
+                },
+                {
+                    "type": "HorizontalLayout",
+                    "elements": [
+                        {
+                            "type": "Control",
+                            "scope": "#/properties/ip-version",
+                            "customComponent": "ps-select"
+                        },
+                        {
+                            "type": "Control",
+                            "scope": "#/properties/bucket-width",
+                            "customComponent": "ps-input-number"
+                        },
+                        {
+                            "type": "Control",
+                            "scope": "#/properties/output-raw",
+                            "customComponent": "ps-input-checkbox"
+                        },
+                        {
+                            "type": "Control",
+                            "scope": "#/properties/flip",
+                            "customComponent": "ps-input-checkbox"
+                        },
+                        {
+                            "type": "Control",
+                            "scope": "#/properties/reverse",
+                            "customComponent": "ps-input-checkbox"
+                        },
+                        {
+                            "type": "Control",
+                            "scope": "#/properties/traverse-nat",
+                            "customComponent": "ps-input-checkbox"
                         }
                     ]
                 }

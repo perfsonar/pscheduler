@@ -2,7 +2,15 @@
     "#": "The zeroth element of this is always null since there is no version 0.",
     "versions": [
         null,
-
-        { }
+        {
+            "type": "VerticalLayout",
+            "elements": [
+                {
+                    "type": "Control",
+                    "scope": "#/properties/vrf",
+                    "customComponent": "ps-input-text"
+                }
+            ]
+        }
     ]
 }

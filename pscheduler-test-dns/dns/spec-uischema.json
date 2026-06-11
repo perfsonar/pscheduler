@@ -2,7 +2,55 @@
     "#": "The zeroth element of this is always null since there is no version 0.",
     "versions": [
         null,
-
-        { }
+        {
+            "type": "VerticalLayout",
+            "elements": [
+                {
+                    "type": "HorizontalLayout",
+                    "elements": [
+                        {
+                            "type": "Control",
+                            "scope": "#/properties/host",
+                            "customComponent": "ps-input-text"
+                        },
+                        {
+                            "type": "Control",
+                            "scope": "#/properties/host-node",
+                            "customComponent": "ps-input-text"
+                        }
+                    ]
+                },
+                {
+                    "type": "HorizontalLayout",
+                    "elements": [
+                        {
+                            "type": "Control",
+                            "scope": "#/properties/query",
+                            "customComponent": "ps-input-text"
+                        },
+                        {
+                            "type": "Control",
+                            "scope": "#/properties/record",
+                            "customComponent": "ps-select"
+                        }
+                    ]
+                },
+                {
+                    "type": "HorizontalLayout",
+                    "elements": [
+                        {
+                            "type": "Control",
+                            "scope": "#/properties/timeout",
+                            "customComponent": "ps-input-text"
+                        },
+                        {
+                            "type": "Control",
+                            "scope": "#/properties/nameserver",
+                            "customComponent": "ps-input-text"
+                        }
+                    ]
+                }
+            ]
+        }
     ]
 }

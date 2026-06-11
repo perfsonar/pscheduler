@@ -2,7 +2,25 @@
     "#": "The zeroth element of this is always null since there is no version 0.",
     "versions": [
         null,
-
-        { }
+        {
+            "type": "VerticalLayout",
+            "elements": [
+                {
+                    "type": "Control",
+                    "scope": "#/properties/ident",
+                    "customComponent": "ps-input-text"
+                },
+                {
+                    "type": "Control",
+                    "scope": "#/properties/facility",
+                    "customComponent": "ps-select"
+                },
+                {
+                    "type": "Control",
+                    "scope": "#/properties/priority",
+                    "customComponent": "ps-select"
+                }
+            ]
+        }
     ]
 }
