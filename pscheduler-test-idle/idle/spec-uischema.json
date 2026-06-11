@@ -1,60 +1,58 @@
 {
     "versions": [
-	null,
-	
+        null,
         {
             "type": "VerticalLayout",
             "elements": [
                 {
                     "type": "Control",
                     "scope": "#/properties/schema",
-                    "customComponent": "dropdown-single-select"
+                    "customComponent": "ps-input-text"
                 },
                 {
                     "type": "Control",
                     "scope": "#/properties/duration",
-                    "customComponent": "input-text"
+                    "customComponent": "ps-input-text"
                 },
                 {
                     "type": "Control",
                     "scope": "#/properties/host-node",
-                    "customComponent": "input-text"
+                    "customComponent": "ps-input-text"
                 },
                 {
                     "type": "Control",
                     "scope": "#/properties/starting-comment",
-                    "customComponent": "input-text"
+                    "customComponent": "ps-input-text"
                 },
                 {
                     "type": "Control",
                     "scope": "#/properties/parting-comment",
-                    "customComponent": "input-text"
+                    "customComponent": "ps-input-text"
                 }
             ]
         },
-
         {
             "type": "VerticalLayout",
             "elements": [
                 {
                     "type": "Control",
                     "scope": "#/properties/schema",
-                    "customComponent": "dropdown-single-select"
+                    "customComponent": "ps-input-text"
                 },
                 {
                     "type": "Control",
                     "scope": "#/properties/duration",
-                    "customComponent": "input-text"
+                    "customComponent": "ps-input-text"
                 },
                 {
                     "type": "Control",
                     "scope": "#/properties/starting-comment",
-                    "customComponent": "input-text"
+                    "customComponent": "ps-input-text"
                 },
                 {
                     "type": "Control",
                     "scope": "#/properties/parting-comment",
-                    "customComponent": "input-text"
+                    "customComponent": "ps-input-text"
                 }
             ]
         }

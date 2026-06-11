@@ -2,9 +2,250 @@
     "#": "The zeroth element of this is always null since there is no version 0.",
     "versions": [
         null,
-
-        { },
-
-        { }
+        {
+            "type": "VerticalLayout",
+            "elements": [
+                {
+                    "type": "HorizontalLayout",
+                    "elements": [
+                        {
+                            "type": "Control",
+                            "scope": "#/properties/source",
+                            "customComponent": "ps-input-text"
+                        },
+                        {
+                            "type": "Control",
+                            "scope": "#/properties/dest",
+                            "customComponent": "ps-input-text"
+                        }
+                    ]
+                },
+                {
+                    "type": "Control",
+                    "scope": "#/properties/source-node",
+                    "customComponent": "ps-input-text"
+                },
+                {
+                    "type": "HorizontalLayout",
+                    "elements": [
+                        {
+                            "type": "Control",
+                            "scope": "#/properties/wait",
+                            "customComponent": "ps-input-text"
+                        },
+                        {
+                            "type": "Control",
+                            "scope": "#/properties/sendwait",
+                            "customComponent": "ps-input-text"
+                        }
+                    ]
+                },
+                {
+                    "type": "HorizontalLayout",
+                    "elements": [
+                        {
+                            "type": "Control",
+                            "scope": "#/properties/hops",
+                            "customComponent": "ps-input-number"
+                        },
+                        {
+                            "type": "Control",
+                            "scope": "#/properties/first-ttl",
+                            "customComponent": "ps-input-number"
+                        },
+                        {
+                            "type": "Control",
+                            "scope": "#/properties/queries",
+                            "customComponent": "ps-input-number"
+                        }
+                    ]
+                },
+                {
+                    "type": "HorizontalLayout",
+                    "elements": [
+                        {
+                            "type": "Control",
+                            "scope": "#/properties/length",
+                            "customComponent": "ps-input-number"
+                        },
+                        {
+                            "type": "Control",
+                            "scope": "#/properties/ip-tos",
+                            "customComponent": "ps-input-number"
+                        },
+                        {
+                            "type": "Control",
+                            "scope": "#/properties/dest-port",
+                            "customComponent": "ps-input-number"
+                        }
+                    ]
+                },
+                {
+                    "type": "HorizontalLayout",
+                    "elements": [
+                        {
+                            "type": "Control",
+                            "scope": "#/properties/probe-type",
+                            "customComponent": "ps-select"
+                        },
+                        {
+                            "type": "Control",
+                            "scope": "#/properties/ip-version",
+                            "customComponent": "ps-select"
+                        }
+                    ]
+                },
+                {
+                    "type": "HorizontalLayout",
+                    "elements": [
+                        {
+                            "type": "Control",
+                            "scope": "#/properties/algorithm",
+                            "customComponent": "ps-input-text"
+                        },
+                        {
+                            "type": "Control",
+                            "scope": "#/properties/as",
+                            "customComponent": "ps-input-checkbox"
+                        },
+                        {
+                            "type": "Control",
+                            "scope": "#/properties/fragment",
+                            "customComponent": "ps-input-checkbox"
+                        },
+                        {
+                            "type": "Control",
+                            "scope": "#/properties/hostnames",
+                            "customComponent": "ps-input-checkbox"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "type": "VerticalLayout",
+            "elements": [
+                {
+                    "type": "HorizontalLayout",
+                    "elements": [
+                        {
+                            "type": "Control",
+                            "scope": "#/properties/source",
+                            "customComponent": "ps-input-text"
+                        },
+                        {
+                            "type": "Control",
+                            "scope": "#/properties/dest",
+                            "customComponent": "ps-input-text"
+                        }
+                    ]
+                },
+                {
+                    "type": "Control",
+                    "scope": "#/properties/source-node",
+                    "customComponent": "ps-input-text"
+                },
+                {
+                    "type": "HorizontalLayout",
+                    "elements": [
+                        {
+                            "type": "Control",
+                            "scope": "#/properties/wait",
+                            "customComponent": "ps-input-text"
+                        },
+                        {
+                            "type": "Control",
+                            "scope": "#/properties/sendwait",
+                            "customComponent": "ps-input-text"
+                        }
+                    ]
+                },
+                {
+                    "type": "HorizontalLayout",
+                    "elements": [
+                        {
+                            "type": "Control",
+                            "scope": "#/properties/hops",
+                            "customComponent": "ps-input-number"
+                        },
+                        {
+                            "type": "Control",
+                            "scope": "#/properties/first-ttl",
+                            "customComponent": "ps-input-number"
+                        },
+                        {
+                            "type": "Control",
+                            "scope": "#/properties/queries",
+                            "customComponent": "ps-input-number"
+                        },
+                        {
+                            "type": "Control",
+                            "scope": "#/properties/length",
+                            "customComponent": "ps-input-number"
+                        }
+                    ]
+                },
+                {
+                    "type": "HorizontalLayout",
+                    "elements": [
+                        {
+                            "type": "Control",
+                            "scope": "#/properties/ip-tos",
+                            "customComponent": "ps-input-number"
+                        },
+                        {
+                            "type": "Control",
+                            "scope": "#/properties/dest-port",
+                            "customComponent": "ps-input-number"
+                        },
+                        {
+                            "type": "Control",
+                            "scope": "#/properties/flow-label",
+                            "customComponent": "ps-input-number"
+                        }
+                    ]
+                },
+                {
+                    "type": "HorizontalLayout",
+                    "elements": [
+                        {
+                            "type": "Control",
+                            "scope": "#/properties/probe-type",
+                            "customComponent": "ps-select"
+                        },
+                        {
+                            "type": "Control",
+                            "scope": "#/properties/ip-version",
+                            "customComponent": "ps-select"
+                        }
+                    ]
+                },
+                {
+                    "type": "HorizontalLayout",
+                    "elements": [
+                        {
+                            "type": "Control",
+                            "scope": "#/properties/algorithm",
+                            "customComponent": "ps-input-text"
+                        },
+                        {
+                            "type": "Control",
+                            "scope": "#/properties/as",
+                            "customComponent": "ps-input-checkbox"
+                        },
+                        {
+                            "type": "Control",
+                            "scope": "#/properties/fragment",
+                            "customComponent": "ps-input-checkbox"
+                        },
+                        {
+                            "type": "Control",
+                            "scope": "#/properties/hostnames",
+                            "customComponent": "ps-input-checkbox"
+                        }
+                    ]
+                }
+            ]
+        }
     ]
 }
