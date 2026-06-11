@@ -1243,7 +1243,6 @@
                     "tests":        { "$ref": "#/pScheduler/StringList" },
                     "preference":        { "$ref": "#/pScheduler/Integer" },
                     "maintainer":   { "$ref": "#/pScheduler/Maintainer" },
-		    "json-forms-compatible":   { "$ref": "#/pScheduler/Boolean" },
                     "scheduling-class": {
                         "type": "string",
                         "enum": [
@@ -1262,8 +1261,7 @@
                     "version",
                     "tests",
                     "preference",
-                    "maintainer",
-		    "json-forms-compatible",
+                    "maintainer"
                 ]
             },
 

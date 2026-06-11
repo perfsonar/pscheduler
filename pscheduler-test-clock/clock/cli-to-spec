@@ -65,7 +65,7 @@ opt_parser.add_option("--source-node",
                       dest="source_node")
 
 opt_parser.add_option("--timeout",
-                      help="Timeout for each round trip",
+                      help="Timeout for clock state request",
                       action="store", type="string",
                       dest="timeout")
 
