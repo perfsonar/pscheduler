@@ -11,11 +11,14 @@
 	    "properties": {
 		"schema": { "$ref": "#/pScheduler/Schema", "const": 1 },
 		"namespace": {
+		    "title": "Namespace",
+		    "description": "The name of the Linux network namespace to use for the measurement.",
+		    "x-description-append": "Any Linux filename is valid (i.e., composed of any characters but '/' and NUL).",
 		    "type": "string",
 		    "#": "These have to be valid as filenames, and Linux is pretty",
 		    "#": "accommodating.",
 		    "pattern": "^[^/\\0]+$",
-		    "x-invalid-message": "'%s' is not a valid namespace name."
+		    "x-invalid-message": "Invalid namespace name."
 		}
 	    },
 	    "required": [

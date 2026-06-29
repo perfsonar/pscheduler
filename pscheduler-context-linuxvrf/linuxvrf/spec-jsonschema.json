@@ -9,13 +9,18 @@
 	{
 	    "type": "object",
 	    "properties": {
-		"schema": { "$ref": "#/pScheduler/Schema", "const": 1 },
+		"schema": {
+		    "$ref": "#/pScheduler/Schema",
+		    "const": 1
+		},
 		"vrf": {
+		    "title": "VRF",
+		    "description": "The name of the virtual routing and forwarding domain to use for the measurement.",
+		    "x-description-append": "Any valid Linux interface name composed of up to 15 characters that are not whitespace, the slash or NUL is valid.",
 		    "type": "string",
-		    "#": "These have to be valid as filenames, and Linux is pretty",
-		    "#": " accommodating.",
-		    "pattern": "^[^/\\0]+$",
-		    "x-invalid-message": "'%s' is not a valid VRF name."
+		    "#": "Source: https://git.kernel.org/pub/scm/network/iproute2/iproute2.git/tree/lib/utils.c?id=1f420318bda3cc62156e89e1b56d60cc744b48ad#n827",
+		    "pattern": "^[^/ \\t\\r\\n]{1,15}$",
+		    "x-invalid-message": "Invalid VRF name."
 		}
 	    },
 	    "required": [
