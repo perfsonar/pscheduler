@@ -21,12 +21,35 @@
 	    "type": "object",
 
             "properties": {
-                "schema":             { "$ref": "#/pScheduler/Schema", "const": 1 },
-                "_dsn":               { "$ref": "#/pScheduler/String" },
-                "table":              { "$ref": "#/local/PostgreSQLIdentifier" },
-                "column":             { "$ref": "#/local/PostgreSQLIdentifier" },
-                "connection-expires": { "$ref": "#/pScheduler/Duration" },
-                "retry-policy":       { "$ref": "#/pScheduler/RetryPolicy" }
+                "schema": {
+		    "$ref": "#/pScheduler/Schema",
+		    "const": 1
+		},
+                "_dsn": {
+		    "title": "DSN",
+		    "description": "PostgreSQL data source name.",
+		    "$ref": "#/pScheduler/String"
+		},
+                "table": {
+		    "title": "Table",
+		    "description": "Table into which the result should be inserted.",
+		    "$ref": "#/local/PostgreSQLIdentifier"
+		},
+                "column": {
+		    "title": "Column",
+		    "description": "Column in the table into which the result should be inserted.",
+		    "$ref": "#/local/PostgreSQLIdentifier"
+		},
+                "connection-expires": {
+		    "title": "Connection Expires",
+		    "description": "How long the connection to PostgreSQL should remain open before it is closed and a new one is created.",
+		    "$ref": "#/pScheduler/Duration"
+		},
+		"retry-policy": {
+                    "title": "Retry Policy",
+                    "description": "Policy for retrying failed archivings.",
+                    "$ref": "#/pScheduler/RetryPolicy"
+                }
             },
             "required": [
                 "_dsn",

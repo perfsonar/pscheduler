@@ -9,40 +9,115 @@
         {
             "type": "object",
             "properties": {
-                "schema": { "$ref": "#/pScheduler/Schema", "const": 1 },
-                "topic": {"$ref": "#/pScheduler/String"},
-                "server": {"$ref": "#/pScheduler/String"}
+                "schema": {
+		    "$ref": "#/pScheduler/Schema",
+		    "const": 1
+		},
+                "topic": {
+		    "title": "Topic",
+		    "description": "Kafka topic.",
+		    "$ref": "#/pScheduler/String"
+		},
+                "server": {
+		    "Title": "Server",
+		    "description": "Kafka server.",
+		    "$ref": "#/pScheduler/Host"
+		}
             },
             "additionalProperties": false,
-            "required": ["topic", "server"]
+            "required": [
+		"topic",
+		"server"
+	    ]
         },
 
         {
             "type": "object",
             "properties": {
-                "schema": { "$ref": "#/pScheduler/Schema", "const": 2 },
-                "topic": {"$ref": "#/pScheduler/String"},
-                "server": {"$ref": "#/pScheduler/String"},
-                "archiver-id": {"$ref": "#/pScheduler/String"},
-                "security-protocol": {"default": "PLAINTEXT", "enum": ["PLAINTEXT", "SSL"]},
-                "kafka-retries": {"$ref": "#/pScheduler/Integer"},
-                "retry-policy": {"$ref": "#/pScheduler/RetryPolicy"}
+                "schema": {
+		    "$ref": "#/pScheduler/Schema", "const": 2
+		},
+                "topic": {
+		    "title": "Topic",
+                    "description": "Kafka topic.",
+		    "$ref": "#/pScheduler/String"
+		},
+                "server": {
+		    "title": "Server",
+                    "description": "Kafka server.",
+		    "$ref": "#/pScheduler/Host"
+		},
+                "archiver-id": {
+		    "title": "Archiver ID",
+                    "description": "Name of the software doing the archiving, like the User-Agent a web browser provides.",
+		    "$ref": "#/pScheduler/String"
+		},
+                "security-protocol": {
+		    "title": "Security Protocol",
+		    "description": "Security protocol to use when connecting to Kafka.",
+		    "default": "PLAINTEXT",
+		    "enum": [
+			"PLAINTEXT",
+			"SSL"
+		    ]
+		},
+                "kafka-retries": {
+		    "title": "Retries",
+		    "description": "Number of times the archiver will retry posting the result to Kafka.",
+		    "$ref": "#/pScheduler/CardinalZero"
+		},
+		"retry-policy": {
+                    "title": "Retry Policy",
+                    "description": "Policy for retrying failed archivings.",
+                    "$ref": "#/pScheduler/RetryPolicy"
+                }
             },
             "additionalProperties": true,
-            "required": ["schema", "topic", "server", "security-protocol"],
+            "required": [
+		"schema",
+		"topic",
+		"server",
+		"security-protocol"
+	    ],
             "allOf": [
                 {
                     "if": {
-                        "properties": {"security-protocol": { "const": "SSL" }},
-                        "required": ["security-protocol"]
+                        "properties": {
+			    "security-protocol": {
+				"const": "SSL"
+			    }
+			},
+                        "required": [
+			    "security-protocol"
+			]
                     },
                     "then": {
                         "properties": {
-                            "_ssl-cacert": {"$ref": "#/pScheduler/String"},
-                            "_ssl-cert": {"$ref": "#/pScheduler/String"},
-                            "_ssl-key": {"$ref": "#/pScheduler/String"},
-                            "_ssl-password": {"$ref": "#/pScheduler/String"},
-                            "ssl-checkhostname": {"$ref": "#/pScheduler/Boolean"}
+                            "_ssl-cacert": {
+				"title": "CA Certificate",
+				"description": "Certificate authority certificate.",
+				"$ref": "#/pScheduler/String"
+			    },
+                            "_ssl-cert": {
+				"title": "SSL Certificate",
+				"description": "Secure Sockets Layer certificate",
+				"$ref": "#/pScheduler/String"
+			    },
+                            "_ssl-key": {
+				"title": "SSL Key",
+				"description": "Secure Sockets Layer key.",
+				"$ref": "#/pScheduler/String"
+			    },
+                            "_ssl-password": {
+				"title": "SSL Key Passphrase",
+				"description": "Secure Sockets Layer key passphrase",
+				"$ref": "#/pScheduler/String"
+			    },
+                            "ssl-checkhostname": {
+				"title": "SSL Check Hostname",
+				"description": "Enable this to check the server's domain name against the identity listed in the SSL certificate.",
+				"$ref": "#/pScheduler/Boolean"
+			    }
                         }
                     }
                 }

@@ -9,12 +9,35 @@
 	{
             "type": "object",
             "properties": {
-		"schema": { "$ref": "#/pScheduler/Schema", "const": 1 },
-                "bind": { "$ref": "#/pScheduler/Host" },
-                "host": { "$ref": "#/pScheduler/Host" },
-                "ip-version": { "$ref": "#/pScheduler/ip-version" },
-                "port": { "$ref": "#/pScheduler/UInt16" },
-                "retry-policy": { "$ref": "#/pScheduler/RetryPolicy" }
+		"schema": {
+		    "$ref": "#/pScheduler/Schema",
+		    "const": 1
+		},
+                "host": {
+		    "title": "Host",
+		    "description": "Host to connect to.",
+		    "$ref": "#/pScheduler/Host"
+		},
+		"port": {
+		    "title": "Port",
+		    "description": "TCP port number.",
+		    "$ref": "#/pScheduler/IPPort"
+		},
+		"ip-version": {
+		    "label": "IP Version",
+		    "description": "Internet protocol version",
+		    "$ref": "#/pScheduler/ip-version"
+		},
+		"bind": {
+		    "title": "bind",
+		    "description": "Bind address for making the connection.",
+		    "$ref": "#/pScheduler/Host"
+		},
+		"retry-policy": {
+                    "title": "Retry Policy",
+                    "description": "Policy for retrying failed archivings.",
+                    "$ref": "#/pScheduler/RetryPolicy"
+                }
             },
             "required": [
                 "host",

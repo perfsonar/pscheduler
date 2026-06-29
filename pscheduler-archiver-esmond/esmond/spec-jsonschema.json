@@ -9,24 +9,44 @@
 	{
 	    "type": "object",
 	    "properties": {
-		"schema": { "$ref": "#/pScheduler/Schema", "const": 1 },
-		"url": { "$ref": "#/pScheduler/URL" },
-		"bind": { "$ref": "#/pScheduler/Host" },
-		"_auth-token": { "$ref": "#/pScheduler/String" },
-		"measurement-agent": { "$ref": "#/pScheduler/Host" },
-		"verify-ssl": { "$ref": "#/pScheduler/Boolean" },
+		"schema": {
+		    "$ref": "#/pScheduler/Schema",
+		    "const": 1
+		},
+		"url": {
+		    "$ref": "#/pScheduler/URL",
+		    "title": "URL",
+		    "description": "URL of Esmond server which will collect the result."
+		},
+		"bind": {
+		    "$ref": "#/pScheduler/Host",
+		    "title": "Bind",
+		    "description": "Address to bind to for outbound connection."
+		},
+		"_auth-token": {
+		    "$ref": "#/pScheduler/String",
+		    "title": "Auth Token",
+		    "description": "The authorization token to be used when submitting the result."
+		},
+		"measurement-agent": {
+		    "$ref": "#/pScheduler/Host",
+		    "title": "Measurement Agent",
+		    "description": "The name of the system doing the measurement."
+		},
+		"verify-ssl": {
+		    "$ref": "#/pScheduler/Boolean",
+		    "title": "Verify SSL",
+		    "description": "Require a SSL certificate verifiable by known certificate autorities.  This should be disabled if the Esmond server's certificate is self-signed."
+		},
 		"retry-policy": {
-		    "type": "array",
-		    "items": {
-			"type": "object",
-			"properties": {
-			    "attempts": {"$ref": "#/pScheduler/Cardinal" },
-			    "wait": {"$ref": "#/pScheduler/Duration" }
-			},
-			"required": [ "attempts", "wait"]
-		    }
+		    "$ref": "#/pScheduler/RetryPolicy",
+		    "title": "Retry Policy",
+		    "description": "Policy for retrying failed attempts to archive to the Esmond server."
 		},
 		"data-formatting-policy": {
+		    "title": "Formatting Policy",
+		    "description": "Indicates how the record should be stored.",
+		    "x-description-append": "Must be one of prefer-mapped, mapped-and-raw, mapped-only or raw-only.",
 		    "type": "string",
 		    "enum": [
 			"prefer-mapped",
@@ -36,15 +56,34 @@
 		    ]
 		},
 		"summaries": {
+		    "title": "Summaries",
+		    "description": "Custom Esmond summaries.",
 		    "type": "array",
 		    "items": {
 			"type": "object",
 			"properties": {
-			    "event-type": { "$ref": "#/pScheduler/String" },
-			    "summary-type": { "$ref": "#/pScheduler/String" },
-			    "summary-window": { "$ref": "#/pScheduler/CardinalZero" }
+			    "event-type": {
+				"title": "Event Type",
+				"description": "The type of event being summarized.",
+				"$ref": "#/pScheduler/String"
+			    },
+			    "summary-type": {
+				"title": "Summary Type",
+				"description": "Type of summary.",
+				"x-description-append": "Must be one of aggregation, average or statistics.",
+				"$ref": "#/pScheduler/String"
+			    },
+			    "summary-window": {
+				"title": "Window",
+				"description": "Time range in seconds to be summarized.",
+				"$ref": "#/pScheduler/CardinalZero"
+			    }
 			},
-			"required": [ "event-type", "summary-type", "summary-window"]
+			"required": [
+			    "event-type",
+			    "summary-type",
+			    "summary-window"
+			]
 		    }
 		}
 	    },

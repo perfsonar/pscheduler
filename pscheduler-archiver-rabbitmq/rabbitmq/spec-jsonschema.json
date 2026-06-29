@@ -9,11 +9,33 @@
         {
             "type": "object",
             "properties": {
-                "schema":       { "$ref": "#/pScheduler/Schema", "const": 1 },
-                "_url":         { "$ref": "#/pScheduler/String" },
-                "exchange":     { "$ref": "#/pScheduler/String" },
-                "routing-key":  { "$ref": "#/pScheduler/String" },
-                "retry-policy": { "$ref": "#/pScheduler/RetryPolicy" }
+                "schema": {
+		    "$ref": "#/pScheduler/Schema",
+		    "const": 1
+		},
+                "_url": {
+		    "title": "URL",
+		    "description": "URL of RabbitMQ server.",
+		    "x-description-append": "Must begin with amqp://.",
+		    "$ref": "#/pScheduler/URL"
+		},
+                "exchange": {
+		    "title": "Exchange",
+		    "description": "RabbitMQ exchange.",
+		    "#": "TODO: Should this be something more strict?",
+		    "$ref": "#/pScheduler/String"
+		},
+                "routing-key":  {
+		    "title": "Routing Key",
+		    "description": "Routing key.",
+		    "#": "TODO: Should this be something more strict?",
+		    "$ref": "#/pScheduler/String"
+		},
+		"retry-policy": {
+                    "title": "Retry Policy",
+                    "description": "Policy for retrying failed archivings.",
+                    "$ref": "#/pScheduler/RetryPolicy"
+                }
             },
             "required": [
                 "_url"
@@ -24,15 +46,40 @@
         {
             "type": "object",
             "properties": {
-                "schema":              { "$ref": "#/pScheduler/Schema", "const": 2 },
-                "_url":                { "$ref": "#/pScheduler/String" },
-                "exchange":            { "$ref": "#/pScheduler/String" },
-                "routing-key":         { "anyOf": [
-                    { "$ref": "#/pScheduler/String" },
-                    { "$ref": "#/pScheduler/JQTransformSpecification" }
-                ] },
-                "connection-expires":  { "$ref": "#/pScheduler/Duration" },
-                "retry-policy":        { "$ref": "#/pScheduler/RetryPolicy" }
+                "schema": {
+		    "$ref": "#/pScheduler/Schema",
+		    "const": 2
+		},
+		"_url": {
+		    "title": "URL",
+		    "description": "URL of RabbitMQ server.",
+		    "x-description-append": "Must begin with amqp://.",
+		    "$ref": "#/pScheduler/URL"
+		},
+                "exchange": {
+		    "title": "Exchange",
+		    "description": "RabbitMQ exchange.",
+		    "#": "TODO: Should this be something more strict?",
+		    "$ref": "#/pScheduler/String"
+		},
+                "routing-key": {
+		    "title": "Routing Key",
+		    "description": "Routing key.",
+		    "anyOf": [
+			{ "$ref": "#/pScheduler/String" },
+			{ "$ref": "#/pScheduler/JQTransformSpecification" }
+                    ]
+		},
+                "connection-expires":  {
+		    "title": "Connection Expires",
+                    "description": "How long the connection to RabbitMQ should remain open before it is closed and a new one is created.",
+		    "$ref": "#/pScheduler/Duration"
+		},
+		"retry-policy": {
+                    "title": "Retry Policy",
+                    "description": "Policy for retrying failed archivings.",
+                    "$ref": "#/pScheduler/RetryPolicy"
+                }
             },
             "required": [
                 "schema",
@@ -44,16 +91,45 @@
         {
             "type": "object",
             "properties": {
-                "schema":              { "$ref": "#/pScheduler/Schema", "const": 3 },
-                "_url":                { "$ref": "#/pScheduler/String" },
-                "exchange":            { "$ref": "#/pScheduler/String" },
-                "timeout":             { "$ref": "#/pScheduler/Duration" },
-                "routing-key":         { "anyOf": [
-                    { "$ref": "#/pScheduler/String" },
-                    { "$ref": "#/pScheduler/JQTransformSpecification" }
-                ] },
-                "connection-expires":  { "$ref": "#/pScheduler/Duration" },
-                "retry-policy":        { "$ref": "#/pScheduler/RetryPolicy" }
+                "schema": {
+		    "$ref": "#/pScheduler/Schema",
+		    "const": 3
+		},
+				"_url": {
+		    "title": "URL",
+		    "description": "URL of RabbitMQ server.",
+		    "x-description-append": "Must begin with amqp://.",
+		    "$ref": "#/pScheduler/URL"
+		},
+                "exchange": {
+		    "title": "Exchange",
+		    "description": "RabbitMQ exchange.",
+		    "#": "TODO: Should this be something more strict?",
+		    "$ref": "#/pScheduler/String"
+		},
+                "routing-key": {
+		    "title": "Routing Key",
+		    "description": "Routing key.",
+		    "anyOf": [
+			{ "$ref": "#/pScheduler/String" },
+			{ "$ref": "#/pScheduler/JQTransformSpecification" }
+                    ]
+		},
+                "timeout":             {
+		    "title": "Timeout",
+		    "description": "How long to wait for RabbitMQ to accept the message",
+		    "$ref": "#/pScheduler/Duration"
+		},
+                "connection-expires":  {
+		    "title": "Connection Expires",
+                    "description": "How long the connection to RabbitMQ should remain open before it is closed and a new one is created.",
+		    "$ref": "#/pScheduler/Duration"
+		},
+		"retry-policy": {
+                    "title": "Retry Policy",
+                    "description": "Policy for retrying failed archivings.",
+                    "$ref": "#/pScheduler/RetryPolicy"
+                }
             },
             "required": [
                 "schema",

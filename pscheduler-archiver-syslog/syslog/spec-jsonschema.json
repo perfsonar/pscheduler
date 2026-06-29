@@ -9,9 +9,19 @@
 	{
 	    "type": "object",
 	    "properties": {
-		"schema": { "$ref": "#/pScheduler/Schema", "const": 1 },
-		"ident": { "$ref": "#/pScheduler/String" },
+		"schema": {
+		    "$ref": "#/pScheduler/Schema",
+		    "const": 1
+		},
+		"ident": {
+		    "title": "Identification",
+		    "description": "Identification string to be used when submitting the log message.",
+		    "$ref": "#/pScheduler/String"
+		},
 		"facility": {
+		    "title": "Facility",
+		    "description": "The syslog facility to be used when the log entry is submitted.",
+		    "x-description-append": "Valid valies are kern, user, mail, daemon, auth, lpr, news, uucp, cron, syslog, local0, local1, local2, local3, local4, local5, local6 and local7.",
 		    "type": "string",
 		    "enum": [
 			"kern",
@@ -35,6 +45,9 @@
 		    ]
 		},
 		"priority": {
+		    "title": "Priority",
+		    "description": "The syslog priority to be used when the log entry is submitted.",
+		    "x-description append": "Valid values are emerg, alert, crit, err, warning, notice, info and debug.",
 		    "type": "string",
 		    "enum": [
 			"emerg",

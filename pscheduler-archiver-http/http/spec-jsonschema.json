@@ -9,7 +9,10 @@
         {
             "type": "object",
             "properties": {
-                "schema": { "$ref": "#/pScheduler/Schema", "const": 1 },
+                "schema": {
+		    "$ref": "#/pScheduler/Schema",
+		    "const": 1
+		},
                 "_url": {
 		    "$ref": "#/pScheduler/URL",
 		    "title": "URL",
@@ -29,16 +32,25 @@
 		    "title": "bind",
 		    "description": "Source address for outgoing request."
 		},
-                "retry-policy": { "$ref": "#/pScheduler/RetryPolicy" }
+                "retry-policy": {
+		    "title": "Retry Policy",
+		    "description": "Policy for retrying failed archivings.",
+		    "$ref": "#/pScheduler/RetryPolicy"
+		}
             },
-            "required": [ "_url" ],
+            "required": [
+		"_url"
+	    ],
             "additionalProperties": false
         },
 
         {
             "type": "object",
             "properties": {
-                "schema": { "$ref": "#/pScheduler/Schema", "const": 2 },
+                "schema": {
+		    "$ref": "#/pScheduler/Schema",
+		    "const": 2
+		},
                 "_url": {
 		    "$ref": "#/pScheduler/URL",
 		    "title": "URL",
@@ -69,9 +81,16 @@
 		    "title": "Bind",
 		    "description": "Source address for outgoing request."
 		},
-                "retry-policy": { "$ref": "#/pScheduler/RetryPolicy" }
+                "retry-policy": {
+		    "title": "Retry Policy",
+		    "description": "Policy for retrying failed archivings.",
+		    "$ref": "#/pScheduler/RetryPolicy"
+		}
             },
-            "required": [ "schema", "_url" ],
+            "required": [
+		"schema",
+		"_url"
+	    ],
             "additionalProperties": false
         },
 
@@ -109,14 +128,21 @@
 		    "title": "Bind",
 		    "description": "Source address for outgoing request."
 		},
-                "retry-policy": { "$ref": "#/pScheduler/RetryPolicy" },
+                "retry-policy": {
+		    "title": "Retry Policy",
+		    "description": "Policy for retrying failed archivings.",
+		    "$ref": "#/pScheduler/RetryPolicy"
+		},
 		"verify-ssl": {
 		    "$ref": "#/pScheduler/Boolean",
 		    "title": "Verify SSL",
 		    "description": "Require that the server present a valid SSL certificate."
 		}
             },
-            "required": [ "schema", "_url" ],
+            "required": [
+		"schema",
+		"_url"
+	    ],
             "additionalProperties": false
          },
 
@@ -164,7 +190,11 @@
 		    "title": "Bind",
 		    "description": "Source address for outgoing request."
 		},
-                "retry-policy": { "$ref": "#/pScheduler/RetryPolicy" }
+                "retry-policy": {
+		    "title": "Retry Policy",
+		    "description": "Policy for retrying failed archivings.",
+		    "$ref": "#/pScheduler/RetryPolicy"
+		}
             },
             "required": [ "schema", "_url" ],
             "additionalProperties": false

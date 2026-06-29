@@ -9,7 +9,10 @@
 	{
             "type": "object",
             "properties": {
-                "schema": { "$ref": "#/pScheduler/Schema", "const": 1 },
+                "schema": {
+		    "$ref": "#/pScheduler/Schema",
+		    "const": 1
+		},
                 "delay": {
 		    "$ref": "#/pScheduler/Duration",
 		    "title": "Delay",
@@ -32,7 +35,10 @@
         {
             "type": "object",
             "properties": {
-                "schema": { "$ref": "#/pScheduler/Schema", "const": 2 },
+                "schema": {
+		    "$ref": "#/pScheduler/Schema",
+		    "const": 2
+		},
 		"delay": {
 		    "$ref": "#/pScheduler/Duration",
 		    "title": "Delay",
