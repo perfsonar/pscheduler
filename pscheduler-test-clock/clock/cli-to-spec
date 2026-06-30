@@ -50,12 +50,12 @@ opt_parser = pscheduler.FailingOptionParser(epilog=
 
 
 opt_parser.add_option("--dest",
-                      help="Destination host",
+                      help="Destination pScheduler host",
                       action="store", type="string",
                       dest="dest")
 
 opt_parser.add_option("--source",
-                      help="Source address or interface",
+                      help="Source pScheduler host",
                       action="store", type="string",
                       dest="source")
 

@@ -67,7 +67,7 @@ opt_parser = pscheduler.FailingOptionParser(epilog=
 
 
 opt_parser.add_option("--duration",
-                      help="Duration of idle test.",
+                      help="Duration of test.",
                       action="store", type="string",
                       dest="duration")
 
@@ -93,7 +93,7 @@ opt_parser.add_option("--dest",
                       dest="dest")
 
 opt_parser.add_option("--cleanup",
-                      help="If specified then test file is not deleted after transfer",
+                      help="Don't delete the test file after the transfer.",
                       action="store_false",
                       dest="cleanup")
 
