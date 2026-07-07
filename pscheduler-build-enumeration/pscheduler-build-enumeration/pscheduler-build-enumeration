@@ -110,7 +110,7 @@ validator()
 
     # If local isn't present, use an empty default.
     VALIDATOR_LOCAL="${TMPBASE}/validator-local"
-    jq 'if .local == null then {} else .local end' "${INPUT}" \
+    jq '.local = (if .local == null then {} else .local end)' "${INPUT}" \
        > "${VALIDATOR_LOCAL}"
 
     # Do some basic validation on the validator.
@@ -120,10 +120,51 @@ validator()
          ("\($name): Versions not found in validator\n" | halt_error(1))
        else
          empty
-       end' "${INPUT}"
+       end' "${VALIDATOR_LOCAL}"
+
+    # For any property whose value is null, use the same-named
+    # property in the latest version before this one where that
+    # property is defined.
+    DENULLED_INPUT="${TMPBASE}/denulled"
+    jq '
+      # Find the latest verion of a property before th current one
+      def fetch_newest_property(name; schema; versions):
+        if schema < 2 then
+          error("Null property references in schema 1 are not allowed.")
+        else
+            name as $name
+          | ( [
+                  range((schema-1); 0; -1)
+                | versions[.].properties[$name]
+                | select(. != null)
+              ][0] ) as $property
+          | if $property == null then error("Schema \(schema) property \(name) has no earlier version.")
+            else $property end
+        end
+      ;
+
+      def process_property(schema; versions):
+         if .value != null then .
+         else .value = fetch_newest_property(.key; schema; versions)
+         end
+      ;
+
+      def process_version(versions):
+        if . == null then .
+        else
+            .properties.schema.const as $schema
+          | if $schema == null then error("A version is missing a schema constant.") else . end
+          | .properties = (.properties | with_entries(process_property($schema; versions)))
+        end
+      ;
+
+        .versions as $versions
+      | .versions = ( .versions | map(if . == null then . else process_version($versions) end) )
+    ' "${VALIDATOR_LOCAL}" > "${DENULLED_INPUT}"
+
 
     VALIDATOR_ARRAY="${TMPBASE}/validator-array"
-    jq '.versions' "${INPUT}" > "${VALIDATOR_ARRAY}"
+    jq '.versions' "${DENULLED_INPUT}" > "${VALIDATOR_ARRAY}"
 
     # Make sure the zeroth element is null
     jq 'if .[0] != null then halt_error(1) else halt_error(0) end' "${VALIDATOR_ARRAY}" > /dev/null 2>&1 \
