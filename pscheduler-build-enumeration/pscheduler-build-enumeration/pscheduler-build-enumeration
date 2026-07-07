@@ -130,7 +130,7 @@ validator()
       # Find the latest verion of a property before th current one
       def fetch_newest_property(name; schema; versions):
         if schema < 2 then
-          error("Null property references in schema 1 are not allowed.")
+          error("Null property reference \"\(name)\" not allowed in schema 1.")
         else
             name as $name
           | ( [
@@ -138,7 +138,7 @@ validator()
                 | versions[.].properties[$name]
                 | select(. != null)
               ][0] ) as $property
-          | if $property == null then error("Schema \(schema) property \(name) has no earlier version.")
+          | if $property == null then error("Schema \(schema) property \"\(name)\" has no earlier version.")
             else $property end
         end
       ;
