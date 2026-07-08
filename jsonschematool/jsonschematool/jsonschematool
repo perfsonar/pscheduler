@@ -283,7 +283,10 @@ def walk_all(struct, struct_top, depth=-1):
                 debug(f'REF {value}', depth)
                 refs[value] = 1
                 ref = get_ref(struct_top, value, leaf=True)
-                new_refs, new_dict = walk_all(ref, struct_top, depth+1)
+                new_refs, walk_dict = walk_all(ref, struct_top, depth+1)
+                if walk_dict is None:
+                    die(f'Reference to {value} failed to resolve.')
+                new_dict = walk_dict
                 refs.update(new_refs)                
                 debug(f'REPLACE {new_dict}', depth)
             else:
