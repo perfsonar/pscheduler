@@ -9,11 +9,30 @@
         {
             "type": "object",
             "properties": {
-                "schema":      { "$ref": "#/pScheduler/Schema", "const": 1 },
-                "source":      { "$ref": "#/pScheduler/Host" },
-                "source-node": { "$ref": "#/pScheduler/Host" },
-                "dest":        { "$ref": "#/pScheduler/Host" },
-                "timeout":     { "$ref": "#/pScheduler/Duration" }
+                "schema": {
+		    "$ref": "#/pScheduler/Schema",
+		    "const": 1
+		},
+                "source": {
+		    "$ref": "#/pScheduler/Host",
+		    "title": "Source",
+		    "description": "Host to carry out the measurement."
+		},
+                "source-node": {
+		    "$ref": "#/pScheduler/Host",
+		    "title": "Source Node",
+		    "description": "pScheduler to contact about the measurement."
+		},
+                "dest": {
+		    "$ref": "#/pScheduler/Host",
+		    "title": "Destination",
+		    "description": "pScheduler to query for response time."
+		},
+                "timeout": {
+		    "$ref": "#/pScheduler/Duration",
+		    "title": "Timeout",
+		    "description": "How long to wait for a response before giving up."
+		}
             },
             "required": [ "dest" ],
             "additionalProperties": false

@@ -28,6 +28,7 @@
 # Utilities
 
 TMPBASE=$(mktemp -d)
+
 cleanup()
 {
     rm -rf "${TMPBASE}"
@@ -75,7 +76,7 @@ check_input()
 }
 
 
-# pScheduler's internal dictionary, with /local merged in
+# pScheduler's internal dictionary
 PS_DICT="${TMPBASE}/psdict"
 pscheduler internal json-dictionary > "${PS_DICT}"
 
@@ -108,11 +109,6 @@ validator()
     LOCATION=$(echo "$1" | cut -d= -f 1)
     INPUT=$(echo "$1" | cut -d= -f 2 | check_input)
 
-    # If local isn't present, use an empty default.
-    VALIDATOR_LOCAL="${TMPBASE}/validator-local"
-    jq '.local = (if .local == null then {} else .local end)' "${INPUT}" \
-       > "${VALIDATOR_LOCAL}"
-
     # Do some basic validation on the validator.
     jq --arg name "${INPUT}" '
        if (.versions | type) != "array"
@@ -120,11 +116,11 @@ validator()
          ("\($name): Versions not found in validator\n" | halt_error(1))
        else
          empty
-       end' "${VALIDATOR_LOCAL}"
+       end' "${INPUT}"
 
-    # For any property whose value is null, use the same-named
-    # property in the latest version before this one where that
-    # property is defined.
+    # For any property in a version whose value is null, use the
+    # same-named property in the latest version before this one where
+    # that property is defined.
     DENULLED_INPUT="${TMPBASE}/denulled"
     jq '
       # Find the latest verion of a property before th current one
@@ -160,9 +156,9 @@ validator()
 
         .versions as $versions
       | .versions = ( .versions | map(if . == null then . else process_version($versions) end) )
-    ' "${VALIDATOR_LOCAL}" > "${DENULLED_INPUT}"
+    ' "${INPUT}" > "${DENULLED_INPUT}"
 
-
+    # Array of validators
     VALIDATOR_ARRAY="${TMPBASE}/validator-array"
     jq '.versions' "${DENULLED_INPUT}" > "${VALIDATOR_ARRAY}"
 
@@ -219,19 +215,17 @@ validator()
         end
     ' "${VALIDATOR_ARRAY}"
 
-
     # Plugin validator array, converted to an object
     VALIDATOR="${TMPBASE}/validator"
     jq '[ to_entries[] | .key = (.key | tostring ) ] | from_entries' "${VALIDATOR_ARRAY}" > "${VALIDATOR}"
 
-    PS_DICT_FULL="${TMPBASE}/psdict-full"
-    jq --slurp '
-        .[].local = .[1] | .[0]
-    	' "${PS_DICT}" "${VALIDATOR_LOCAL}" > "${PS_DICT_FULL}"
+    # Local stuff
+    PS_LOCAL_DICT="${TMPBASE}/local-dict"
+    jq --slurpfile denulled "${DENULLED_INPUT}" '.local = ($denulled[0].local // {})' "${PS_DICT}" > "${PS_LOCAL_DICT}"
 
     # Dereferenced validator
     VALIDATOR_DEREF="${TMPBASE}/validator-deref"
-    jsonschematool --pretty --dereference --annotations "${PS_DICT_FULL}" "${VALIDATOR}" > "${VALIDATOR_DEREF}" \
+    jsonschematool --debug --pretty --dereference --annotations "${PS_LOCAL_DICT}" "${VALIDATOR}" > "${VALIDATOR_DEREF}" \
 	|| die "Unable to process ${INPUT}"
 
     # Ibid, turned into an array

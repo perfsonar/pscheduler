@@ -215,6 +215,15 @@
 	    "examples": [ "2001:db8::beef:cafe", "3fff:0123:4567:89ab:cdef:0000:1b4d:c0de" ]
 	},
 
+	"IPv6FlowLabel": {
+	    "type": "integer",
+	    "minimum": 0,
+	    "maximum": 1048575,
+            "title": "Flow Label",
+            "description": "IPv6 flow label.",
+            "x-description-append": "Any 20-bit decimal number in [0.. 1048575] is valid."
+	},
+
         "IPv6RFC2732": {
             "#": "IPv6 address with optional port, formatted per RFC 2732",
             "#": "Source: https://stackoverflow.com/a/17871737/180674",
@@ -246,6 +255,15 @@
         "IPCIDRList": {
             "type": "array",
             "items": { "$ref": "#/pScheduler/IPCIDR" }
+        },
+
+	"IPVersion": {
+            "type": "integer",
+            "enum": [ 4, 6 ],
+	    "examples": [ 4, 6 ],
+	    "title": "IP Version",
+	    "description": "IP protocol version.",
+	    "x-description-append": "Valid values are 4 and 6."
         },
 
         "Int8": {
@@ -1106,16 +1124,6 @@
                 "host-precedence-violation",
                 "precedence-cutoff-in-effect"
             ]
-        },
-
-        "ip-version": {
-            "type": "integer",
-            "enum": [ 4, 6 ]
-        },
-
-        "ip-version-list": {
-            "type": "array",
-            "items": { "$ref": "#/pScheduler/ip-version" }
         },
 
         "#": "Standard Plugin Enumeration Types",

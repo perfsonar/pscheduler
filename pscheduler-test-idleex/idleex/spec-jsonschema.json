@@ -9,12 +9,35 @@
 	{
             "type": "object",
             "properties": {
-		"schema":           { "$ref": "#/pScheduler/Schema", "const": 1 },
-		"duration":         { "$ref": "#/pScheduler/Duration" },
-		"host":             { "$ref": "#/pScheduler/Host" },
-		"host-node":        { "$ref": "#/pScheduler/URLHostPort" },
-		"parting-comment":  { "$ref": "#/pScheduler/String" },
-		"starting-comment": { "$ref": "#/pScheduler/String" }
+		"schema": {
+		    "$ref": "#/pScheduler/Schema",
+		    "const": 1
+		},
+		"duration": {
+		    "$ref": "#/pScheduler/Duration",
+		    "title": "Duration",
+		    "description": "How long to be idle."
+		},
+		"host": {
+		    "$ref": "#/pScheduler/Host",
+		    "title": "Host",
+		    "description": "The host that will be idle."
+		},
+		"host-node": {
+		    "$ref": "#/pScheduler/URLHostPort",
+		    "title": "Host Node",
+		    "description": "The pScheduler node to contact for the host."
+		},
+		"parting-comment": {
+		    "$ref": "#/pScheduler/String",
+		    "title": "Parting Comment",
+		    "description": "Commentary for after idling is done."
+		},
+		"starting-comment": {
+		    "$ref": "#/pScheduler/String",
+		    "title": "Starting Comment",
+		    "description": "Commentary for before idling starts."
+		}
             },
             "required": [
 		"duration"

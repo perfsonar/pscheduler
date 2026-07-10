@@ -15,7 +15,10 @@
 
 	"ScanScheme": {
             "type": "string",
-            "enum": [ "up", "down", "edges", "random"]
+            "enum": [ "up", "down", "edges", "random"],
+	    "title": "Scan Scheme",
+	    "description": "Order in which to scan the network.",
+	    "x-description-append": "Valid values are 'up' to scan from the first address, 'down' to scan from the last, 'edges' to scan in from both ends and 'random' to scan randomly."
         }
     },
 
@@ -26,15 +29,48 @@
 	{
             "type": "object",
             "properties": {
-		"schema":    { "$ref": "#/pScheduler/Schema", "const": 1 },
-		"host":      { "$ref": "#/pScheduler/Host" },
-		"host-node": { "$ref": "#/pScheduler/Host" },
-		"network":   { "$ref": "#/pScheduler/IPCIDR" },
-		"gateway":   { "$ref": "#/local/GatewayHost" },
-		"limit":     { "$ref": "#/pScheduler/Cardinal" },
-		"parallel":  { "$ref": "#/pScheduler/Cardinal" },
-		"scan":      { "$ref": "#/local/ScanScheme" },
-		"timeout":   { "$ref": "#/pScheduler/Duration" }
+		"schema":    {
+		    "$ref": "#/pScheduler/Schema",
+		    "const": 1
+		},
+		"host": {
+		    "$ref": "#/pScheduler/Host",
+		    "title": "Host",
+		    "description": "Host to run the test."
+		},
+		"host-node": {
+		    "$ref": "#/pScheduler/URLHostPort",
+		    "title": "Host Node",
+		    "description": "pScheduler to contact about running the test."
+		},
+		"network": {
+		    "$ref": "#/pScheduler/IPCIDR",
+		    "title": "Network",
+		    "description": "Network to scan."
+		},
+		"gateway":   {
+		    "$ref": "#/local/GatewayHost",
+		    "title": "Gateway",
+		    "description": "Gateway address within the network."
+		},
+		"limit": {
+		    "$ref": "#/pScheduler/Cardinal",
+		    "title": "Limit",
+		    "description": "Maximum addresses to scan.  Default is to scan the entire network."
+		},
+		"parallel":  {
+		    "$ref": "#/pScheduler/Cardinal",
+		    "title": "Parallel",
+		    "description": "Number of addresses to scan in parallel."
+		},
+		"scan": {
+		    "$ref": "#/local/ScanScheme"
+		},
+		"timeout": {
+		    "$ref": "#/pScheduler/Duration",
+		    "title": "Timeout",
+		    "description": "Maximum time to wait for a response."
+		}
             },
             "required": [
 		"network"

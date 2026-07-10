@@ -52,11 +52,7 @@
 		    "$ref": "#/pScheduler/Schema",
 		    "const": 2
 		},
-		"duration": {
-		    "$ref": "#/pScheduler/Duration",
-		    "title": "Duration",
-		    "description": "How long to be idle."
-		},
+		"duration": null,
 		"host": {
 		    "type": "array",
                     "items": {
@@ -66,16 +62,8 @@
 		    },
                     "minItems" : 1
 		},
-		"parting-comment": {
-		    "$ref": "#/pScheduler/String",
-		    "title": "Parting Comment",
-		    "description": "Commentary for after idling is done."
-		},
-		"starting-comment": {
-		    "$ref": "#/pScheduler/String",
-		    "title": "Starting Comment",
-		    "description": "Commentary for before idling starts."
-		}
+		"parting-comment": null,
+		"starting-comment": null
             },
             "additionalProperties": false,
             "required": [

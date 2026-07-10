@@ -64,7 +64,7 @@ opt_parser.add_option("--host-node",
                       dest="host_node")
 
 opt_parser.add_option("--duration",
-                      help="Duration of idle test.",
+                      help="Duration of the test.",
                       action="store", type="string",
                       dest="duration")
 

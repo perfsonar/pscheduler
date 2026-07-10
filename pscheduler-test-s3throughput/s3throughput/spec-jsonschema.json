@@ -9,21 +9,63 @@
         {
             "type": "object",
             "properties": {
-                "schema":      { "$ref": "#/pScheduler/Schema", "const": 1 },
-                "host":        { "$ref": "#/pScheduler/Host" },
-                "host-node":   { "$ref": "#/pScheduler/Host" },
-                "duration":    { "$ref": "#/pScheduler/Duration" },
-                "timeout":     { "$ref": "#/pScheduler/Duration" },
-	        "_access-key": { "$ref": "#/pScheduler/String" },
-	        "bucket":      { "$ref": "#/pScheduler/String" },
-                "_secret-key": { "$ref": "#/pScheduler/String" },
+                "schema": {
+		    "$ref": "#/pScheduler/Schema",
+		    "const": 1
+		},
+                "host": {
+		    "$ref": "#/pScheduler/Host",
+		    "title": "Host",
+		    "description": "Host to run the test."
+		},
+                "host-node": {
+		    "$ref": "#/pScheduler/Host",
+		    "title": "Host Node",
+		    "description": "pScheduler to contact about running the test."
+		},
+                "duration": {
+		    "$ref": "#/pScheduler/Duration",
+		    "title": "Duration",
+		    "description": "Duration of the test."
+		},
+                "timeout": {
+		    "$ref": "#/pScheduler/Duration",
+		    "title": "Timeout",
+		    "description": "Timeout for each query attempt."
+		},
+	        "_access-key": {
+		    "$ref": "#/pScheduler/String",
+		    "title": "Acces Key",
+		    "description": "Access key for the S3 server."
+		},
+	        "bucket": {
+		    "$ref": "#/pScheduler/String",
+		    "title": "Bucket",
+		    "description": "Bucket to use for the test."
+		},
+                "_secret-key": {
+		    "$ref": "#/pScheduler/String",
+		    "title": "Secret Key",
+		    "description": "Secret key for the S3 server."
+		},
 	        "url":	       {
 		    "type": "string",
 		    "format": "uri",
-		    "pattern": "^https?://"
+		    "pattern": "^https?://",
+		    "title": "URL",
+		    "description": "URL for the S3 server, including method.",
+		    "x-description-append": "Any https:// URL is valid."
 		},
-       	        "iterations":  { "$ref": "#/pScheduler/Cardinal" },
-	        "object-size": { "$ref": "#/pScheduler/Cardinal" }
+       	        "iterations":  {
+		    "$ref": "#/pScheduler/Cardinal",
+		    "title": "Iterations",
+		    "description": "Number of times the test should be run."
+		},
+	        "object-size": {
+		    "$ref": "#/pScheduler/Cardinal",
+		    "title": "Object Size",
+		    "description": "Size of objects to write."
+		}
             },
             "required": [
                 "_access-key",

@@ -13,14 +13,20 @@
 		"vegas",
 		"westwood",
                 "yeah"
-	    ]
+	    ],
+	    "title": "Congestion",
+	    "description": "Congestion control algorithm to be used.",
+	    "x-description-append": "Valid values are bbr, bic, cubic, htcp, reno, vegas, westwood and yeah."
         },
 
 
         "congestion-unvalidated": {
 	    "#": "Schema 4 and later",
             "type": "string",
-            "minLength": 1
+            "minLength": 1,
+	    "title": "Congestion",
+	    "description": "Congestion control algorithm to be used.",
+	    "x-description-append": "Any value is valid, but unsupported congestion control methods will cause measurement failures."
         }
     },
 
@@ -29,68 +35,165 @@
         null,
 	
         {
-            "title": "pScheduler Throughput Specification Schema",
             "type": "object",
             "properties": {
-                "schema":      { "$ref": "#/pScheduler/Schema", "const": 1 },
-                "source":      { "$ref": "#/pScheduler/Host" },
-                "source-node": { "$ref": "#/pScheduler/URLHostPort" },
-                "dest":        { "$ref": "#/pScheduler/Host" },
-                "dest-node":   { "$ref": "#/pScheduler/URLHostPort" },
-                "duration":    { "$ref": "#/pScheduler/Duration" },
-                "interval":    { "$ref": "#/pScheduler/Duration" },
-                "parallel":    { "$ref": "#/pScheduler/Cardinal" },
-                "udp":         { "$ref": "#/pScheduler/Boolean" },
-                "bandwidth":   { "$ref": "#/pScheduler/Cardinal" },
-                "window-size": { "$ref": "#/pScheduler/Cardinal" },
-                "mss":         { "$ref": "#/pScheduler/Cardinal" },
-                "buffer-length": { "$ref": "#/pScheduler/Cardinal" },
-                "ip-tos":        { "$ref": "#/pScheduler/IPTOS" },
-                "ip-version":    { "$ref": "#/pScheduler/ip-version" },
-                "local-address": { "$ref": "#/pScheduler/Host" },
-                "omit":          { "$ref": "#/pScheduler/Duration" },
-                "no-delay":    { "$ref": "#/pScheduler/Boolean" },
-                "congestion":    { "$ref": "#/local/congestion" },
-                "zero-copy":    { "$ref": "#/pScheduler/Boolean" },
-                "flow-label":    { "$ref": "#/pScheduler/Cardinal" },
-                "client-cpu-affinity":    { "$ref": "#/pScheduler/Integer" },
-                "server-cpu-affinity":    { "$ref": "#/pScheduler/Integer" },
-                "reverse": { "$ref": "#/pScheduler/Boolean" }
+                "schema": {
+		    "$ref": "#/pScheduler/Schema",
+		    "const": 1
+		},
+                "source": {
+		    "$ref": "#/pScheduler/Host",
+		    "title": "Source",
+		    "description": "Sending end of the test."
+		},
+                "source-node": {
+		    "$ref": "#/pScheduler/URLHostPort",
+		    "title": "Source Node",
+                    "description": "pScheduler to contact for the source of the test."
+		},
+                "dest": {
+		    "$ref": "#/pScheduler/Host",
+                    "title": "Destination",
+                    "description": "Receiving end of the test."
+		},
+                "dest-node": {
+		    "$ref": "#/pScheduler/URLHostPort",
+                    "title": "Destination Node",
+                    "description": "pScheduler to contact for the destination of the test."
+		},
+                "duration": {
+		    "$ref": "#/pScheduler/Duration",
+                    "title": "Duration",
+                    "description": "How long to run the measurement."
+		},
+                "interval": {
+		    "$ref": "#/pScheduler/Duration",
+                    "title": "Interval",
+                    "description": "How often to report results, exclusive of the summary and the end."
+		},
+                "parallel": {
+		    "$ref": "#/pScheduler/Cardinal",
+                    "title": "Parallel",
+                    "description": "Number of data streams to run in parallel during the test."
+		},
+                "udp": {
+		    "$ref": "#/pScheduler/Boolean",
+                    "title": "UDP",
+                    "description": "Test with UDP instead of TCP."
+		},
+                "bandwidth": {
+		    "$ref": "#/pScheduler/Cardinal",
+                    "title": "Bandwidth",
+                    "description": "Maximum bandwidth in bits per second."
+		},
+                "window-size": {
+		    "$ref": "#/pScheduler/Cardinal",
+                    "title": "Window Size",
+                    "description": "TCP window (buffer) size to use, in bytes."
+		},
+                "mss": {
+		    "$ref": "#/pScheduler/Cardinal",
+                    "title": "MSS",
+                    "description": "TCP maximum segment size."
+
+		},
+                "buffer-length": {
+		    "$ref": "#/pScheduler/Cardinal",
+                    "title": "Buffer Length",
+                    "description": "Read/write buffer size, in bytes."
+		},
+                "ip-tos": {
+		    "$ref": "#/pScheduler/IPTOS"
+		},
+                "ip-version": {
+		    "$ref": "#/pScheduler/IPVersion"
+		},
+                "local-address": {
+		    "$ref": "#/pScheduler/Host",
+                    "title": "Local Address",
+                    "description": "Use this as a local address for the sending end of the test, usually when NAT or PAT is involved."
+		},
+                "omit": {
+		    "$ref": "#/pScheduler/Duration",
+                    "title": "Omit",
+                    "description": "Amount of time to omit from the start of the tet."
+		},
+                "no-delay": {
+		    "$ref": "#/pScheduler/Boolean",
+                    "title": "No Delay",
+                    "description": "Set TCP's no-delay flag, disabling Nagle's algorithm."
+		},
+                "congestion": {
+		    "$ref": "#/local/congestion"
+		},
+                "zero-copy": {
+		    "$ref": "#/pScheduler/Boolean",
+                    "title": "Zero Copy",
+                    "description": "Use zero-copy sending and receiving methods."
+		},
+                "flow-label": {
+		    "$ref": "#/pScheduler/IPv6FlowLabel"
+		},
+                "client-cpu-affinity": {
+		    "$ref": "#/pScheduler/Integer",
+                    "title": "Client CPU Affinity",
+                    "description": "CPU affinity for the client (source) end of the test."
+		},
+                "server-cpu-affinity": {
+		    "$ref": "#/pScheduler/Integer",
+                    "title": "Server CPU Affinity",
+                    "description": "CPU affinity for the server (destination) end of the test."
+		},
+                "reverse": {
+		    "$ref": "#/pScheduler/Boolean",
+                    "title": "Reverse",
+                    "description": "Reverse the direction of the test so the destination sends to the source."
+		}
             },
             "additionalProperties": false,
             "required": [ "dest" ]
         },
 
         {
-            "title": "pScheduler Throughput Specification Schema",
             "type": "object",
             "properties": {
-                "schema":      { "$ref": "#/pScheduler/Schema", "const": 2 },
-                "source":      { "$ref": "#/pScheduler/Host" },
-                "source-node": { "$ref": "#/pScheduler/URLHostPort" },
-                "dest":        { "$ref": "#/pScheduler/Host" },
-                "dest-node":   { "$ref": "#/pScheduler/URLHostPort" },
-                "duration":    { "$ref": "#/pScheduler/Duration" },
-                "interval":    { "$ref": "#/pScheduler/Duration" },
-                "parallel":    { "$ref": "#/pScheduler/Cardinal" },
-                "udp":         { "$ref": "#/pScheduler/Boolean" },
-                "bandwidth":   { "$ref": "#/pScheduler/Cardinal" },
-                "window-size": { "$ref": "#/pScheduler/Cardinal" },
-                "mss":         { "$ref": "#/pScheduler/Cardinal" },
-                "buffer-length": { "$ref": "#/pScheduler/Cardinal" },
-                "ip-tos":        { "$ref": "#/pScheduler/IPTOS" },
-                "ip-version":    { "$ref": "#/pScheduler/ip-version" },
-                "local-address": { "$ref": "#/pScheduler/Host" },
-                "omit":          { "$ref": "#/pScheduler/Duration" },
-                "no-delay":    { "$ref": "#/pScheduler/Boolean" },
-                "congestion":    { "$ref": "#/local/congestion" },
-                "zero-copy":    { "$ref": "#/pScheduler/Boolean" },
-                "flow-label":    { "$ref": "#/pScheduler/Cardinal" },
-                "client-cpu-affinity":    { "$ref": "#/pScheduler/Integer" },
-                "server-cpu-affinity":    { "$ref": "#/pScheduler/Integer" },
-                "single-ended": { "$ref": "#/pScheduler/Boolean" },
-                "single-ended-port": { "$ref": "#/pScheduler/Integer" },
-                "reverse": { "$ref": "#/pScheduler/Boolean" }
+                "schema": {
+		    "$ref": "#/pScheduler/Schema",
+		    "const": 2
+		},
+                "source": null,
+                "source-node": null,
+                "dest": null,
+                "dest-node": null,
+                "duration": null,
+                "interval": null,
+                "parallel": null,
+                "udp": null,
+                "bandwidth": null,
+                "window-size": null,
+                "mss": null,
+                "buffer-length": null,
+                "ip-tos": null,
+                "ip-version": null,
+                "local-address": null,
+                "omit": null,
+                "no-delay": null,
+                "congestion": null,
+                "zero-copy": null,
+                "flow-label": null,
+                "client-cpu-affinity": null,
+                "server-cpu-affinity": null,
+                "single-ended": {
+		    "$ref": "#/pScheduler/Boolean",
+		    "title": "Single-Ended",
+		    "description": "Run the test to a system without pScheduler on the destination end."
+		},
+                "single-ended-port": {
+		    "$ref": "#/pScheduler/IPPort",
+		    "title": "Single-Ended Port",
+		    "description": "Port to use when conducting a single-ended test."
+		},
+                "reverse": null
             },
             "additionalProperties": false,
             "required": [
@@ -100,36 +203,42 @@
         },
 
         {
-            "title": "pScheduler Throughput Specification Schema",
             "type": "object",
             "properties": {
-                "schema":      { "$ref": "#/pScheduler/Schema", "const": 3 },
-                "source":      { "$ref": "#/pScheduler/Host" },
-                "source-node": { "$ref": "#/pScheduler/URLHostPort" },
-                "dest":        { "$ref": "#/pScheduler/Host" },
-                "dest-node":   { "$ref": "#/pScheduler/URLHostPort" },
-                "duration":    { "$ref": "#/pScheduler/Duration" },
-                "interval":    { "$ref": "#/pScheduler/Duration" },
-                "link-rtt":    { "$ref": "#/pScheduler/Duration" },
-                "parallel":    { "$ref": "#/pScheduler/Cardinal" },
-                "udp":         { "$ref": "#/pScheduler/Boolean" },
-                "bandwidth":   { "$ref": "#/pScheduler/Cardinal" },
-                "window-size": { "$ref": "#/pScheduler/Cardinal" },
-                "mss":         { "$ref": "#/pScheduler/Cardinal" },
-                "buffer-length": { "$ref": "#/pScheduler/Cardinal" },
-                "ip-tos":        { "$ref": "#/pScheduler/IPTOS" },
-                "ip-version":    { "$ref": "#/pScheduler/ip-version" },
-                "local-address": { "$ref": "#/pScheduler/Host" },
-                "omit":          { "$ref": "#/pScheduler/Duration" },
-                "no-delay":    { "$ref": "#/pScheduler/Boolean" },
-                "congestion":    { "$ref": "#/local/congestion" },
-                "zero-copy":    { "$ref": "#/pScheduler/Boolean" },
-                "flow-label":    { "$ref": "#/pScheduler/Cardinal" },
-                "client-cpu-affinity":    { "$ref": "#/pScheduler/Integer" },
-                "server-cpu-affinity":    { "$ref": "#/pScheduler/Integer" },
-                "single-ended": { "$ref": "#/pScheduler/Boolean" },
-                "single-ended-port": { "$ref": "#/pScheduler/Integer" },
-                "reverse": { "$ref": "#/pScheduler/Boolean" }
+                "schema": {
+		    "$ref": "#/pScheduler/Schema",
+		    "const": 3
+		},
+                "source": null,
+                "source-node": null,
+                "dest": null,
+                "dest-node": null,
+                "duration": null,
+                "interval": null,
+                "link-rtt": {
+		    "$ref": "#/pScheduler/Duration",
+		    "title": "Link RTT",
+		    "description": "Approximate link round-trip time.  Useful for testing satellite links."
+		},
+                "parallel": null,
+                "udp": null,
+                "bandwidth": null,
+                "window-size": null,
+                "mss": null,
+                "buffer-length": null,
+                "ip-tos": null,
+                "ip-version": null,
+                "local-address": null,
+                "omit": null,
+                "no-delay":  null,
+                "congestion": null,
+                "zero-copy": null,
+                "flow-label": null,
+                "client-cpu-affinity": null,
+                "server-cpu-affinity": null,
+                "single-ended": null,
+                "single-ended-port": null,
+                "reverse": null
             },
             "additionalProperties": false,
             "required": [
@@ -139,38 +248,50 @@
         },
 
         {
-            "title": "pScheduler Throughput Specification Schema",
             "type": "object",
             "properties": {
-                "schema":      { "$ref": "#/pScheduler/Schema", "const": 4 },
-                "source":      { "$ref": "#/pScheduler/Host" },
-                "source-node": { "$ref": "#/pScheduler/URLHostPort" },
-                "dest":        { "$ref": "#/pScheduler/Host" },
-                "dest-node":   { "$ref": "#/pScheduler/URLHostPort" },
-                "duration":    { "$ref": "#/pScheduler/Duration" },
-                "interval":    { "$ref": "#/pScheduler/Duration" },
-                "link-rtt":    { "$ref": "#/pScheduler/Duration" },
-                "parallel":    { "$ref": "#/pScheduler/Cardinal" },
-                "udp":         { "$ref": "#/pScheduler/Boolean" },
-                "bandwidth":   { "$ref": "#/pScheduler/Cardinal" },
-                "bandwidth-strict":   { "$ref": "#/pScheduler/Boolean" },
-                "burst-size": { "$ref": "#/pScheduler/Cardinal" },
-                "window-size": { "$ref": "#/pScheduler/Cardinal" },
-                "mss":         { "$ref": "#/pScheduler/Cardinal" },
-                "buffer-length": { "$ref": "#/pScheduler/Cardinal" },
-                "ip-tos":        { "$ref": "#/pScheduler/IPTOS" },
-                "ip-version":    { "$ref": "#/pScheduler/ip-version" },
-                "local-address": { "$ref": "#/pScheduler/Host" },
-                "omit":          { "$ref": "#/pScheduler/Duration" },
-                "no-delay":    { "$ref": "#/pScheduler/Boolean" },
-                "congestion":    { "$ref": "#/local/congestion-unvalidated" },
-                "zero-copy":    { "$ref": "#/pScheduler/Boolean" },
-                "flow-label":    { "$ref": "#/pScheduler/Cardinal" },
-                "client-cpu-affinity":    { "$ref": "#/pScheduler/Integer" },
-                "server-cpu-affinity":    { "$ref": "#/pScheduler/Integer" },
-                "single-ended": { "$ref": "#/pScheduler/Boolean" },
-                "single-ended-port": { "$ref": "#/pScheduler/Integer" },
-                "reverse": { "$ref": "#/pScheduler/Boolean" }
+                "schema": {
+		    "$ref": "#/pScheduler/Schema",
+		    "const": 4
+		},
+                "source": null,
+                "source-node": null,
+                "dest": null,
+                "dest-node": null,
+                "duration": null,
+                "interval": null,
+                "link-rtt": null,
+                "parallel": null,
+                "udp": null,
+                "bandwidth": null,
+                "bandwidth-strict": {
+		    "$ref": "#/pScheduler/Boolean",
+		    "title": "Strict Bandwidth",
+		    "description": "Never go faster than the specified bandwidth, even to make up for lost time."
+		},
+                "burst-size": {
+		    "$ref": "#/pScheduler/Cardinal",
+		    "title": "Burst Size",
+		    "description": "Maximum number of packets to send in a single burst."
+		},
+                "window-size": null,
+                "mss": null,
+                "buffer-length": null,
+                "ip-tos": null,
+                "ip-version": null,
+                "local-address": null,
+                "omit": null,
+                "no-delay": null,
+                "congestion": {
+		    "$ref": "#/local/congestion-unvalidated"
+		},
+                "zero-copy": null,
+                "flow-label": null,
+                "client-cpu-affinity": null,
+                "server-cpu-affinity": null,
+                "single-ended": null,
+                "single-ended-port": null,
+                "reverse": null
             },
             "additionalProperties": false,
             "required": [
@@ -180,39 +301,45 @@
         },
 
         {
-            "title": "pScheduler Throughput Specification Schema",
             "type": "object",
             "properties": {
-                "schema":      { "$ref": "#/pScheduler/Schema", "const": 5 },
-                "source":      { "$ref": "#/pScheduler/Host" },
-                "source-node": { "$ref": "#/pScheduler/URLHostPort" },
-                "dest":        { "$ref": "#/pScheduler/Host" },
-                "dest-node":   { "$ref": "#/pScheduler/URLHostPort" },
-                "duration":    { "$ref": "#/pScheduler/Duration" },
-                "interval":    { "$ref": "#/pScheduler/Duration" },
-                "link-rtt":    { "$ref": "#/pScheduler/Duration" },
-                "parallel":    { "$ref": "#/pScheduler/Cardinal" },
-                "udp":         { "$ref": "#/pScheduler/Boolean" },
-                "bandwidth":   { "$ref": "#/pScheduler/Cardinal" },
-                "bandwidth-strict":   { "$ref": "#/pScheduler/Boolean" },
-                "burst-size": { "$ref": "#/pScheduler/Cardinal" },
-                "window-size": { "$ref": "#/pScheduler/Cardinal" },
-                "mss":         { "$ref": "#/pScheduler/Cardinal" },
-                "buffer-length": { "$ref": "#/pScheduler/Cardinal" },
-                "ip-tos":        { "$ref": "#/pScheduler/IPTOS" },
-                "ip-version":    { "$ref": "#/pScheduler/ip-version" },
-                "local-address": { "$ref": "#/pScheduler/Host" },
-                "omit":          { "$ref": "#/pScheduler/Duration" },
-                "no-delay":    { "$ref": "#/pScheduler/Boolean" },
-                "congestion":    { "$ref": "#/local/congestion-unvalidated" },
-                "zero-copy":    { "$ref": "#/pScheduler/Boolean" },
-                "flow-label":    { "$ref": "#/pScheduler/Cardinal" },
-                "client-cpu-affinity":    { "$ref": "#/pScheduler/Integer" },
-                "server-cpu-affinity":    { "$ref": "#/pScheduler/Integer" },
-                "single-ended": { "$ref": "#/pScheduler/Boolean" },
-                "single-ended-port": { "$ref": "#/pScheduler/Integer" },
-                "reverse": { "$ref": "#/pScheduler/Boolean" },
-                "loopback":    { "$ref": "#/pScheduler/Boolean" }
+                "schema": {
+		    "$ref": "#/pScheduler/Schema",
+		    "const": 5
+		},
+                "source": null,
+                "source-node": null,
+                "dest": null,
+                "dest-node": null,
+                "duration": null,
+                "interval": null,
+                "link-rtt": null,
+                "parallel": null,
+                "udp": null,
+                "bandwidth": null,
+                "bandwidth-strict": null,
+                "burst-size": null,
+                "window-size": null,
+                "mss": null,
+                "buffer-length": null,
+                "ip-tos": null,
+                "ip-version": null,
+                "local-address": null,
+                "omit": null,
+                "no-delay": null,
+                "congestion": null,
+                "zero-copy": null,
+                "flow-label": null,
+                "client-cpu-affinity": null,
+                "server-cpu-affinity": null,
+                "single-ended": null,
+                "single-ended-port": null,
+                "reverse": null,
+                "loopback": {
+		    "$ref": "#/pScheduler/Boolean",
+		    "title": "Loopback",
+		    "description": "Allow the client and server sides to run on the same hosts for loopback testing."
+		}
             },
             "additionalProperties": false,
             "required": [
@@ -222,40 +349,46 @@
         },
 
         {
-            "title": "pScheduler Throughput Specification Schema",
             "type": "object",
             "properties": {
-                "schema":      { "$ref": "#/pScheduler/Schema", "const": 6 },
-                "source":      { "$ref": "#/pScheduler/Host" },
-                "source-node": { "$ref": "#/pScheduler/URLHostPort" },
-                "dest":        { "$ref": "#/pScheduler/Host" },
-                "dest-node":   { "$ref": "#/pScheduler/URLHostPort" },
-                "duration":    { "$ref": "#/pScheduler/Duration" },
-                "interval":    { "$ref": "#/pScheduler/Duration" },
-                "link-rtt":    { "$ref": "#/pScheduler/Duration" },
-                "parallel":    { "$ref": "#/pScheduler/Cardinal" },
-                "udp":         { "$ref": "#/pScheduler/Boolean" },
-                "bandwidth":   { "$ref": "#/pScheduler/Cardinal" },
-                "bandwidth-strict":   { "$ref": "#/pScheduler/Boolean" },
-                "burst-size": { "$ref": "#/pScheduler/Cardinal" },
-                "window-size": { "$ref": "#/pScheduler/Cardinal" },
-                "mss":         { "$ref": "#/pScheduler/Cardinal" },
-                "buffer-length": { "$ref": "#/pScheduler/Cardinal" },
-                "ip-tos":        { "$ref": "#/pScheduler/IPTOS" },
-                "ip-version":    { "$ref": "#/pScheduler/ip-version" },
-                "local-address": { "$ref": "#/pScheduler/Host" },
-                "omit":          { "$ref": "#/pScheduler/Duration" },
-                "no-delay":    { "$ref": "#/pScheduler/Boolean" },
-                "congestion":    { "$ref": "#/local/congestion-unvalidated" },
-                "zero-copy":    { "$ref": "#/pScheduler/Boolean" },
-                "flow-label":    { "$ref": "#/pScheduler/Cardinal" },
-                "client-cpu-affinity":    { "$ref": "#/pScheduler/Integer" },
-                "server-cpu-affinity":    { "$ref": "#/pScheduler/Integer" },
-                "single-ended": { "$ref": "#/pScheduler/Boolean" },
-                "single-ended-port": { "$ref": "#/pScheduler/Integer" },
-                "reverse": { "$ref": "#/pScheduler/Boolean" },
-                "reverse-connections": { "$ref": "#/pScheduler/Boolean" },
-                "loopback":    { "$ref": "#/pScheduler/Boolean" }
+                "schema": {
+		    "$ref": "#/pScheduler/Schema",
+		    "const": 6
+		},
+                "source": null,
+                "source-node": null,
+                "dest": null,
+                "dest-node": null,
+                "duration": null,
+                "interval": null,
+                "link-rtt": null,
+                "parallel": null,
+                "udp": null,
+                "bandwidth": null,
+                "bandwidth-strict": null,
+                "burst-size": null,
+                "window-size": null,
+                "mss": null,
+                "buffer-length": null,
+                "ip-tos": null,
+                "ip-version": null,
+                "local-address": null,
+                "omit": null,
+                "no-delay": null,
+                "congestion": null,
+                "zero-copy": null,
+                "flow-label": null,
+                "client-cpu-affinity": null,
+                "server-cpu-affinity": null,
+                "single-ended": null,
+                "single-ended-port": null,
+                "reverse": null,
+                "reverse-connections": {
+		    "$ref": "#/pScheduler/Boolean",
+		    "title": "Reverse Connections",
+		    "description": "Make connections from destination to source when possible without affecting the direction in which data is sent."
+		},
+                "loopback": null
             },
             "additionalProperties": false,
             "required": [
@@ -265,41 +398,47 @@
         },
 
         {
-            "title": "pScheduler Throughput Specification Schema",
             "type": "object",
             "properties": {
-                "schema":      { "$ref": "#/pScheduler/Schema", "const": 7 },
-                "source":      { "$ref": "#/pScheduler/Host" },
-                "source-node": { "$ref": "#/pScheduler/URLHostPort" },
-                "dest":        { "$ref": "#/pScheduler/Host" },
-                "dest-node":   { "$ref": "#/pScheduler/URLHostPort" },
-                "duration":    { "$ref": "#/pScheduler/Duration" },
-                "interval":    { "$ref": "#/pScheduler/Duration" },
-                "link-rtt":    { "$ref": "#/pScheduler/Duration" },
-                "parallel":    { "$ref": "#/pScheduler/Cardinal" },
-                "udp":         { "$ref": "#/pScheduler/Boolean" },
-                "bandwidth":   { "$ref": "#/pScheduler/Cardinal" },
-                "bandwidth-strict":   { "$ref": "#/pScheduler/Boolean" },
-                "burst-size": { "$ref": "#/pScheduler/Cardinal" },
-                "fq-rate":     { "$ref": "#/pScheduler/Cardinal" },
-                "window-size": { "$ref": "#/pScheduler/Cardinal" },
-                "mss":         { "$ref": "#/pScheduler/Cardinal" },
-                "buffer-length": { "$ref": "#/pScheduler/Cardinal" },
-                "ip-tos":        { "$ref": "#/pScheduler/IPTOS" },
-                "ip-version":    { "$ref": "#/pScheduler/ip-version" },
-                "local-address": { "$ref": "#/pScheduler/Host" },
-                "omit":          { "$ref": "#/pScheduler/Duration" },
-                "no-delay":    { "$ref": "#/pScheduler/Boolean" },
-                "congestion":    { "$ref": "#/local/congestion-unvalidated" },
-                "zero-copy":    { "$ref": "#/pScheduler/Boolean" },
-                "flow-label":    { "$ref": "#/pScheduler/Cardinal" },
-                "client-cpu-affinity":    { "$ref": "#/pScheduler/Integer" },
-                "server-cpu-affinity":    { "$ref": "#/pScheduler/Integer" },
-                "single-ended": { "$ref": "#/pScheduler/Boolean" },
-                "single-ended-port": { "$ref": "#/pScheduler/Integer" },
-                "reverse": { "$ref": "#/pScheduler/Boolean" },
-                "reverse-connections": { "$ref": "#/pScheduler/Boolean" },
-                "loopback":    { "$ref": "#/pScheduler/Boolean" }
+                "schema": {
+		    "$ref": "#/pScheduler/Schema",
+		    "const": 7
+		},
+                "source": null,
+                "source-node": null,
+                "dest": null,
+                "dest-node": null,
+                "duration": null,
+                "interval": null,
+                "link-rtt": null,
+                "parallel": null,
+                "udp": null,
+                "bandwidth": null,
+                "bandwidth-strict": null,
+                "burst-size": null,
+                "fq-rate": {
+		    "$ref": "#/pScheduler/Cardinal",
+		    "title": "FQ Rate",
+		    "description": "TCP fair queueing rate."		    
+		},
+                "window-size": null,
+                "mss": null,
+                "buffer-length": null,
+                "ip-tos": null,
+                "ip-version": null,
+                "local-address": null,
+                "omit": null,
+                "no-delay": null,
+                "congestion": null,
+                "zero-copy": null,
+                "flow-label": null,
+                "client-cpu-affinity": null,
+                "server-cpu-affinity": null,
+                "single-ended": null,
+                "single-ended-port": null,
+                "reverse": null,
+                "reverse-connections": null,
+                "loopback": null
             },
             "additionalProperties": false,
             "required": [

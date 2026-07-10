@@ -9,13 +9,40 @@
         {
             "type": "object",
             "properties": {
-                "schema":         { "$ref": "#/pScheduler/Schema", "const": 1 },
-                "host":           { "$ref": "#/pScheduler/Host" },
-                "host-node":      { "$ref": "#/pScheduler/Host" },
-                "duration":       { "$ref": "#/pScheduler/Duration" },
-                "timeout":        { "$ref": "#/pScheduler/Duration" },
-		"interface":      { "$ref": "#/pScheduler/String" },
-		"ssid":           { "$ref": "#/pScheduler/String" }
+                "schema": {
+		    "$ref": "#/pScheduler/Schema",
+		    "const": 1
+		},
+                "host": {
+		    "$ref": "#/pScheduler/Host",
+		    "title": "Host",
+		    "description": "Host that will run the test."
+		},
+                "host-node": {
+		    "$ref": "#/pScheduler/URLHostPort",
+		    "title": "Host Node",
+		    "description": "pScheduler to contact about being the host."
+		},
+                "duration": {
+		    "$ref": "#/pScheduler/Duration",
+		    "title": "Duration",
+		    "description": "Duration of the test."
+		},
+                "timeout": {
+		    "$ref": "#/pScheduler/Duration",
+		    "title": "Timeout",
+		    "description": "Timeout for each query attempt."
+		},
+		"interface": {
+		    "$ref": "#/pScheduler/String",
+		    "title": "Interface",
+		    "description": "Network interface to use for scanning."
+		},
+		"ssid": {
+		    "$ref": "#/pScheduler/String",
+		    "title": "SSIDs",
+		    "description": "List of BSSIDs for the SSID to be produced."
+		}
             },
             "required": [
                 "interface",

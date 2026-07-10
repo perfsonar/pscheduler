@@ -20,13 +20,41 @@
 	{
             "type": "object",
             "properties": {
-                "schema":         { "$ref": "#/pScheduler/Schema", "const": 1 },
-                "network":        { "$ref": "#/local/HostOrCIDR" },
-                "source":         { "$ref": "#/pScheduler/Host" },
-                "services":       { "$ref": "#/pScheduler/Boolean" },
-                "ports":          { "$ref": "#/local/portlist" },
-                "timeout":        { "$ref": "#/pScheduler/Duration" },
-                "source-node":    { "$ref": "#/pScheduler/URLHostPort"}
+                "schema": {
+		    "$ref": "#/pScheduler/Schema",
+		    "const": 1
+		},
+                "network": {
+		    "$ref": "#/local/HostOrCIDR",
+		    "title": "Network",
+		    "description": "CIDR network or host to scan"
+		},
+                "source": {
+		    "$ref": "#/pScheduler/Host",
+		    "title": "Source",
+		    "description": "Source for scan"
+		},
+                "services": {
+		    "$ref": "#/pScheduler/Boolean",
+		    "title": "Services",
+		    "description": "Scan for additional info beyond open ports."
+		},
+                "ports": {
+		    "$ref": "#/local/portlist",
+		    "title": "Ports",
+		    "description": "Ports to scan.",
+		    "x-description-append": "Single port (1234) or port range (1234-5678) with multiples separated by commas."
+		},
+                "timeout": {
+		    "$ref": "#/pScheduler/Duration",
+		    "title": "Timeout",
+		    "description": "Maximum time to wait for responses."
+		},
+                "source-node": {
+		    "$ref": "#/pScheduler/URLHostPort",
+		    "title": "Source Node",
+		    "description": "pScheduler to contact about this measurement."
+		}
             },
 
             "required": [

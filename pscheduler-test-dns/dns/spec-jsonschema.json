@@ -3,7 +3,10 @@
     "local": {
 	"record": {
             "type": "string",
-            "enum": [ "a", "aaaa", "ns", "cname", "soa", "ptr", "mx", "txt" ]
+            "enum": [ "a", "aaaa", "ns", "cname", "soa", "ptr", "mx", "txt" ],
+	    "title": "Record",
+	    "description": "DNS record type to be queried.",
+	    "x-description-append": "Must be one of a, aaaa, ns, cname, soa, ptr, mx or txt."
         }
     },
 
@@ -14,13 +17,38 @@
 	{
             "type": "object",
             "properties": {
-		"schema":            { "$ref": "#/pScheduler/Schema", "const": 1 },
-		"host":              { "$ref": "#/pScheduler/Host" },
-		"host-node":         { "$ref": "#/pScheduler/URLHostPort" },
-		"query":             { "$ref": "#/pScheduler/Host" },
-		"record":            { "$ref": "#/local/record" },
-		"timeout":           { "$ref": "#/pScheduler/Duration" },
-		"nameserver":        { "$ref": "#/pScheduler/Host" }
+		"schema": {
+		    "$ref": "#/pScheduler/Schema",
+		    "const": 1
+		},
+		"host": {
+		    "$ref": "#/pScheduler/Host",
+		    "title": "Host",
+		    "description": "Host which will run the test."
+		},
+		"host-node": {
+		    "$ref": "#/pScheduler/URLHostPort",
+		    "title": "Host Node",
+		    "description": "pScheduler node on host to contact."
+		},
+		"query": {
+		    "$ref": "#/pScheduler/Host",
+		    "title": "Query",
+		    "description": "DNS record to be queried."
+		},
+		"record": {
+		    "$ref": "#/local/record"
+		},
+		"timeout": {
+		    "$ref": "#/pScheduler/Duration",
+		    "title": "Timeout",
+		    "description": "How long to wait for a response before giving up."
+		},
+		"nameserver": {
+		    "$ref": "#/pScheduler/Host",
+		    "title": "Host",
+		    "description": "Host from which the query should be made."
+		}
             },
 	    "additionalProperties": false,
             "required": [

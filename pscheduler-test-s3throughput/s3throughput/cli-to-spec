@@ -86,7 +86,7 @@ opt_parser.add_option("--secret-key",
                       dest="secret_key")
 
 opt_parser.add_option("--url",
-                      help="Url for the S# server (including method)",
+                      help="Url for the S3 server (including method)",
                       action="store", type="string",
                       dest="url")
 

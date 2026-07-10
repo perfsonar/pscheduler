@@ -9,11 +9,31 @@
 	{
             "type": "object",
             "properties": {
-                "schema":           { "$ref": "#/pScheduler/Schema", "const": 1 },
-                "data":             { "$ref": "#/pScheduler/AnyJSON" },
-                "host":             { "$ref": "#/pScheduler/Host" },
-                "host-node":        { "$ref": "#/pScheduler/URLHostPort" },
-                "fail":             { "$ref": "#/pScheduler/Probability" }
+                "schema": {
+		    "$ref": "#/pScheduler/Schema",
+		    "const": 1
+		},
+                "data": {
+		    "$ref": "#/pScheduler/AnyJSON",
+		    "title": "Data",
+		    "description": "Data to be used for the result."
+		},
+                "host": {
+		    "$ref": "#/pScheduler/Host",
+		    "title": "Host",
+		    "description": "Host to run the test."
+		    
+		},
+                "host-node": {
+		    "$ref": "#/pScheduler/URLHostPort",
+		    "title": "Host Node",
+		    "description": "pScheduler to contact about this measurement"
+		},
+                "fail": {
+		    "$ref": "#/pScheduler/Probability",
+		    "title": "Fail",
+		    "description": "Probability that the test will fail.  Defaults to 0."
+		}
             },
             "additionalProperties": false,
             "required": []
