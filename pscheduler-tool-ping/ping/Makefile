@@ -9,6 +9,7 @@ FILES=\
 	merged-results \
 	participant-data \
 	run \
+	ping-safe \
 	ping_utils.py
 
 

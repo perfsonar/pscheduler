@@ -28,7 +28,6 @@ Provides:	%{name} = %{version}-%{release}
 # Include all required libraries here
 Requires:	pscheduler-server >= 4.3.0
 Requires:	pscheduler-test-http
-Requires:	pscheduler-test-disk-to-disk
 Requires:	%{_pscheduler_python}-pscheduler >= 4.3.0
 Requires:	%{_pscheduler_python}-pycurl
 Requires:	rpm-post-wrapper

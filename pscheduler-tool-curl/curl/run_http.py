@@ -38,7 +38,15 @@ def run(input):
 
     parsed_url = urlparse(source)
 
-    if parsed_url.scheme == 'file':
+    # Can-run should have rejected this, but this is an extra check
+    # just in case.
+    if parsed_url.scheme.lower() == 'gopher':
+        return({
+            'succeeded': False,
+            'error': 'Will not operate on Gopher URLs.  See https://hackerone.com/reports/3477023.'
+            })
+
+    if parsed_url.scheme.lower() == 'file':
         real_path = os.path.realpath(parsed_url.path)
         reasons = file_ok(real_path)
         if reasons:
@@ -66,6 +74,8 @@ def run(input):
     curl.setopt(pycurl.USERAGENT, "Mozilla/5.0 (pScheduler) HTTP response measurement tool")
     curl.setopt(pycurl.URL, str(source))
     curl.setopt(pycurl.HTTPHEADER, [header + ': ' + value for header, value in headers.items()])
+    curl.setopt(pycurl.REDIR_PROTOCOLS,
+                pycurl.PROTO_FTP | pycurl.PROTO_FTPS | pycurl.PROTO_HTTP | pycurl.PROTO_HTTPS)
 
     # TODO: This test doesn't have bind but needs one.
     # curl.setopt(pycurl.INTERFACE, str(bind))

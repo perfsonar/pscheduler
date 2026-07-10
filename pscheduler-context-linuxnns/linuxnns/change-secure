@@ -20,18 +20,15 @@ then
 fi
 
 
-TMPBASE=${TMPDIR:-/tmp}/$WHOAMI.$$
+TMPBASE=$(mktemp -d)
 cleanup()
 {
-    if [ "$TMPBASE" ]
-    then
-        rm -rf $TMPBASE*
-    fi
+    rm -rf "${TMPBASE}"
 }
 trap cleanup EXIT
 
 
-INPUT="${TMPBASE}.input"
+INPUT="${TMPBASE}/input"
 cat > "${INPUT}"
 
 

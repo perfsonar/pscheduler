@@ -108,10 +108,10 @@ class AMQPExpiringConnection(object):
         parsed_url = urllib.parse.urlparse(url)
 
         # Set default port and SSL flag based on URL scheme
-        if (parsed_url.scheme == "amqp"):
+        if (parsed_url.scheme.lower() == "amqp"):
             port = 5672
             self.ssl = False
-        elif (parsed_url.scheme == "amqps"):
+        elif (parsed_url.scheme.lower() == "amqps"):
             port = 5671
             self.ssl = True
         else:

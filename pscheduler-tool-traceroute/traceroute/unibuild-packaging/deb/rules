@@ -31,6 +31,8 @@ override_dh_auto_install:
 	if [ -f $(CURDIR)/debian/sudoers ]; then \
 		install -D -m 0440 $(CURDIR)/debian/sudoers \
 			$(ROOT)/etc/sudoers.d/$(DEB_SOURCE_PACKAGE); \
+		sed -i -e 's|__DEST__|/usr/lib/pscheduler/classes/$(CLASS)/$(NAME)|g' \
+			$(ROOT)/etc/sudoers.d/$(DEB_SOURCE_PACKAGE); \
 	fi
 
 override_dh_auto_clean:

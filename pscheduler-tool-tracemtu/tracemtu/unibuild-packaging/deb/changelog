@@ -1,3 +1,9 @@
+pscheduler-tool-tracemtu (5.2.5-1) perfsonar-5.2; urgency=low
+
+  * New upstream version.
+
+ -- Lætitia Delvaux <adelvaux@man.poznan.pl>  Fri, 29 May 2026 18:04:19 +0200
+
 pscheduler-tool-tracemtu (5.2.4-2) perfsonar-5.2; urgency=low
 
   * New upstream version.

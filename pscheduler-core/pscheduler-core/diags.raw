@@ -94,18 +94,6 @@ done
 section "Installed Archivers"
 dump_url 'https://localhost/pscheduler/archivers?pretty&expanded=true'
 
-section "Global Archivers"
-
-FOUND=false
-for FILE in $(find __ARCHIVE_DEFAULT__ -type f)
-do
-    echo
-    echo "${FILE}:"
-    cat "${FILE}"
-    FOUND=true
-done
-
-$FOUND || echo "None installed"
 
 
 

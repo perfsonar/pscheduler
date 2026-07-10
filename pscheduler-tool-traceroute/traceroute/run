@@ -6,6 +6,7 @@
 
 import datetime
 import icmperror
+import os
 import pscheduler
 import re
 
@@ -276,6 +277,9 @@ except KeyError:
 #
 
 if need_root:
+    # Root does a sudo traceroute-safe args
+    script_path = os.path.abspath(os.path.dirname(__file__))
+    argv.insert(0, f'{script_path}/traceroute-safe')
     argv.insert(0, 'sudo')
 
 # Force all args to be strings

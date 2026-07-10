@@ -76,7 +76,7 @@ reasons = []
 
 parsed_url = urlparse(source)
 
-if parsed_url.scheme == 'file':
+if parsed_url.scheme.lower() == 'file':
 
     if keep_content is not None:
         reasons.append('Cannot keep content from file:// URLs')
@@ -86,8 +86,16 @@ if parsed_url.scheme == 'file':
 
     reasons.extend(file_ok(parsed_url.path))
 
+elif parsed_url.scheme.lower() == 'gopher':
+
+    # This gets a specific reason
+    reasons.append('Will not operate on Gopher URLs.  See https://hackerone.com/reports/3477023.')
+
+elif parsed_url.scheme.lower() not in [ 'http', 'https', 'ftp', 'ftps' ]:
+
+    reasons.append(f'''URL scheme '{parsed_url.scheme}' is not supported.''')
+
 
 pscheduler.succeed_json(
     { 'can-run': False, 'reasons': reasons } if reasons else { 'can-run': True }
 )
-
