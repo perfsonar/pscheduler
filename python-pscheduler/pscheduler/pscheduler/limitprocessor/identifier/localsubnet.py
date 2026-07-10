@@ -37,7 +37,6 @@ def ipv6_netmask_size(mask_in):
     """
 
     mask = mask_in.lower().split("/")[0]
-    print("MASK", mask)
 
     # Lead-pad any parts with less than four digits
     parts = [ '0' * (4-len(part)) + part for part in mask.split(":") ]
