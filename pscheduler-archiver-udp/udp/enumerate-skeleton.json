@@ -1,0 +1,15 @@
+{
+    "schema": 2,
+    "name": "udp",
+    "label": "UDP",
+    "description": "Send a JSON result as a UDP datagram",
+    "version": "1.0",
+
+    "maintainer": {
+        "name": "perfSONAR Development Team",
+	"email": "perfsonar-developer@internet2.edu",
+	"href": "http://www.perfsonar.net"
+    },
+
+    "json-forms-compatible": true
+}

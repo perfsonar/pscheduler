@@ -1,0 +1,16 @@
+{
+    "schema": 2,
+    "name": "throughput",
+    "label": "Throughput",
+    "description": "Measure network throughput between hosts",
+
+    "version": "1.0",
+
+    "maintainer": {
+        "name": "perfSONAR Development Team",
+	"email": "perfsonar-developer@internet2.edu",
+	"href": "http://www.perfsonar.net"
+    },
+    "scheduling-class": "exclusive",
+    "json-forms-compatible": true
+}

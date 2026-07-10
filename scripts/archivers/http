@@ -1,0 +1,23 @@
+{
+    "archiver": "http",
+    "data": {
+	"schema": 2,
+	
+        "_url": "https://posttestserver.dev/p/perfsonar/post",
+
+	"#": "Posttestserver.dev requires a User-Agent.",
+	"_headers": {
+	    "User-Agent": "perfSONAR HTTP(S) Archiver"
+	},
+
+        "op": "post",
+
+	"#bind": "10.0.0.7",
+	"#bind": "192.168.222.7",
+
+	"#retry-policy": [
+            { "attempts": 4,  "wait": "PT5S" }
+        ]
+    },
+    "ttl": "PT1M"
+}

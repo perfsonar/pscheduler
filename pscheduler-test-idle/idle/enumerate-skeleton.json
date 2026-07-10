@@ -1,0 +1,16 @@
+{
+    "schema": 2,
+
+    "name": "idle",
+    "label": "Idle",
+    "description": "Consume time in the background",
+    "version": "1.0",
+    "maintainer": {
+        "name": "perfSONAR Development Team",
+	"email": "perfsonar-developer@internet2.edu",
+	"href": "http://www.perfsonar.net"
+    },
+
+    "scheduling-class": "background",
+    "json-forms-compatible": true
+}

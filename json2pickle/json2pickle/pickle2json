@@ -1,0 +1,20 @@
+#!/usr/bin/env python3
+#
+# pickle2json - Decode Python-pickled data into JSON
+#
+# See manual page for documentation.
+#
+
+import json
+import pickle
+import sys
+
+try:
+    input = pickle.load(sys.stdin.buffer)
+except Exception as ex:
+    print(ex, file=sys.stderr)
+    exit(1)
+
+json.dump(input, sys.stdout)
+
+exit(0)

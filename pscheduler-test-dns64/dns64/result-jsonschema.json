@@ -1,0 +1,34 @@
+{
+    "#": "This gets merged into every version as #/local.",
+    "local": {},
+
+    "#": "The zeroth element of this is always null since there is no version 0.",
+    "versions": [
+        null,
+
+	{
+            "type": "object",
+            "properties": {
+                "schema":     { "type": "integer", "const": 1 },
+                "succeeded":  { "$ref": "#/pScheduler/Boolean" },
+                "time":       { "$ref": "#/pScheduler/Duration" },
+                "ipv4": {
+                    "type": "array",
+                    "items": { "$ref": "#/pScheduler/IPv4" },
+                    "minItems" : 0
+                },
+                "ipv6": {
+                    "type": "array",
+                    "items": {"$ref": "#/pScheduler/IPv6"},
+                    "minItems": 0
+                },
+                "translated": { "$ref": "#/pScheduler/Boolean" }
+            },
+            "required": [
+                "succeeded",
+                "time"
+            ],
+            "additionalProperties": false
+        }
+    ]
+}

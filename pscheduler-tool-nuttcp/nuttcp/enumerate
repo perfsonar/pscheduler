@@ -2,6 +2,7 @@
 {
     "schema": 1,
     "name": "nuttcp",
+    "label": "Nuttcp",
     "description": "Measure network throughput with nuttcp",
     "version": "1.0",
     "tests": [ "throughput" ],

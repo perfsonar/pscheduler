@@ -25,6 +25,7 @@ Requires:       %{_pscheduler_python}-pscheduler
 Requires:	rpm-post-wrapper
 
 BuildRequires:	pscheduler-rpm
+BuildRequires:	pscheduler-plugin-makefiles
 
 
 %define directory %{_includedir}/make
@@ -56,4 +57,3 @@ pscheduler internal warmboot
 %files
 %defattr(-,root,root,-)
 %{dest}
-%{_pscheduler_archiver_doc}/*

@@ -1,0 +1,15 @@
+{
+    "schema": 2,
+
+    "name": "clock",
+    "label": "Clock",
+    "description": "Measure the clock difference between hosts",
+    "version": "1.0",
+    "maintainer": {
+        "name": "perfSONAR Development Team",
+	"email": "perfsonar-developer@internet2.edu",
+	"href": "http://www.perfsonar.net"
+    },
+    "scheduling-class": "background",
+    "json-forms-compatible": true
+}

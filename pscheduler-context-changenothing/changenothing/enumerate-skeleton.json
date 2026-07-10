@@ -1,0 +1,16 @@
+{
+    "schema": 2,
+
+    "name": "changenothing",
+    "label": "Change Nothing",
+    "description": "Make no changes - NOT FOR PRODUCTION",
+    "version": "1.0",
+
+    "maintainer": {
+        "name": "perfSONAR Development Team",
+	"email": "perfsonar-developer@internet2.edu",
+	"href": "http://www.perfsonar.net"
+    },
+
+    "json-forms-compatible": true
+}

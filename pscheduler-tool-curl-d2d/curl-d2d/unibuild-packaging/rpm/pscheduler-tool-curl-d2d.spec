@@ -34,6 +34,7 @@ Requires:	%{_pscheduler_python}-pycurl
 Requires:	rpm-post-wrapper
 
 BuildRequires:	pscheduler-rpm
+BuildRequires:	pscheduler-plugin-makefiles
 
 %description
 curl tool class for pScheduler

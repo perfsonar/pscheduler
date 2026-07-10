@@ -3,6 +3,7 @@
     "schema": 1,
 
     "name": "dnspy",
+    "label": "DNSPy",
     "description": "Measure DNS transaction time",
     "version": "1.0",
     "tests": [ "dns" ],

@@ -1,0 +1,36 @@
+{
+    "#": "The zeroth element of this is always null since there is no version 0.",
+    "versions": [
+        null,
+        {
+            "type": "VerticalLayout",
+            "elements": [
+                {
+                    "type": "HorizontalLayout",
+                    "elements": [
+                        {
+                            "type": "Control",
+                            "scope": "#/properties/source",
+                            "customComponent": "ps-input-text"
+                        },
+                        {
+                            "type": "Control",
+                            "scope": "#/properties/dest",
+                            "customComponent": "ps-input-text"
+                        }
+                    ]
+                },
+                {
+                    "type": "Control",
+                    "scope": "#/properties/source-node",
+                    "customComponent": "ps-input-text"
+                },
+                {
+                    "type": "Control",
+                    "scope": "#/properties/timeout",
+                    "customComponent": "ps-input-text"
+                }
+            ]
+        }
+    ]
+}

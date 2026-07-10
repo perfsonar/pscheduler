@@ -1,0 +1,15 @@
+{
+    "schema": 2,
+
+    "name": "trace",
+    "label": "Trace",
+    "description": "Trace the path between IP hosts",
+    "version": "1.0",
+    "maintainer": {
+        "name": "perfSONAR Development Team",
+	"email": "perfsonar-developer@internet2.edu",
+	"href": "http://www.perfsonar.net"
+    },
+    "scheduling-class": "background",
+    "json-forms-compatible": true
+}

@@ -5,31 +5,6 @@
 
 import pscheduler
 
-from validate import spec_is_valid, MAX_SCHEMA
+from validate import check_spec_semantics
 
-
-try:
-    json = pscheduler.json_load()
-except ValueError as ex:
-    pscheduler.succeed_json({
-        "valid": False,
-        "error": str(ex)
-    })
-
-valid, message = spec_is_valid(json)
-
-if not valid:
-    pscheduler.succeed.json({
-        "valid": False,
-        "error": message
-    })
-
-if ('single-ended' in json) and ('loopback' in json):
-    pscheduler.succeed_json({
-        "valid": False,
-        "error": "Single-ended and loopback modes are mutually exclusive"
-    })
-
-pscheduler.succeed_json({
-    "valid": valid
-})
+pscheduler.plugin_spec_is_valid('test', semantic=check_spec_semantics)

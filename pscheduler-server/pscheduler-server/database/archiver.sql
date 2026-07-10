@@ -160,13 +160,15 @@ AS $$
 DECLARE
     json_result TEXT;
 BEGIN
+    NEW.available := TRUE;
+    NEW.name := NEW.json ->> 'name';
     json_result := json_validate(NEW.json, '#/pScheduler/PluginEnumeration/Archiver');
     IF json_result IS NOT NULL
     THEN
-        RAISE EXCEPTION 'Invalid enumeration: %', json_result;
+        RAISE WARNING 'Invalid enumeration for archiver "%" (disabling): %', NEW.name, json_result;
+	NEW.available := FALSE;
     END IF;
 
-    NEW.name := NEW.json ->> 'name';
     NEW.description := NEW.json ->> 'description';
     RETURN NEW;
 END;
@@ -252,7 +254,6 @@ DECLARE
     archiver_name TEXT;
     archiver_enumeration JSONB;
     json_result TEXT;
-    sschema NUMERIC;  -- Name dodges a reserved word
 BEGIN
     run_result := pscheduler_command(ARRAY['internal', 'list', 'archiver']);
     IF run_result.status <> 0 THEN
@@ -272,21 +273,6 @@ BEGIN
         END IF;
 
 	archiver_enumeration := run_result.stdout::JSONB;
-
-        sschema := text_to_numeric(archiver_enumeration ->> 'schema');
-        IF sschema IS NOT NULL AND sschema > 1 THEN
-            RAISE WARNING 'Archiver "%": schema % is not supported',
-                archiver_name, sschema;
-            CONTINUE;
-        END IF;
-
-        json_result := json_validate(archiver_enumeration,
-	    '#/pScheduler/PluginEnumeration/Archiver');
-        IF json_result IS NOT NULL
-        THEN
-            RAISE WARNING 'Invalid enumeration for archiver "%": %', archiver_name, json_result;
-	    CONTINUE;
-        END IF;
 
 	INSERT INTO archiver (json, updated, available)
 	VALUES (archiver_enumeration, now(), TRUE)

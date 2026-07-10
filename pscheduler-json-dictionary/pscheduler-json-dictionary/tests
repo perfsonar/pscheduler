@@ -1,0 +1,277 @@
+#
+# Tests for the JSON Dictionary
+#
+# This only tests the basic types, many of which were changed from
+# anyOf to regular experessions to make JSON Forms happy.  See #1526.
+#
+
+# Item		Match	JSON Test Value
+
+AnyJSON		true	{"foo": "bar", "baz": 123}
+AnyJSON		true	12345
+AnyJSON		true	null
+
+Array		true	[1, 2, 3]
+Array		false	"NotAnArray"
+
+AS		true	{"number": 12345, "owner": "Bob's Intertubes"}
+AS		false	{"number": 12.34, "owner": "Bob's Intertubes"}
+AS		false	{"number": 12.34, "other": "Should not be here"}
+
+Boolean		true	true
+Boolean		true	false
+Boolean		false	38
+
+Cardinal	true	12
+Cardinal	false	0
+Cardinal	false	-7
+
+CardinalList	true	[1, 2, 3, 4]
+CardinalList	false	[1, 2, 4, -4]
+CardinalList	false	null
+
+CardinalZero	true	0
+CardinalZero	true	5
+CardinalZero	false	-9
+
+CardinalZeroList	true	[0, 1, 2, 3]
+CardinalZeroList	false	[0, 1, 2, -3]
+CardinalZeroList	false	{}
+
+# ClockState is compound; not sure why it's in with the simple types.
+
+Duration	true	"PT5S"
+Duration	true	"P3DT6H5M12.75S"
+Duration	false	"P3QT6H5M12.75S"
+
+Email		true	"perfsonar@example.com"
+Email		false	"gloop"
+Email		false	99
+
+Float		true	3.14
+Float		true	3
+Float		false	"float"
+
+GeographicPosition	true "+40.6894-074.0447"
+GeographicPosition	false "+40.6894?074.0447"
+GeographicPosition	false 1919
+
+Host		true	"foo"
+Host		true	"foo.bar.org"
+Host		true	"128.82.4.1"
+Host		false	"foo.bar!org"
+Host		false	"128.82.4!1"
+
+HostName	true	"quack"
+HostName	true	"quack.example.org"
+HostName	false	"quack.example!org"
+HostName	false	12.34
+
+Integer		true	52
+Integer		false	3.1415
+Integer		false	"NotAnInteger"
+
+IPAddress	true	"128.82.4.1"
+IPAddress	false	"821.82.4.1"
+IPAddress	false	"128.82.4.q"
+IPAddress	false	"Eh?"
+IPAddress	false	"256.100.100.100"
+IPAddress	false	"192.168.1"
+IPAddress	false	"192.168.1.1.1"
+IPAddress	false	"192.168.1."
+IPAddress	true	"dead::beef"
+IPAddress	true	"2001:0db8:85a3:0000:0000:8a2e:0370:7334"
+IPAddress	true	"2001:db8::1"
+IPAddress	true	"::1"
+IPAddress	true	"fe80::"
+IPAddress	true	"0:0:0:0:0:0:0:1"
+IPAddress	false	"dead!:beef"
+IPAddress	false	"dead::beefy"
+IPAddress	false	"Nope."
+IPAddress	false	"2001::85a3::8a2e"
+IPAddress	false	"2001:db8:85a3"
+IPAddress	false	"12345::abcd"
+IPAddress	false	"::1::"
+IPAddress	false	"fe80:::1"
+
+IPv4		true	"128.82.4.1"
+IPv4		false	"821.82.4.1"
+IPv4		false	"128.82.4.q"
+IPv4		false	"Eh?"
+IPv4		false	"256.100.100.100"
+IPv4		false	"192.168.1"
+IPv4		false	"192.168.1.1.1"
+IPv4		false	"192.168.1."
+
+IPv6		true	"dead::beef"
+IPv6		true	"2001:0db8:85a3:0000:0000:8a2e:0370:7334"
+IPv6		true	"2001:db8::1"
+IPv6		true	"::1"
+IPv6		true	"fe80::"
+IPv6		true	"0:0:0:0:0:0:0:1"
+IPv6		false	"dead!:beef"
+IPv6		false	"dead::beefy"
+IPv6		false	"Nope."
+IPv6		false	"2001::85a3::8a2e"
+IPv6		false	"2001:db8:85a3"
+IPv6		false	"12345::abcd"
+IPv6		false	"::1::"
+IPv6		false	"fe80:::1"
+
+IPv6RFC2732	true	"[dead::beef]"
+IPv6RFC2732	true	"[dead::beef]:9600"
+IPv6RFC2732	false	"dead::beef"
+
+IPv4CIDR	true	"192.168.1.0/24"
+IPv4CIDR	false	"192.168.1.x/24"
+IPv4CIDR	false	"192.168.1.0/9000"
+
+IPv6CIDR	true	"dead:beef::/64"
+IPv6CIDR	true	"dead::beef/128"
+IPv6CIDR	false	"dead::beef/1280"
+
+IPCIDR		true	"192.168.1.0/24"
+IPCIDR		false	"192.168.1.x/24"
+IPCIDR		false	"192.168.1.0/9000"
+IPCIDR		true	"dead:beef::/64"
+IPCIDR		true	"dead::beef/128"
+IPCIDR		false	"dead::beef/1280"
+
+IPCIDRList	true	[]
+IPCIDRList	true	[ "192.168.1.0/24", "dead:beef::/64" ]
+IPCIDRList	false	[ "192.168.1.0/24", "dead:beef::/64", "Yeeha" ]
+
+Int8		false	-129
+Int8		true	-128
+Int8		true	0
+Int8		true	127
+Int8		false	128
+
+UInt8		false	-11
+UInt8		true	0
+UInt8		true	255
+UInt8		false	256
+
+Int16		false	-32769
+Int16		true	-32768
+Int16		true	0
+Int16		true	32767
+Int16		false	32768
+
+UInt16		false	-1
+UInt16		true	0
+UInt16		true	65535
+UInt16		false	65536
+
+Int32		false	-2147483649
+Int32		true	-2147483648
+Int32		true	0
+Int32		true	2147483647
+Int32		false	2147483648
+
+UInt32		false	-1
+UInt32		true	0
+UInt32		true	4294967295
+UInt32		false	4294967296
+
+Int64		false	-9223372036854775809
+Int64		true	-9223372036854775808
+Int64		true	0
+Int64		true	9223372036854775807
+Int64		false	9223372036854775808
+
+UInt64		false	-1
+UInt64		true	0
+UInt64		true	184446744073709551615
+UInt64		false	184446744073709551616
+
+IPPort		false	-1
+IPPort		true	0
+IPPort		true	65535
+IPPort		false	65536
+
+IPPortRange	true	{ "lower": 1234, "upper": 5678 }
+IPPortRange	false	{ "lower": -1234, "upper": 5678 }
+IPPortRange	false	{ "lower": 1234, "middle": 2345, "upper": 5678 }
+
+IPTOS		false	-1
+IPTOS		true	0
+IPTOS		true	255
+IPTOS		false	256
+
+JQTransformSpecification	true	{ "script": "." }
+JQTransformSpecification	true	{ "script": ".", "output-raw": true }
+JQTransformSpecification	true	{ "script": ".", "args": {} }
+JQTransformSpecification	true	{ "script": [ ".", "" ] }
+JQTransformSpecification	false	{ "script": 39 }
+JQTransformSpecification	false	{ "script": ".", "extra": "stuff" }
+
+Number		true	19
+Number		true	-19
+Number		true	3.14
+Number		false	"ou812"
+
+POSIXCronSpecification	true	"* * * * *"
+POSIXCronSpecification	true	"1-15,30 * * * *"
+POSIXCronSpecification	false	"1-15,30 * * * Q"
+
+Probability	false	-1
+Probability	true	0.0
+Probability	true	0
+Probability	true	1.0
+Probability	false	1.1
+
+# RetryPolicy is compound.
+# RetryPolicyEntry is compound.
+
+String		true	"foo"
+String		true	""
+String		false	null
+
+StringList	true	[ ]
+StringList	true	[ "foo", "bar", "baz" ]
+StringList	false	[ "foo", "bar", "baz", 38 ]
+StringList	false	"Not an array."
+
+# Some things to test failures
+#Integer		true	"NotAnInteger"
+#Duration	true	"NotADuration"
+#Duration	false	"PT5S"
+
+# StringMatch is compound
+
+StringNull	true	"foo"
+StringNull	true	null
+StringNull	false	12345
+
+Timestamp	true	"2025-01-01"
+Timestamp	true	"2025-01-01T12:34:55"
+Timestamp	false	"2025-01-01Q12:34:55"
+
+TimestampAbsoluteRelative	true	"2025-01-01T12:34:55"
+TimestampAbsoluteRelative	true	"PT5M"
+TimestampAbsoluteRelative	true	"-PT5M"
+TimestampAbsoluteRelative	true	"+PT5M"
+TimestampAbsoluteRelative	true	"@PT5M"
+TimestampAbsoluteRelative	false	"@+PT5M"
+TimestampAbsoluteRelative	false	"notPT5Mvalid"
+
+URL				true	"https://www.example.com/~beep/boop"
+URL				true	"www.example.com/~beep/boop"
+URL				true	"mailto:bob@example.com"
+URL				true	"192.168.1.1"
+# TODO: Find some invalid URLs.  This is difficult.
+
+URLHostPort			true	"foo.example.com"
+URLHostPort			true	"foo.example.com:1234"
+URLHostPort			false	"foo.example.com:123x"
+URLHostPort			false	"74!75!"
+
+UUID				true	"b4ef29fa-6e29-4aab-8e98-5cb8406f1770"
+UUID				true	"664eb5fa-301b-4297-86ea-3c4f27a9e9b5"
+UUID				false	"664eb5fa-301q-4297-86ea-3c4f27a9e9b5"
+UUID				false	"664eb5fa-301b-4297-86ea-3c4f27a9e9"
+
+Version				true	"1.2.34.9"
+Version				true	"1.2.34.9beta"
+Version				false	"1.2.34!9beta"

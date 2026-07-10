@@ -1,0 +1,76 @@
+{
+    "#": "This gets merged into every version as #/local.",
+    "local": {},
+
+    "#": "The zeroth element of this is always null since there is no version 0.",
+    "versions": [
+	null,
+
+	{
+            "type": "object",
+            "properties": {
+
+		"schema": {
+		    "$ref": "#/pScheduler/Schema",
+		    "const": 1
+		},
+		"dest": {
+		    "$ref": "#/pScheduler/URLHostPort",
+		    "title": "Destination",
+		    "description": "Destination pScheduler host."
+		},
+		"source": {
+		    "$ref": "#/pScheduler/URLHostPort",
+		    "title": "Source",
+		    "description": "Source pScheduler host."
+		},
+		"timeout": {
+		    "$ref": "#/pScheduler/Duration",
+		    "title": "Timeout",
+		    "description": "Timeout for clock state request."
+		}
+            },
+            "required": [
+		"dest"
+            ],
+	    "additionalProperties": false
+	},
+
+	{
+            "type": "object",
+            "properties": {
+
+		"schema": {
+		    "$ref": "#/pScheduler/Schema",
+		    "const": 2
+		},
+		"dest": {
+		    "$ref": "#/pScheduler/URLHostPort",
+		    "title": "Destination",
+		    "description": "Destination pScheduler host."
+		},
+		"source": {
+		    "$ref": "#/pScheduler/URLHostPort",
+		    "title": "Source",
+		    "description": "Source pScheduler host."
+		},
+		"source-node": {
+		    "$ref": "#/pScheduler/URLHostPort",
+		    "title": "Source Node",
+		    "description": "Source pScheduler host, if different."
+
+		},
+		"timeout": {
+		    "$ref": "#/pScheduler/Duration",
+                    "title": "Timeout",
+                    "description": "Timeout for clock state request."
+		}
+            },
+            "required": [
+		"schema",
+		"dest"
+            ],
+	    "additionalProperties": false
+	}
+    ]
+}

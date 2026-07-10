@@ -1,0 +1,203 @@
+{
+    "#": "This gets merged into every version as #/local.",
+    "local": {},
+
+    "#": "The zeroth element of this is always null since there is no version 0.",
+    "versions": [
+        null,
+
+        {
+            "type": "object",
+            "properties": {
+                "schema": {
+		    "$ref": "#/pScheduler/Schema",
+		    "const": 1
+		},
+                "_url": {
+		    "$ref": "#/pScheduler/URL",
+		    "title": "URL",
+		    "description": "URL for archive."
+		},
+                "op": {
+                    "type": "string",
+                    "enum": [
+                        "put",
+                        "post"
+                    ],
+		    "title": "Operation",
+		    "description": "HTTP operation.  Must be \"put\" or \"post\"."
+                },
+                "bind": {
+		    "$ref": "#/pScheduler/Host",
+		    "title": "bind",
+		    "description": "Source address for outgoing request."
+		},
+                "retry-policy": {
+		    "title": "Retry Policy",
+		    "description": "Policy for retrying failed archivings.",
+		    "$ref": "#/pScheduler/RetryPolicy"
+		}
+            },
+            "required": [
+		"_url"
+	    ],
+            "additionalProperties": false
+        },
+
+        {
+            "type": "object",
+            "properties": {
+                "schema": {
+		    "$ref": "#/pScheduler/Schema",
+		    "const": 2
+		},
+                "_url": {
+		    "$ref": "#/pScheduler/URL",
+		    "title": "URL",
+		    "description": "URL for archive."
+		},
+                "op": {
+                    "type": "string",
+                    "enum": [
+                        "put",
+                        "post"
+                    ],
+		    "title": "Operation",
+		    "description": "HTTP operation.  Must be \"put\" or \"post\"."
+                },
+                "_headers": {
+                    "type": "object",
+                    "patternProperties": {
+                        "^.*$": {
+			    "$ref": "#/pScheduler/String",
+			    "title": "Header",
+			    "description": "A HTTP header value"
+			}
+                    },
+                    "additionalProperties": false
+                },
+		"bind": {
+		    "$ref": "#/pScheduler/Host",
+		    "title": "Bind",
+		    "description": "Source address for outgoing request."
+		},
+                "retry-policy": {
+		    "title": "Retry Policy",
+		    "description": "Policy for retrying failed archivings.",
+		    "$ref": "#/pScheduler/RetryPolicy"
+		}
+            },
+            "required": [
+		"schema",
+		"_url"
+	    ],
+            "additionalProperties": false
+        },
+
+        {
+            "type": "object",
+            "properties": {
+                "schema": { "$ref": "#/pScheduler/Schema", "const": 3 },
+		"_url": {
+		    "$ref": "#/pScheduler/URL",
+		    "title": "URL",
+		    "description": "URL for archive."
+		},
+                "op": {
+                    "type": "string",
+                    "enum": [
+                        "put",
+                        "post"
+                    ],
+		    "title": "Operation",
+		    "description": "HTTP operation.  Must be \"put\" or \"post\"."
+                },
+                "_headers": {
+                    "type": "object",
+                    "patternProperties": {
+                        "^.*$": {
+			    "$ref": "#/pScheduler/String",
+			    "title": "Header",
+			    "description": "A HTTP header value"
+			}
+                    },
+                    "additionalProperties": false
+                },
+		"bind": {
+		    "$ref": "#/pScheduler/Host",
+		    "title": "Bind",
+		    "description": "Source address for outgoing request."
+		},
+                "retry-policy": {
+		    "title": "Retry Policy",
+		    "description": "Policy for retrying failed archivings.",
+		    "$ref": "#/pScheduler/RetryPolicy"
+		},
+		"verify-ssl": {
+		    "$ref": "#/pScheduler/Boolean",
+		    "title": "Verify SSL",
+		    "description": "Require that the server present a valid SSL certificate."
+		}
+            },
+            "required": [
+		"schema",
+		"_url"
+	    ],
+            "additionalProperties": false
+         },
+
+        {
+            "type": "object",
+            "properties": {
+                "schema": { "$ref": "#/pScheduler/Schema", "const": 4 },
+		"_url": {
+		    "$ref": "#/pScheduler/URL",
+		    "title": "URL",
+		    "description": "URL for archive."
+		},
+                "op": {
+                    "type": "string",
+                    "enum": [
+                        "put",
+                        "post"
+                    ],
+		    "title": "Operation",
+		    "description": "HTTP operation.  Must be \"put\" or \"post\"."
+                },
+		"verify-ssl": {
+		    "$ref": "#/pScheduler/Boolean",
+		    "title": "Verify SSL",
+		    "description": "Require that the server present a valid SSL certificate."
+		},
+                "_headers": {
+                    "type": "object",
+		    "patternProperties": {
+                        "^.*$": {
+			    "$ref": "#/pScheduler/String",
+			    "title": "Header",
+			    "description": "A HTTP header value"
+			}
+                    },
+                    "additionalProperties": false
+                },
+                "timeout": {
+		    "$ref": "#/pScheduler/Duration",
+		    "title": "Timeout",
+		    "description": "How long to wait before giving up."
+		},
+		"bind": {
+		    "$ref": "#/pScheduler/Host",
+		    "title": "Bind",
+		    "description": "Source address for outgoing request."
+		},
+                "retry-policy": {
+		    "title": "Retry Policy",
+		    "description": "Policy for retrying failed archivings.",
+		    "$ref": "#/pScheduler/RetryPolicy"
+		}
+            },
+            "required": [ "schema", "_url" ],
+            "additionalProperties": false
+        }
+    ]
+}

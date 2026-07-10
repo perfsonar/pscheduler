@@ -43,6 +43,7 @@ Requires:	%{_pscheduler_python}-py-radix
 Requires:	pscheduler-jq-library
 Requires:	%{_pscheduler_python}-pycurl
 Requires:	%{_pscheduler_python}-pyjq >= 2.2.0
+Requires:	pscheduler-json-dictionary
 Requires:	rsyslog
 Requires:	logrotate
 Requires:       numactl
@@ -71,6 +72,7 @@ BuildRequires:	%{_pscheduler_python}-py-radix
 BuildRequires:	pscheduler-jq-library
 BuildRequires:	%{_pscheduler_python}-pycurl
 BuildRequires:	%{_pscheduler_python}-pyjq >= 2.2.0
+BuildRequires:	pscheduler-json-dictionary
 BuildRequires:  numactl
 BuildRequires:  traceroute
 
@@ -98,7 +100,9 @@ Utility functions for pScheduler
 
 %build
 
-make CLASSES="%{_pscheduler_classes}"
+make \
+    CLASSES="%{_pscheduler_classes}" \
+    DATADIR="%{_pscheduler_datadir}"
 
 
 %install

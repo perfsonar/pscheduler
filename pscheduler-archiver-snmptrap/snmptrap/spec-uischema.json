@@ -1,0 +1,66 @@
+{
+    "#": "The zeroth element of this is always null since there is no version 0.",
+    "versions": [
+        null,
+        {
+            "type": "VerticalLayout",
+            "elements": [
+                {
+                    "type": "Control",
+                    "scope": "#/properties/dest",
+                    "customComponent": "ps-input-text"
+                },
+                {
+                    "type": "Control",
+                    "scope": "#/properties/trap-oid",
+                    "customComponent": "ps-input-text"
+                },
+                {
+                    "type": "Control",
+                    "scope": "#/properties/_community",
+                    "customComponent": "ps-input-text"
+                },
+                {
+                    "type": "Control",
+                    "scope": "#/properties/trap-varbinds",
+                    "customComponent": "ps-input-array"
+                },
+                {
+                    "type": "Control",
+                    "scope": "#/properties/instance-index",
+                    "customComponent": "ps-input-number"
+                },
+                {
+                    "type": "Control",
+                    "scope": "#/properties/_auth-key",
+                    "customComponent": "ps-input-text"
+                },
+                {
+                    "type": "Control",
+                    "scope": "#/properties/_priv-key",
+                    "customComponent": "ps-input-text"
+                },
+                {
+                    "type": "Control",
+                    "scope": "#/properties/auth-protocol",
+                    "customComponent": "ps-select"
+                },
+                {
+                    "type": "Control",
+                    "scope": "#/properties/priv-protocol",
+                    "customComponent": "ps-select"
+                },
+                {
+                    "type": "Control",
+                    "scope": "#/properties/security-name",
+                    "customComponent": "ps-input-text"
+                },
+                {
+                    "type": "Control",
+                    "scope": "#/properties/security-level",
+                    "customComponent": "ps-select"
+                }
+            ]
+        }
+    ]
+}

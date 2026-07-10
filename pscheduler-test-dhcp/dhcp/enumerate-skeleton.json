@@ -1,0 +1,16 @@
+
+
+{
+    "schema": 2,
+    "name": "dhcp",
+    "label": "DHCP",
+    "description": "Tests the response time for getting a new dhcp lease.",
+    "version": "1.0",
+    "maintainer": {
+        "name": "perfSONAR Development Team",
+	"email": "perfsonar-developer@internet2.edu",
+	"href": "http://www.perfsonar.net"
+    },
+    "scheduling-class": "background",
+    "json-forms-compatible": true
+}

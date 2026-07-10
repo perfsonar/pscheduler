@@ -1,0 +1,8 @@
+{
+    "archiver": "bitbucket",
+
+    "data": {
+    },
+
+    "ttl": "PT1M"
+}

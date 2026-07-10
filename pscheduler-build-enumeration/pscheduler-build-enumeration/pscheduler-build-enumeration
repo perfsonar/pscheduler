@@ -1,0 +1,287 @@
+#!/bin/sh -e
+#
+# Build pScheduler enumerators from a skeleton, JSON and UI schemas.
+#
+#BEGIN-HELP
+# Usage: pscheduler-build-enumeration [ --plain ASSIGN | --validator ASSIGN ... ]
+#
+# Where ASSIGN is of the format LOCATION=FILE, where LOCATION names
+# where in the JSON tree the finished JSON should be added (e.g., . or
+# .foo.bar) and FILE is the path of a file to be read and processed.
+#
+# Options:
+#   --plain ASSIGN      Process assignment as unlatered JSON
+#   --validator ASSIGN  Process assignment as a pScheduler validator
+#
+# Example:  (Typical for a test plugin)
+#     pscheduler-build-enumeration \
+#         --plain .=enumerate-skeleton.json \
+#         --plain .spec.jsonschema=spec-jsonschema.json \
+#         --add .spec.uischema=spec-uischema.json \
+#         --validator .result.jsonschema=spec-uischema.json
+#END-HELP
+#
+
+
+# ----------------------------------------------------------------------
+
+# Utilities
+
+TMPBASE=$(mktemp -d)
+
+cleanup()
+{
+    rm -rf "${TMPBASE}"
+}
+trap cleanup EXIT
+
+
+self_help()
+{
+    sed -n -e '/^#BEGIN-HELP/,/^#END-HELP/{//!p}' $0 \
+        | sed -e 's/^#//'
+}
+
+
+die()
+{
+    echo "$@" 1>&2
+    exit 1
+}
+
+
+# Validate a location and fix it up so jq will like it
+fix_location()
+{
+    read LOCATION
+
+    (echo "${LOCATION}" | grep -q -E '^\.([A-Za-z0-9_-]+)?(\.[A-Za-z0-9_-]+)*$') \
+	|| die "${LOCATION}: Invalid location"
+
+    echo "${LOCATION}" \
+	| sed -e 's/\.\([A-Za-z0-9_-]\+\)/."\1"/g'
+}
+
+
+# Check to see that an input file exists and is valid JSON
+check_input()
+{
+    read INPUT
+    ERRORS="${TMPBASE}/check_input_errors"
+    jq 'empty' "${INPUT}" 2> "${ERRORS}" \
+	|| die "${INPUT}:" "$(cat ${ERRORS})"
+
+    # Echo the path if it was okay
+    echo "${INPUT}"
+}
+
+
+# pScheduler's internal dictionary
+PS_DICT="${TMPBASE}/psdict"
+pscheduler internal json-dictionary > "${PS_DICT}"
+
+
+# ----------------------------------------------------------------------
+
+# Operations
+
+ACCUMULATED="${TMPBASE}/accumulated"
+echo '{}' > "${ACCUMULATED}"
+
+WORK="${TMPBASE}/work"
+
+# Merge JSON unaltered.
+plain()
+{
+    LOCATION=$(echo "$1" | cut -d= -f 1 | fix_location)
+    [ "${LOCATION}" != "." ] \
+	|| LOCATION=""
+
+    INPUT=$(echo "$1" | cut -d= -f 2 | check_input)
+    jq --slurp ".[0]${LOCATION} = .[1] | .[0]" "${ACCUMULATED}" "${INPUT}" > "${WORK}"
+    mv "${WORK}" "${ACCUMULATED}"
+}
+
+
+# Dereference a pScheduler validator against the pScheduler dictionary
+validator()
+{
+    LOCATION=$(echo "$1" | cut -d= -f 1)
+    INPUT=$(echo "$1" | cut -d= -f 2 | check_input)
+
+    # Do some basic validation on the validator.
+    jq --arg name "${INPUT}" '
+       if (.versions | type) != "array"
+       then
+         ("\($name): Versions not found in validator\n" | halt_error(1))
+       else
+         empty
+       end' "${INPUT}"
+
+    # For any property in a version whose value is null, use the
+    # same-named property in the latest version before this one where
+    # that property is defined.
+    DENULLED_INPUT="${TMPBASE}/denulled"
+    jq '
+      # Find the latest verion of a property before th current one
+      def fetch_newest_property(name; schema; versions):
+        if schema < 2 then
+          error("Null property reference \"\(name)\" not allowed in schema 1.")
+        else
+            name as $name
+          | ( [
+                  range((schema-1); 0; -1)
+                | versions[.].properties[$name]
+                | select(. != null)
+              ][0] ) as $property
+          | if $property == null then error("Schema \(schema) property \"\(name)\" has no earlier version.")
+            else $property end
+        end
+      ;
+
+      def process_property(schema; versions):
+         if .value != null then .
+         else .value = fetch_newest_property(.key; schema; versions)
+         end
+      ;
+
+      def process_version(versions):
+        if . == null then .
+        else
+            .properties.schema.const as $schema
+          | if $schema == null then error("A version is missing a schema constant.") else . end
+          | .properties = (.properties | with_entries(process_property($schema; versions)))
+        end
+      ;
+
+        .versions as $versions
+      | .versions = ( .versions | map(if . == null then . else process_version($versions) end) )
+    ' "${INPUT}" > "${DENULLED_INPUT}"
+
+    # Array of validators
+    VALIDATOR_ARRAY="${TMPBASE}/validator-array"
+    jq '.versions' "${DENULLED_INPUT}" > "${VALIDATOR_ARRAY}"
+
+    # Make sure the zeroth element is null
+    jq 'if .[0] != null then halt_error(1) else halt_error(0) end' "${VALIDATOR_ARRAY}" > /dev/null 2>&1 \
+	|| die "${INPUT}: First element in validator must be null."
+
+    # Make sure all elements have a correctly-numbered schema enum
+    jq --arg name "${INPUT}" '
+      [ to_entries[]
+        | select(.key > 0)
+        | select( ( (.value.properties.schema.type != "integer") and (.value.properties.schema."$ref" != "#/pScheduler/Schema") )
+                  or (.value.properties.schema.const != .key)
+                )
+        | .key
+      ]
+      | join(", ")
+      | if (length > 0)
+        then
+          ("\($name): Schema(s) \(.) are incorrect:\nShould be { \"type\": \"integer\", \"const\": N }\n"
+           | halt_error(1))
+        else
+          empty
+        end
+    ' "${VALIDATOR_ARRAY}"
+
+    # Make sure element 1 *does have* a required schema
+    jq --arg name "${INPUT}" '
+      [
+          ((.[1].required) // [])[]
+        | select(. == "schema")
+      ]
+      | if (length > 0)
+        then
+          ("\($name): Version 1 has a required \"schema\" property\n" | halt_error(1))
+        else
+          empty
+        end
+   ' "${VALIDATOR_ARRAY}"
+
+    # Make sure elements 2+ *do* have a required schema
+
+    jq --arg name "${INPUT}" '
+      [ to_entries[]
+        | select((.key > 1) and ([((.value.required) // [])[] | select(. == "schema")] | (length == 0)))
+        | "  Version \(.key) does not require the schema property\n"
+      ]
+      | join("")
+      | if (length > 0)
+        then
+          ( "\($name):\n\(.)" | halt_error(1))
+        else
+          empty
+        end
+    ' "${VALIDATOR_ARRAY}"
+
+    # Plugin validator array, converted to an object
+    VALIDATOR="${TMPBASE}/validator"
+    jq '[ to_entries[] | .key = (.key | tostring ) ] | from_entries' "${VALIDATOR_ARRAY}" > "${VALIDATOR}"
+
+    # Local stuff
+    PS_LOCAL_DICT="${TMPBASE}/local-dict"
+    jq --slurpfile denulled "${DENULLED_INPUT}" '.local = ($denulled[0].local // {})' "${PS_DICT}" > "${PS_LOCAL_DICT}"
+
+    # Dereferenced validator
+    VALIDATOR_DEREF="${TMPBASE}/validator-deref"
+    jsonschematool --debug --pretty --dereference --annotations "${PS_LOCAL_DICT}" "${VALIDATOR}" > "${VALIDATOR_DEREF}" \
+	|| die "Unable to process ${INPUT}"
+
+    # Ibid, turned into an array
+    VALIDATOR_ARRAY_FINAL="${TMPBASE}/validator-array-final"
+    jq '
+          [ to_entries[] | .key = (.key | tonumber) ]
+    	  | sort_by(.key)
+	  | [ .[] | .value ]
+	  ' "${VALIDATOR_DEREF}" \
+	      > "${VALIDATOR_ARRAY_FINAL}"
+
+    VERSIONED="${TMPBASE}/versioned"
+    jq '{ "versions": . }' "${VALIDATOR_ARRAY_FINAL}" > "${VERSIONED}"
+
+    # Add the dereferenced file
+    plain "${LOCATION}=${VERSIONED}"
+}
+
+
+# ----------------------------------------------------------------------
+
+# Validate the arguments
+
+while echo "$1" | grep -q -E '^--'
+do
+    ARG="$1"
+    shift
+    case "${ARG}" in
+	--plain)
+	    plain "$1"
+    	    shift
+	    ;;
+	--validator)
+	    validator "$1"
+    	    shift
+	    ;;
+        --help)
+            self_help
+            exit 0
+            ;;
+        *)
+            self_help 1>&2
+            exit 1
+            ;;
+    esac
+done
+
+if [ "$#" -ne 0 ]
+then
+    self_help 1>&2
+    exit 1
+fi
+
+echo '#!/bin/sh -e'
+echo 'cat <<-"EOF"'
+cat "${ACCUMULATED}"
+echo 'EOF'
+
+exit 0

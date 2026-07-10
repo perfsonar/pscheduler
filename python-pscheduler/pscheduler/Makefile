@@ -10,8 +10,14 @@ ifndef CLASSES
 	@echo No CLASSES specified for build
 	@false
 endif
+ifndef DATADIR
+	@echo No DATADIR specified for build
+	@false
+endif
 	find pscheduler -type f -name "*.py" \
-	| xargs sed -i -e 's|__CLASSES__|$(CLASSES)|'
+	| xargs sed -i \
+		-e 's|__CLASSES__|$(CLASSES)|' \
+		-e 's|__DATADIR__|$(DATADIR)|'
 
 
 test: file-setup

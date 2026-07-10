@@ -23,7 +23,8 @@ def tools():
     test_filter = request.args.get('test', None)
 
     if test_filter is None:
-        return json_query("SELECT json FROM tool WHERE available ORDER BY NAME")
+        return json_query("SELECT json FROM tool WHERE available ORDER BY NAME",
+                          sanitize=False)
 
     log.debug("Looking for tools against filter %s", test_filter)
     cursor = dbcursor_query("SELECT * FROM api_tools_for_test(%s)",
@@ -39,7 +40,7 @@ def tools():
         result = [ { "can-run": row[0], "tool": row[1] } for row in cursor ]
 
     # Sanitized, even though there should be nothing special in these.
-    return ok_json( result )
+    return ok_json(result, sanitize=False)
 
 
 @application.route("/tools/<name>", methods=['GET'])
@@ -47,5 +48,6 @@ def tools_name(name):
     return json_query("SELECT json FROM tool"
                       " WHERE available AND name = %s",
                       [name], single=True,
-                      not_found_message=f'No tool "{name}" is available.'
+                      not_found_message=f'No tool "{name}" is available.',
+                      sanitize=False
                       )

@@ -1,0 +1,15 @@
+{
+    "schema": 2,
+    "name": "postgresql",
+    "label": "PostgreSQL",
+    "description": "PostgreSQL database archiver",
+    "version": "1.0",
+
+    "maintainer": {
+        "name": "perfSONAR Development Team",
+	"email": "perfsonar-developer@internet2.edu",
+	"href": "http://www.perfsonar.net"
+    },
+
+    "json-forms-compatible": true
+}

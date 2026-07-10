@@ -1,0 +1,9 @@
+{
+    "foo": 999,
+    "bar": "A String",
+    "baz": "postmonster@example.com",
+    "quux": {
+	"abc": 123,
+	"def": false
+    }
+}

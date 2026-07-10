@@ -26,6 +26,7 @@ Requires:	pscheduler-test-http
 Requires:	rpm-post-wrapper
 
 BuildRequires:	pscheduler-rpm
+BuildRequires:	pscheduler-plugin-makefiles
 
 %description
 psurl tool class for pScheduler (DISABLED)

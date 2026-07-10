@@ -3,6 +3,7 @@
     "schema": 1,
 
     "name": "net-snmp-set",
+    "label": "Net SNMP Set",
     "description": "Set a variable via SNMP Set",
     "version": "1.0",
     "tests": [ "snmpset" ],

@@ -1,0 +1,53 @@
+{
+    "#": "This gets merged into every version as #/local.",
+    "local": {
+        "ssid_info": {
+            "type": "object",
+            "properties": {
+                "ssid":      { "$ref": "#/pScheduler/String" },
+                "signal":    { "type": "number" },
+                "address":   { "$ref": "#/pScheduler/String" },
+                "frequency": { "type": "number" },
+                "quality":   { "type": "number" },
+                "bitrates":  { "type": "array", "items": { "$ref": "#/pScheduler/Cardinal" } },
+                "encrypted": { "$ref": "#/pScheduler/Boolean" },
+                "channel":   { "$ref": "#/pScheduler/Cardinal" },
+                "mode":      { "$ref": "#/pScheduler/String" }
+            },
+            "required": [
+                "ssid",
+                "signal",
+                "address",
+                "frequency",
+                "quality",
+                "bitrates",
+                "encrypted",
+                "channel",
+                "mode"
+            ],
+            "additionalProperties": false
+        }
+    },
+
+    "#": "The zeroth element of this is always null since there is no version 0.",
+    "versions": [
+        null,
+
+	{
+            "type": "object",
+            "properties": {
+                "schema":     { "type": "integer", "const": 1 },
+                "succeeded":  { "$ref": "#/pScheduler/Boolean" },
+                "time":       { "$ref": "#/pScheduler/Duration" },
+		"ssid_list":  { "type": "array", "items": { "$ref": "#/local/ssid_info" } }
+            },
+            "required": [
+                "succeeded",
+                "time",
+		"ssid_list"
+            ],
+            "additionalProperties": false
+        }
+	
+    ]
+}

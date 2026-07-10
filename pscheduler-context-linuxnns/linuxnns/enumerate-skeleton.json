@@ -1,0 +1,16 @@
+{
+    "schema": 2,
+
+    "name": "linuxnns",
+    "label": "Linux Network Namespace",
+    "description": "Change Linux network namespace",
+    "version": "1.0",
+
+    "maintainer": {
+        "name": "perfSONAR Development Team",
+	"email": "perfsonar-developer@internet2.edu",
+	"href": "http://www.perfsonar.net"
+    },
+
+    "json-forms-compatible": true
+}

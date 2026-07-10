@@ -14,6 +14,7 @@
     "schema": 1,
 
     "name": "nmapscan",
+    "label": "NMAP Scan",
     "description": "Uses the nmap tool (https://nmap.org/) to locate open ports and service information on a given host/subnet",
     "version": "1.0",
     "tests": [ "openports" ],

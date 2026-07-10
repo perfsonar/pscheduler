@@ -1,0 +1,49 @@
+{
+    "#": "This gets merged into every version as #/local.",
+    "local": {},
+
+    "#": "The zeroth element of this is always null since there is no version 0.",
+    "versions": [
+        null,
+
+	{
+            "type": "object",
+            "properties": {
+		"schema": {
+		    "$ref": "#/pScheduler/Schema",
+		    "const": 1
+		},
+                "host": {
+		    "title": "Host",
+		    "description": "Host to connect to.",
+		    "$ref": "#/pScheduler/Host"
+		},
+		"port": {
+		    "title": "Port",
+		    "description": "TCP port number.",
+		    "$ref": "#/pScheduler/IPPort"
+		},
+		"ip-version": {
+		    "label": "IP Version",
+		    "description": "Internet protocol version",
+		    "$ref": "#/pScheduler/IPVersion"
+		},
+		"bind": {
+		    "title": "bind",
+		    "description": "Bind address for making the connection.",
+		    "$ref": "#/pScheduler/Host"
+		},
+		"retry-policy": {
+                    "title": "Retry Policy",
+                    "description": "Policy for retrying failed archivings.",
+                    "$ref": "#/pScheduler/RetryPolicy"
+                }
+            },
+            "required": [
+                "host",
+                "port"
+            ],
+            "additionalProperties": false
+        }
+    ]
+}

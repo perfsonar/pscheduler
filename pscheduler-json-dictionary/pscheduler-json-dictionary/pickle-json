@@ -1,0 +1,16 @@
+#!/usr/bin/env python3
+#
+# Read a JSON file from stdin, pickle to stdout
+#
+
+import json
+import pickle
+import sys
+
+try:
+    input = json.load(sys.stdin)
+except json.decoder.JSONDecodeError as ex:
+    print(ex, file=sys.stderr)
+    exit(1)
+
+pickle.dump(input, sys.stdout.buffer)

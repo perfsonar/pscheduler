@@ -25,6 +25,7 @@ Requires:	%{_pscheduler_python}-pscheduler
 Requires:	rpm-post-wrapper
 
 BuildRequires:	pscheduler-rpm >= 1.0.0.5.1
+BuildRequires:	pscheduler-plugin-makefiles
 
 
 %define directory %{_includedir}/make

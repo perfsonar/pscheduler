@@ -1,0 +1,15 @@
+{
+    "schema": 2,
+    "name": "snmptrap",
+    "label": "SNMP Trap",
+    "description": "Send an SNMP trap to a destination.",
+    "version": "1.0.0.3",
+
+    "maintainer": {
+        "name": "perfSONAR Development Team",
+	"email": "perfsonar-developer@internet2.edu",
+	"href": "http://www.perfsonar.net"
+    },
+
+    "json-forms-compatible": false
+}

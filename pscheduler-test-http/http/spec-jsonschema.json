@@ -1,0 +1,221 @@
+{
+    "#": "This gets merged into every version as #/local.",
+    "local": {
+	"headers": {
+            "type": "object",
+	    "#": "Regex is per https://tools.ietf.org/html/rfc7230#section-3.2",
+            "patternProperties": {
+                "^[!#\\$%&'*+\\-.\\^`|~0-9A-Za-z]+$": { "$ref": "#/pScheduler/String" }
+            },
+            "additionalProperties": false
+        }
+    },
+    
+    "#": "The zeroth element of this is always null since there is no version 0.",
+    "versions": [
+	null,
+	
+	{
+            "type": "object",
+            "properties": {
+		"schema": {
+		    "$ref": "#/pScheduler/Schema",
+		    "const": 1 },
+		"host": {
+		    "$ref": "#/pScheduler/Host",
+		    "title": "Host",
+		    "description": "Host to run the test."
+		},
+		"host-node": {
+		    "$ref": "#/pScheduler/Host",
+		    "title": "Host Node",
+		    "description": "pScheduler to contact about running the test."
+		},
+		"url": {
+		    "$ref": "#/pScheduler/URL",
+		    "title": "URL",
+		    "description": "URL to query."
+		},
+		"parse": {
+		    "$ref": "#/pScheduler/String",
+		    "title": "",
+		    "description": ""
+		},
+		"timeout": {
+		    "$ref": "#/pScheduler/Duration",
+		    "title": "Timeout",
+		    "description": "How long to wait for a response from the server."
+		}
+            },
+            "required": [
+		"url"
+	    ],
+            "additionalProperties": false
+	},
+
+	{
+            "type": "object",
+            "properties": {
+		"schema": {
+		    "$ref": "#/pScheduler/Schema",
+		    "const": 2
+		},
+		"host": {
+		    "$ref": "#/pScheduler/Host",
+		    "title": "Host",
+		    "description": "Host to run the test."
+		},
+		"host-node": {
+		    "$ref": "#/pScheduler/Host",
+		    "title": "Host Node",
+		    "description": "pScheduler to contact about running the test."
+		},
+		"url": {
+		    "$ref": "#/pScheduler/URL",
+		    "title": "URL",
+		    "description": "URL to query."
+		},
+		"parse": {
+		    "$ref": "#/pScheduler/String",
+		    "title": "",
+		    "description": ""
+		},
+		"timeout": {
+		    "$ref": "#/pScheduler/Duration",
+		    "title": "Timeout",
+		    "description": "How long to wait for a response from the server."
+		},
+		"always-succeed": {
+		    "$ref": "#/pScheduler/Boolean",
+		    "title": "Always Succeed",
+		    "description": "Treat HTTP failures as successful regardless of the server's response code."
+		},
+		"keep-content": {
+		    "$ref": "#/pScheduler/CardinalZero",
+		    "title": "Keep Content",
+		    "description": "Amount of returned content to keep in bytes.  Use 0 for all; default is to not keep anything."
+		}
+            },
+            "required": [
+		"schema",
+		"url"
+	    ],
+            "additionalProperties": false
+	},
+	
+	{
+            "type": "object",
+            "properties": {
+		"schema": {
+		    "$ref": "#/pScheduler/Schema",
+		    "const": 3
+		},
+		"host": {
+		    "$ref": "#/pScheduler/Host",
+		    "title": "Host",
+		    "description": "Host to run the test."
+		},
+		"host-node": {
+		    "$ref": "#/pScheduler/Host",
+		    "title": "Host Node",
+		    "description": "pScheduler to contact about running the test."
+		},
+		"ip-version": {
+		    "$ref": "#/pScheduler/IPVersion",
+		    "title": "IP Version",
+		    "description": "IP protocol version to be used for the test."
+		},
+		"url": {
+		    "$ref": "#/pScheduler/URL",
+		    "title": "URL",
+		    "description": "URL to query."
+		},
+		"parse": {
+		    "$ref": "#/pScheduler/String",
+		    "title": "",
+		    "description": ""
+		},
+		"timeout": {
+		    "$ref": "#/pScheduler/Duration",
+		    "title": "Timeout",
+		    "description": "How long to wait for a response from the server."
+		},
+		"always-succeed": {
+		    "$ref": "#/pScheduler/Boolean",
+		    "title": "Always Succeed",
+		    "description": "Treat HTTP failures as successful regardless of the server's response code."
+		},
+		"keep-content": {
+		    "$ref": "#/pScheduler/CardinalZero",
+		    "title": "Keep Content",
+		    "description": "Amount of returned content to keep in bytes.  Use 0 for all; default is to not keep anything."
+		}
+            },
+            "required": [
+		"schema",
+		"url"
+	    ],
+            "additionalProperties": false
+	},
+	
+	{
+            "type": "object",
+            "properties": {
+		"schema": {
+		    "$ref": "#/pScheduler/Schema",
+		    "const": 4
+		},
+		"host": {
+		    "$ref": "#/pScheduler/Host",
+		    "title": "Host",
+		    "description": "Host to run the test."
+		},
+		"host-node": {
+		    "$ref": "#/pScheduler/Host",
+		    "title": "Host Node",
+		    "description": "pScheduler to contact about running the test."
+		},
+		"ip-version": {
+		    "$ref": "#/pScheduler/IPVersion",
+		    "title": "IP Version",
+		    "description": "IP protocol version to be used for the test."
+		},
+		"url": {
+		    "$ref": "#/pScheduler/URL",
+		    "title": "URL",
+		    "description": "URL to query."
+		},
+		"headers": {
+		    "$ref": "#/local/headers",
+		    "title": "Headers",
+		    "description": "Header(s) to be sent with the HTTP request"
+		},
+		"parse": {
+		    "$ref": "#/pScheduler/String",
+		    "title": "Parse",
+		    "description": "Look for the provided string in what the server returns and mark it as 'found' in the result."
+		},
+		"timeout": {
+		    "$ref": "#/pScheduler/Duration",
+		    "title": "Timeout",
+		    "description": "How long to wait for a response from the server."
+		},
+		"always-succeed": {
+		    "$ref": "#/pScheduler/Boolean",
+		    "title": "Always Succeed",
+		    "description": "Treat HTTP failures as successful regardless of the server's response code."
+		},
+		"keep-content": {
+		    "$ref": "#/pScheduler/CardinalZero",
+		    "title": "Keep Content",
+		    "description": "Amount of returned content to keep in bytes.  Use 0 for all; default is to not keep anything."
+		}
+            },
+            "required": [
+		"schema",
+		"url"
+	    ],
+            "additionalProperties": false
+	}
+    ]
+}

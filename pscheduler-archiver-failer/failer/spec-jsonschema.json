@@ -1,0 +1,69 @@
+{
+    "#": "This gets merged into every version as #/local.",
+    "local": {},
+
+    "#": "The zeroth element of this is always null since there is no version 0.",
+    "versions": [
+        null,
+
+	{
+            "type": "object",
+            "properties": {
+                "schema": {
+		    "$ref": "#/pScheduler/Schema",
+		    "const": 1
+		},
+                "delay": {
+		    "$ref": "#/pScheduler/Duration",
+		    "title": "Delay",
+		    "description": "How long to delay before completing."
+		},
+                "fail": {
+		    "$ref": "#/pScheduler/Probability",
+		    "title": "Fail",
+		    "description": "Probability that any attempt will fail."
+		},
+                "retry": {
+		    "$ref": "#/pScheduler/Probability",
+		    "title": "Retry",
+		    "description": "Probability that a retry will be requested after a failure."
+		}
+            },
+            "additionalProperties": false
+        },
+
+        {
+            "type": "object",
+            "properties": {
+                "schema": {
+		    "$ref": "#/pScheduler/Schema",
+		    "const": 2
+		},
+		"delay": {
+		    "$ref": "#/pScheduler/Duration",
+		    "title": "Delay",
+		    "description": "How long to delay before completing."
+		},
+                "fail": {
+		    "$ref": "#/pScheduler/Probability",
+		    "title": "Fail",
+		    "description": "Probability that any attempt will fail."
+		},
+		"badly": {
+		    "$ref": "#/pScheduler/Boolean",
+		    "title": "Fail Badly",
+		    "description": "When failing, fail badly with an internal error."
+		},
+                "retry": {
+		    "$ref": "#/pScheduler/Probability",
+		    "title": "Retry",
+		    "description": "Probability that a retry will be requested after a failure."
+		}
+            },
+            "required": [
+                "schema"
+            ],
+            "additionalProperties": false
+        }
+    ]
+}

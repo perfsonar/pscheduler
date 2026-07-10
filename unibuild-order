@@ -36,6 +36,10 @@ define(HAVE_GOLANG,ifelse(FAMILY/ARCH,Debian/armv7,,
               1))
 
 
+# Setting this to zero removes everything involving SNMP.
+define(INCLUDE_SNMP,1)
+define(SNMP,ifelse(INCLUDE_SNMP,1,$1,))
+
 #
 # PACKAGE BUILD UTILITIES
 #
@@ -94,7 +98,7 @@ python-werkzeug						# EL8 has this, ours is newer
 python-flask						# EL8 has this, ours is newer
 
 # TODO: See if this is available in EL9
-python-pysnmp
+SNMP(python-pysnmp)
 
 # Home-grown Python Modules
 python-icmperror
@@ -105,14 +109,20 @@ httpd-wsgi-socket
 
 # Utility and Tool programs
 drop-in
+json2pickle
 
+jsonschematool
 
 #
 # PSCHEDULER CORE PARTS
 #
 
 pscheduler-account
+pscheduler-build-enumeration
 pscheduler-jq-library
+# Note: This requires pscheduler-core to work, but not build and
+# python-pscheduler uses it.
+pscheduler-json-dictionary
 python-pscheduler
 pscheduler-core
 pscheduler-server
@@ -121,6 +131,8 @@ pscheduler-server
 #
 # PSCHEDULER PLUG-INS
 #
+
+pscheduler-plugin-makefiles
 
 # Things needed for a very-minimal functioning installation
 
@@ -136,8 +148,14 @@ pscheduler-tool-snooze
 pscheduler-test-noop
 pscheduler-tool-passthrough
 
-# One archiver
+# Simple archivers
 pscheduler-archiver-bitbucket
+pscheduler-archiver-failer
+
+# Simple context changers
+pscheduler-context-changefail
+pscheduler-context-changenothing
+
 
 # ----- MINIMAL BUILD STOPS HERE -----
 pscheduler-minimal-marker
@@ -167,8 +185,8 @@ pscheduler-test-rtt
 ifelse(HAVE_S3_BENCHMARK,1,pscheduler-test-s3throughput)
 pscheduler-test-simplestream
 pscheduler-test-snmpget			--bundle snmp
-pscheduler-test-snmpgetbgm		--bundle snmp
-pscheduler-test-snmpset			--bundle snmp
+SNMP(pscheduler-test-snmpgetbgm		--bundle snmp)
+SNMP(pscheduler-test-snmpset		--bundle snmp)
 pscheduler-test-trace
 pscheduler-test-wifibssid
 
@@ -216,7 +234,7 @@ ifelse(DISTRO/eval(MAJOR >= 11),Debian/1,iperf3,        # We only want iperf3 on
        iperf3)
 pscheduler-tool-iperf3
 
-pscheduler-tool-net-snmp-set		--bundle snmp
+SNMP(pscheduler-tool-net-snmp-set		--bundle snmp)
 pscheduler-tool-nmapreach			--bundle extras
 # TODO: This has problems.  See #1223.
 #pscheduler-tool-nmapscan		--bundle extras
@@ -236,7 +254,7 @@ pscheduler-tool-psclock
 pscheduler-tool-pstimer
 pscheduler-tool-psurl			--bundle obsolete
 pscheduler-tool-pydns64
-pscheduler-tool-pysnmp			--bundle snmp
+SNMP(pscheduler-tool-pysnmp			--bundle snmp)
 
 define(HAVE_S3_BENCHMARK,ifelse(HAVE_GOLANG,0,0,
 	   FAMILY/eval(MAJOR == 11),Debian/1,HAVE_GOLANG,
@@ -262,20 +280,17 @@ pscheduler-tool-umichwpa		--bundle extras
 #
 
 pscheduler-archiver-esmond			--bundle obsolete
-pscheduler-archiver-failer
 pscheduler-archiver-http
 pscheduler-archiver-kafka
 pscheduler-archiver-postgresql
 pscheduler-archiver-rabbitmq
-pscheduler-archiver-snmptrap		--bundle snmp
+SNMP(pscheduler-archiver-snmptrap		--bundle snmp)
 pscheduler-archiver-syslog
 pscheduler-archiver-tcp
 pscheduler-archiver-udp
 
 
 # Context Changers
-pscheduler-context-changefail
-pscheduler-context-changenothing
 pscheduler-context-linuxnns
 pscheduler-context-linuxvrf
 
@@ -288,4 +303,4 @@ pscheduler-docs
 pscheduler-bundle-extras
 pscheduler-bundle-full
 pscheduler-bundle-obsolete
-pscheduler-bundle-snmp
+SNMP(pscheduler-bundle-snmp)

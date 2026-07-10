@@ -1,0 +1,73 @@
+#
+# Makefile for any test class
+#
+
+ENUMERATE := enumerate
+ENUMERATE_JSON := enumerate.json
+ENUMERATE_SKELETON := enumerate-skeleton.json
+SPEC_SCHEMA := spec-jsonschema.json
+UI_SCHEMA := spec-uischema.json
+RESULT_SCHEMA := result-jsonschema.json
+
+FILES += \
+	cli-to-spec \
+	$(ENUMERATE) \
+	$(ENUMERATE_JSON) \
+	participants \
+	result-format \
+	spec-format \
+	spec-is-valid \
+	spec-to-cli
+
+MODULES +=
+
+default: build
+
+
+
+$(ENUMERATE): $(ENUMERATE_SKELETON) $(SPEC_SCHEMA) $(UI_SCHEMA) $(RESULT_SCHEMA)
+	pscheduler-build-enumeration \
+		--plain .=$(ENUMERATE_SKELETON) \
+		--validator .spec.jsonschema=$(SPEC_SCHEMA) \
+		--plain .spec.uischema=$(UI_SCHEMA) \
+		--validator .result.jsonschema=$(RESULT_SCHEMA) \
+		> $@
+	chmod +x $@
+TO_CLEAN += $(ENUMERATE)
+
+$(ENUMERATE_JSON): $(ENUMERATE)
+	./$< > $@
+TO_CLEAN += $(ENUMERATE_JSON)
+
+
+PYS=$(MODULES:%=%.py)
+PYCS=$(MODULES:%=__pycache__/%.pyc)
+
+$(PYCS):
+ifndef PYTHON
+	@echo No PYTHON specified for build
+	@false
+endif
+	$(PYTHON) -m compileall .
+TO_CLEAN += $(PYCS) __pycache__
+
+
+build: $(FILES) $(PYS) $(PYCS)
+
+
+install: build
+ifndef DESTDIR
+	@echo No DESTDIR specified for installation
+	@false
+endif
+	mkdir -p $(DESTDIR)
+	install -m 555 $(FILES) $(DESTDIR)
+ifneq ($(PYS),)
+	install -m 444 $(PYS) $(DESTDIR)
+	cp -r __pycache__ $(DESTDIR)
+endif
+
+
+
+clean:
+	rm -rf $(TO_CLEAN) *~

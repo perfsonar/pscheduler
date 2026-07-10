@@ -1,0 +1,59 @@
+{
+    "#": "This gets merged into every version as #/local.",
+    "local": {},
+
+    "#": "The zeroth element of this is always null since there is no version 0.",
+    "versions": [
+	null,
+
+	{
+	    "type": "object",
+            "properties": {
+		"schema": {
+		    "$ref": "#/pScheduler/Schema",
+		    "const": 1
+		},
+		"parallel": {
+		    "$ref": "#/pScheduler/Cardinal",
+		    "title": "Parallel",
+		    "description": "Number of parallel streams to use with GridFTP transfers."
+		},
+		"host": {
+		    "$ref": "#/pScheduler/Host",
+		    "title": "Host",
+		    "description": "Host where the test should be run."
+		},
+		"dest": {
+		    "$ref": "#/pScheduler/String",
+		    "title": "Destination",
+		    "description": "Destination URL."
+		},
+		"source": {
+		    "$ref": "#/pScheduler/String",
+		    "title": "Source",
+		    "description": "Source URL."
+		},
+		"duration": {
+		    "$ref": "#/pScheduler/Duration",
+		    "title": "Duration",
+		    "description": "Duration of the test."
+		},
+		"timeout": {
+		    "$ref": "#/pScheduler/Duration",
+		    "title": "Timeout",
+		    "description": "Timeout for each query attempt."
+		},
+		"cleanup": {
+		    "$ref": "#/pScheduler/Boolean",
+		    "title": "No Clean Up",
+		    "description": "Don't delete the test file after the transfer."
+		}	
+	    },
+            "required":  [
+		"dest",
+		"source"
+            ],
+            "additionalProperties": false
+	}
+    ]
+}

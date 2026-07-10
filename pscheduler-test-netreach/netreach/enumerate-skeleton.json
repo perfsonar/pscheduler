@@ -1,0 +1,14 @@
+{
+    "schema": 2,
+    "name": "netreach",
+    "label": "Network Reachability",
+    "description": "Determine if any host on a network is reachable",
+    "version": "1.0",
+    "maintainer": {
+        "name": "perfSONAR Development Team",
+	"email": "perfsonar-developer@internet2.edu",
+	"href": "http://www.perfsonar.net"
+    },
+    "scheduling-class": "background",
+    "json-forms-compatible": false
+}

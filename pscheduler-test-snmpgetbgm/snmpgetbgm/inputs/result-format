@@ -15,18 +15,21 @@
 	"succeeded": true,
 	"time": "PT0.0123S",
 	"data": [
-	    {
-		"type": "String",
-		"value": "Foo"
-	    },
-	    {
-		"type": "String",
-		"value": "Bar"
-	    },
-	    {
-		"type": "String",
-		"value": "Baz"
-	    }
+	    [
+		
+		{
+		    "type": "String",
+		    "value": "Foo"
+		},
+		{
+		    "type": "String",
+		    "value": "Bar"
+		},
+		{
+		    "type": "String",
+		    "value": "Baz"
+		}
+	    ]
 	]
     }
 }

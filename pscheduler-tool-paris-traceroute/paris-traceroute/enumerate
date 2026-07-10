@@ -3,6 +3,7 @@
     "schema": 1,
 
     "name": "paris-traceroute",
+    "label": "Paris Traceroute",
     "description": "Determine the route between hosts with Paris Traceroute",
     "version": "1.0",
     "tests": [ "trace" ],

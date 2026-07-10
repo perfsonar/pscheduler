@@ -80,14 +80,15 @@ AS $$
 DECLARE
     json_result TEXT;
 BEGIN
-    -- TODO: Need to add this to the dictionary
+    NEW.name := NEW.json ->> 'name';
+    NEW.available := TRUE;
     json_result := json_validate(NEW.json, '#/pScheduler/PluginEnumeration/Context');
     IF json_result IS NOT NULL
     THEN
-        RAISE EXCEPTION 'Invalid enumeration: %', json_result;
+        RAISE WARNING 'Invalid enumeration for context "%" (disabling): %', NEW.name, json_result;
+	NEW.available := FALSE;
     END IF;
 
-    NEW.name := NEW.json ->> 'name';
     NEW.description := NEW.json ->> 'description';
     RETURN NEW;
 END;
@@ -117,7 +118,6 @@ DECLARE
     context_name TEXT;
     context_enumeration JSONB;
     json_result TEXT;
-    sschema NUMERIC;  -- Name dodges a reserved word
 BEGIN
     run_result := pscheduler_command(ARRAY['internal', 'list', 'context']);
     IF run_result.status <> 0 THEN
@@ -138,25 +138,10 @@ BEGIN
 
 	context_enumeration := run_result.stdout::JSONB;
 
-        sschema := text_to_numeric(context_enumeration ->> 'schema');
-        IF sschema IS NOT NULL AND sschema > 1 THEN
-            RAISE WARNING 'Context "%": schema % is not supported',
-                context_name, sschema;
-            CONTINUE;
-        END IF;
-
-        json_result := json_validate(context_enumeration,
-	    '#/pScheduler/PluginEnumeration/Context');
-        IF json_result IS NOT NULL
-        THEN
-            RAISE WARNING 'Invalid enumeration for context "%": %', context_name, json_result;
-	    CONTINUE;
-        END IF;
-
-	INSERT INTO context (json, updated, available)
-        VALUES (context_enumeration, now(), true)
+	INSERT INTO context (json, updated)
+        VALUES (context_enumeration, now())
         ON CONFLICT (name) DO UPDATE
-        SET json = context_enumeration, updated = now(), available = TRUE;
+        SET json = context_enumeration, updated = now();
 
     END LOOP;
 

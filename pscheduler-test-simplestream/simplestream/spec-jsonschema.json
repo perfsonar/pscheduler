@@ -1,0 +1,114 @@
+{
+    "#": "This gets merged into every version as #/local.",
+    "local": {},
+
+    "#": "The zeroth element of this is always null since there is no version 0.",
+    "versions": [
+        null,
+	
+	{
+            "type": "object",
+            "properties": {
+                "schema": {
+		    "$ref": "#/pScheduler/Schema", "const": 1
+		},
+                "dawdle": {
+		    "$ref": "#/pScheduler/Duration",
+		    "title": "Dawdle",
+		    "description": "Maximum time to delay before sending data."
+		},
+                "fail": {
+		    "$ref": "#/pScheduler/Probability",
+		    "title": "Failure",
+		    "description": "The probability that the test will be forced to fail."
+		},
+                "dest": {
+		    "$ref": "#/pScheduler/Host",
+		    "title": "Destination",
+		    "description": "Receiving end of the connection."
+		},
+                "dest-node": {
+		    "$ref": "#/pScheduler/URLHostPort",
+		    "title": "Destination Node",
+		    "description": "pScheduler to contact for the destinationend."
+		},
+                "source": {
+		    "$ref": "#/pScheduler/Host",
+		    "title": "Source",
+		    "description": "Sending end of the connection."
+		},
+                "source-node": {
+		    "$ref": "#/pScheduler/URLHostPort",
+		    "title": "Source Node",
+		    "description": "pScheduler to contact for the source end."
+		},
+                "test-material": {
+		    "$ref": "#/pScheduler/String",
+		    "title": "Test Material",
+		    "description": "Text to be sent across the connection."
+		},
+                "timeout": {
+		    "$ref": "#/pScheduler/Duration",
+		    "title": "Timeout",
+		    "description": "How long the receiver should wait for data."
+		}
+            },
+            "required": [
+                "dest"
+            ]
+        },
+
+	{
+            "type": "object",
+            "properties": {
+                "schema": {
+		    "$ref": "#/pScheduler/Schema",
+		    "const": 2
+		},
+                "dawdle": null,
+                "fail": null,
+                "ip-version": {
+		    "$ref": "#/pScheduler/IPVersion",
+		    "title": "IP Version",
+		    "description": "IP version to use for the connection."
+		},
+                "dest": null,
+                "dest-node": null,
+                "source": null,
+                "source-node": null,
+                "test-material": null,
+                "timeout": null
+            },
+            "required": [
+                "schema", "dest"
+            ]
+        },
+
+	{
+            "type": "object",
+            "properties": {
+                "schema": {
+		    "$ref": "#/pScheduler/Schema",
+		    "const": 3
+		},
+                "dawdle": null,
+                "fail": null,
+                "ip-version": null,
+                "dest": null,
+                "dest-node": null,
+                "port": {
+		    "$ref": "#/pScheduler/IPPort",
+		    "title": "Port",
+		    "description": "Port to use for the connection."
+		},
+                "source": null,
+                "source-node": null,
+                "test-material": null,
+                "timeout": null
+            },
+            "required": [
+                "schema", "dest"
+            ]
+        }
+    ]
+}

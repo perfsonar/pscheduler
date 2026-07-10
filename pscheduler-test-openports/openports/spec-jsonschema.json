@@ -1,0 +1,66 @@
+{
+    "#": "This gets merged into every version as #/local.",
+    "local": {
+	"portlist": {
+            "type": "string",
+	    "pattern" : "^(6553[0-5]|655[0-2][0-9]|65[0-4][0-9]{2}|6[0-4][0-9]{3}|[1-5][0-9]{4}|[0-9]{1,4})((,(6553[0-5]|655[0-2][0-9]|65[0-4][0-9]{2}|6[0-4][0-9]{3}|[1-5][0-9]{4}|[0-9]{1,4}))|(-(6553[0-5]|655[0-2][0-9]|65[0-4][0-9]{2}|6[0-4][0-9]{3}|[1-5][0-9]{4}|[0-9]{1,4})))*$"
+        },
+        "HostOrCIDR": {
+            "oneOf": [
+                { "$ref": "#/pScheduler/IPCIDR" },
+                { "$ref": "#/pScheduler/Host" }
+            ]
+	}
+    },
+
+    "#": "The zeroth element of this is always null since there is no version 0.",
+    "versions": [
+	null,
+
+	{
+            "type": "object",
+            "properties": {
+                "schema": {
+		    "$ref": "#/pScheduler/Schema",
+		    "const": 1
+		},
+                "network": {
+		    "$ref": "#/local/HostOrCIDR",
+		    "title": "Network",
+		    "description": "CIDR network or host to scan"
+		},
+                "source": {
+		    "$ref": "#/pScheduler/Host",
+		    "title": "Source",
+		    "description": "Source for scan"
+		},
+                "services": {
+		    "$ref": "#/pScheduler/Boolean",
+		    "title": "Services",
+		    "description": "Scan for additional info beyond open ports."
+		},
+                "ports": {
+		    "$ref": "#/local/portlist",
+		    "title": "Ports",
+		    "description": "Ports to scan.",
+		    "x-description-append": "Single port (1234) or port range (1234-5678) with multiples separated by commas."
+		},
+                "timeout": {
+		    "$ref": "#/pScheduler/Duration",
+		    "title": "Timeout",
+		    "description": "Maximum time to wait for responses."
+		},
+                "source-node": {
+		    "$ref": "#/pScheduler/URLHostPort",
+		    "title": "Source Node",
+		    "description": "pScheduler to contact about this measurement."
+		}
+            },
+
+            "required": [
+                "network"
+            ],
+	    "additionalProperties": false
+        }
+    ]
+}

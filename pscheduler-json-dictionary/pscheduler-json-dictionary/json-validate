@@ -1,0 +1,37 @@
+#!/usr/bin/env python3
+
+import pscheduler
+import sys
+
+def die(message):
+    print(message, file=sys.stderr)
+    exit(1)
+
+try:
+    validate_as = sys.argv[1]
+except IndexError:
+    die(f'Usage: {sys.argv[0]}: validate-as')
+    exit(1)
+
+json_in = pscheduler.json_load(exit_on_error=True)
+
+ok, error = pscheduler.json_validate(
+    {
+        "input": json_in
+    },
+    {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+            "input": { '$ref': f'#{validate_as}' }
+        },
+        "additionalProperties": False
+    }
+    )
+
+
+if not ok:
+    die(error)
+
+print(error)
+exit(0)

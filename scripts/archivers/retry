@@ -1,0 +1,31 @@
+{
+    "archiver": "http",
+    "data": {
+        "_url": "http://www.posttestserver.com/post.php?dir=blahblahblah",
+        "op": "post",
+        "retry-policy": [
+            {
+                "#": "Once a minute for the first five minutes",
+                "attempts": 5,
+                "wait": "PT1M"
+            },
+            {
+                "#": "Every five minutes for the rest of the first hour",
+                "attempts": 11,
+                "wait": "PT5M"
+            },
+            {
+                "#": "Hourly for the rest of the day",
+                "attempts": 23,
+                "wait": "PT1H"
+            },
+            {
+                "#": "Every four hours for the following day",
+                "attempts": 6,
+                "wait": "PT4H"
+            }
+        ]
+    },
+    "#": "Give up unconditionally after this long",
+    "ttl": "P2DT1H"
+}

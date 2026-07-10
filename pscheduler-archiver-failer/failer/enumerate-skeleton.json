@@ -1,0 +1,16 @@
+{
+    "schema": 2,
+
+    "name": "failer",
+    "label": "Failer",
+    "description": "Dummy archiver that fails some of the time",
+    "version": "1.0",
+
+    "maintainer": {
+        "name": "perfSONAR Development Team",
+	"email": "perfsonar-developer@internet2.edu",
+	"href": "http://www.perfsonar.net"
+    },
+
+    "json-forms-compatible": true
+}

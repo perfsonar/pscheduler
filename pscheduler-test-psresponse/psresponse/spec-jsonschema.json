@@ -1,0 +1,41 @@
+{
+    "#": "This gets merged into every version as #/local.",
+    "local": {},
+
+    "#": "The zeroth element of this is always null since there is no version 0.",
+    "versions": [
+	null,
+
+        {
+            "type": "object",
+            "properties": {
+                "schema": {
+		    "$ref": "#/pScheduler/Schema",
+		    "const": 1
+		},
+                "source": {
+		    "$ref": "#/pScheduler/Host",
+		    "title": "Source",
+		    "description": "Host to carry out the measurement."
+		},
+                "source-node": {
+		    "$ref": "#/pScheduler/Host",
+		    "title": "Source Node",
+		    "description": "pScheduler to contact about the measurement."
+		},
+                "dest": {
+		    "$ref": "#/pScheduler/Host",
+		    "title": "Destination",
+		    "description": "pScheduler to query for response time."
+		},
+                "timeout": {
+		    "$ref": "#/pScheduler/Duration",
+		    "title": "Timeout",
+		    "description": "How long to wait for a response before giving up."
+		}
+            },
+            "required": [ "dest" ],
+            "additionalProperties": false
+        }
+    ]
+}

@@ -3,6 +3,7 @@
     "schema": 1,
 
     "name": "fpingreach",
+    "label": "FPing Reach",
     "description": "Determine network reachability with fping",
     "version": "1.0",
     "tests": [ "netreach" ],

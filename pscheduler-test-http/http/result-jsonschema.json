@@ -1,0 +1,60 @@
+{
+    "#": "This gets merged into every version as #/local.",
+    "local": {
+        "headers": {
+            "type": "object",
+            "patternProperties": {
+                "#": "Regex is per https://tools.ietf.org/html/rfc7230#section-3.2",
+                "^[!#\\$%&'*+\\-.\\^`|~0-9A-Za-z]+$": { "$ref": "#/pScheduler/String" }
+            },
+            "additionalProperties": false
+        }
+    },
+
+    "#": "The zeroth element of this is always null since there is no version 0.",
+    "#": "TODO: _ for sensitive values",
+
+    "versions": [
+        null,
+
+        {
+            "type": "object",
+            "properties": {
+                "schema":     { "type": "integer", "const": 1 },
+                "succeeded":  { "$ref": "#/pScheduler/Boolean" },
+                "error":      { "$ref": "#/pScheduler/String" },
+                "diags":      { "$ref": "#/pScheduler/String" },
+                "time":       { "$ref": "#/pScheduler/Duration" },
+                "found":      { "$ref": "#/pScheduler/Boolean" }
+            },
+            "required": [
+                "succeeded",
+                "time"
+            ],
+            "additionalProperties": false
+        },
+
+	{
+            "type": "object",
+            "properties": {
+                "schema":     { "type": "integer", "const": 2 },
+                "succeeded":  { "$ref": "#/pScheduler/Boolean" },
+                "error":      { "$ref": "#/pScheduler/String" },
+                "diags":      { "$ref": "#/pScheduler/String" },
+                "time":       { "$ref": "#/pScheduler/Duration" },
+                "found":      { "$ref": "#/pScheduler/Boolean" },
+                "status":     { "$ref": "#/pScheduler/Cardinal" },
+                "headers":    { "$ref": "#/local/headers" },
+                "content":    { "$ref": "#/pScheduler/String" }
+            },
+            "required": [
+                "schema",
+                "succeeded",
+                "time"
+            ],
+            "additionalProperties": false
+        }
+
+
+    ]
+}

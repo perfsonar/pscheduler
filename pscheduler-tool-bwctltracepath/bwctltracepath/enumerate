@@ -3,6 +3,7 @@
     "schema": 1,
 
     "name": "bwctltracepath",
+    "label": "BWCTL Tracepath",
     "description": "Determine the path to another host with BWCTL tracepath - NON-FUNCTIONING",
     "version": "1.0",
     "tests": [ ],

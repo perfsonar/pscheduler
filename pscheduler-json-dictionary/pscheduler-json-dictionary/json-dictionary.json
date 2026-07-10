@@ -1,0 +1,1324 @@
+{
+    "#": "pScheduler JSON Dictionary",
+
+    "pScheduler": {
+
+        "#": "JSON Types",
+
+        "AnyJSON": {
+	    "x-description-append": "This can be any valid JSON.",
+	    "examples": [ { "foo": "bar" }, "perfSONAR", true, 97, null ],
+	    "x-invalid-message": "Invalid JSON.",
+	    "x-info": [
+		{
+		    "title": "JSON",
+		    "href": "https://www.json.org"
+		}
+	    ]
+	},
+
+        "Array": { "type": "array" },
+
+	"ASNumber": {
+	    "type": "integer",
+	    "minimum": 1,
+	    "maximum": 4294967294,
+	    "x-description-append": "This can be any autonomous system numeber in [0..4294967294].",
+	    "examples": [ 64500, 4200000000 ],
+	    "x-invalid-message": "Invalid AS number.",
+	    "x-info": [
+		{
+		    "title": "Autonomous System Numbers",
+		    "href": "https://www.iana.org/assignments/as-numbers/as-numbers.xhtml"
+		}
+	    ]
+	},
+
+        "AS": {
+            "type": "object",
+            "properties": {
+                "number": {
+		    "$ref": "#/pScheduler/ASNumber"
+		},
+                "owner": {
+		    "$ref": "#/pScheduler/String",
+		    "description": "The owner of the AS"
+		}
+            },
+            "additionalProperties": false,
+            "required": [ "number" ]
+        },
+
+        "Boolean": { "type": "boolean" },
+
+        "Cardinal": {
+            "type": "integer",
+            "minimum": 1,
+	    "x-description-append": "Any positive integer is valid.",
+	    "examples": [ 5, 2, 19 ],
+	    "x-invalid-message": "'%s' is not a positive integer."
+        },
+
+        "CardinalList": {
+            "type": "array",
+            "items": { "$ref": "#/pScheduler/Cardinal" }
+        },
+
+        "CardinalZero": {
+            "type": "integer",
+            "minimum": 0,
+	    "x-description-append": "Zero or any positive integer is valid.",
+	    "examples": [ 0, 1, 5, 19 ],
+	    "x-invalid-message": "This must be zero or any positive integer."
+        },
+
+        "CardinalZeroList": {
+            "type": "array",
+            "items": { "$ref": "#/pScheduler/CardinalZero" }
+        },
+
+        "ClockState": {
+            "type": "object",
+            "properties": {
+                "time":         { "$ref": "#/pScheduler/Timestamp" },
+                "synchronized": { "$ref": "#/pScheduler/Boolean" },
+                "source":       { "$ref": "#/pScheduler/String" },
+                "reference":    { "$ref": "#/pScheduler/String" },
+                "offset":       { "$ref": "#/pScheduler/Number" }
+            },
+            "additionalProperties": false,
+            "required": [ "time", "synchronized" ]
+        },
+
+        "Duration": {
+            "type": "string",
+            "#": "ISO 8601.  Source: https://gist.github.com/philipashlock/8830168",
+            "#": "Modified not to accept repeats (e.g., R5PT1M), which we don't support.",
+            "#": "Modified not to accept months or years, which are inexact.",
+            "pattern": "^P(?:\\d+(?:\\.\\d+)?W)?(?:\\d+(?:\\.\\d+)?D)?(?:T(?:\\d+(?:\\.\\d+)?H)?(?:\\d+(?:\\.\\d+)?M)?(?:\\d+(?:\\.\\d+)?S)?)?$",
+	    "title": "Duration",
+	    "x-description-append": "This can be any valid ISO 8601 duration not involving months or years, which are inexact.",
+	    "examples": [ "PT10S", "PT45.67S", "PT1H30M", "P1D", "P2D3H37M" ],
+            "x-invalid-message": "Invalid ISO 8601 duration.",
+	    "x-info": [
+		{
+		    "title": "ISO 8601 Durations",
+		    "href": "https://en.wikipedia.org/wiki/ISO_8601#Durations"
+		}
+	    ]
+        },
+
+        "Email": {
+	    "type": "string",
+	    "format": "email",
+	    "x-description-append": "This can be any valid email address.",
+	    "examples": [ "alice@example.com", "bob@example.net", "charlie@example.edu" ],
+	    "x-invalid-message": "Invalid email address."
+	},
+
+        "Float": {
+            "type": "number",
+	    "x-description-append": "This can be any floating-point number.",
+	    "examples": [ 3.1415, 6.022e23, 86 ],
+	    "x-invalid-message": "Invalid floating-point number."
+        },
+
+        "GeographicPosition": {
+            "type": "string",
+            "#": "ISO 6709",
+            "#": "Source:  https://svn.apache.org/repos/asf/abdera/abdera2/common/src/main/java/org/apache/abdera2/common/geo/IsoPosition.java",
+            "pattern": "^(([+-]\\d{2})(\\d{2})?(\\d{2})?(\\.\\d+)?)(([+-]\\d{3})(\\d{2})?(\\d{2})?(\\.\\d+)?)([+-]\\d+(\\.\\d+)?)?$",
+	    "x-description-append": "This can be any ISO 6709 geographic position.",
+	    "#": "These coordinates are the boardwalk at Rehoboth Beach, Delaware, USA.",
+	    "examples": [ "+38.7166753292509-75.07609107912923" ],
+	    "x-invalid-message": "Invalid ISO 6709 geographic position.",
+	    "x-info": [
+		{
+		    "title": "ISO 6709",
+		    "href": "https://en.wikipedia.org/wiki/ISO_6709"
+		}
+	    ]
+        },
+
+        "Host": {
+	    "#1526 WAS anyOf": [
+                { "$ref": "#/pScheduler/HostName" },
+                { "$ref": "#/pScheduler/IPAddress" }
+	    ],
+	    "type": "string",
+	    "pattern": "(^[A-Za-z0-9_][A-Za-z0-9\\-]{0,62}(\\.[A-Za-z0-9][A-Za-z0-9\\-]{0,62})*\\.?$)|(^((25[0-5]|(2[0-4]|1\\d|[1-9]|)\\d)\\.?\\b){4}$)|(^((?:[0-9A-Fa-f]{1,4}:){7}[0-9A-Fa-f]{1,4}|(?:[0-9A-Fa-f]{1,4}:){1,7}:|:(?::[0-9A-Fa-f]{1,4}){1,7}|(?:[0-9A-Fa-f]{1,4}:){1,6}:[0-9A-Fa-f]{1,4}|(?:[0-9A-Fa-f]{1,4}:){1,5}(?::[0-9A-Fa-f]{1,4}){1,2}|(?:[0-9A-Fa-f]{1,4}:){1,4}(?::[0-9A-Fa-f]{1,4}){1,3}|(?:[0-9A-Fa-f]{1,4}:){1,3}(?::[0-9A-Fa-f]{1,4}){1,4}|(?:[0-9A-Fa-f]{1,4}:){1,2}(?::[0-9A-Fa-f]{1,4}){1,5}|[0-9A-Fa-f]{1,4}:(?:(?::[0-9A-Fa-f]{1,4}){1,6})|:(?:(?::[0-9A-Fa-f]{1,4}){1,6}))$)",
+	    "x-description-append": "Any hostname, FQDN, IPv4 address or IPv6 address is valid.",
+	    "x-invalid-message": "Invalid host name.",
+	    "examples": [ "host.example.net", "198.51.100.45", "2001:db8::c0de" ]
+        },
+
+        "HostName": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 255,
+            "#": "This is derived from the pattern in the JSONSchema module",
+            "#": "but allows the first element to begin with an underscore.",
+            "#": "See #1514.",
+            "pattern": "^[A-Za-z0-9_][A-Za-z0-9\\-]{0,62}(\\.[A-Za-z0-9][A-Za-z0-9\\-]{0,62})*\\.?$",
+	    "examples": [ "host.example.net" ],
+	    "x-description-append": "Any hostname as described in RFCs 952, 1123 or 2181 is valid.",
+	    "x-invalid-message": "Invalid hostname.",
+	    "x-info": [
+		{
+		    "title": "RFC 952",
+		    "href": "https://datatracker.ietf.org/doc/html/rfc952"
+		},
+		{
+		    "title": "RFC 1123",
+		    "href": "https://datatracker.ietf.org/doc/html/rfc1123"
+		},
+		{
+		    "title": "RFC 2181",
+		    "href": "https://datatracker.ietf.org/doc/html/rfc2181"
+		}
+	    ]
+        },
+
+        "Integer": {
+	    "type": "integer",
+	    "examples": [ 5, -17, 0 ],
+	    "x-description-append": "Any integer is valid.",
+	    "x-invalid-message": "Invalid integer."
+	},
+
+        "IPAddress": {
+            "#1526 WAS: oneOf": [
+                { "type": "string", "format": "ipv4" },
+                { "type": "string", "format": "ipv6" }
+            ],
+	    "type": "string",
+	    "#": "Source: https://www.ditig.com/validating-ipv4-and-ipv6-addresses-with-regexp",
+            "pattern": "(^((25[0-5]|(2[0-4]|1\\d|[1-9]|)\\d)\\.?\\b){4}$)|(^((?:[0-9A-Fa-f]{1,4}:){7}[0-9A-Fa-f]{1,4}|(?:[0-9A-Fa-f]{1,4}:){1,7}:|:(?::[0-9A-Fa-f]{1,4}){1,7}|(?:[0-9A-Fa-f]{1,4}:){1,6}:[0-9A-Fa-f]{1,4}|(?:[0-9A-Fa-f]{1,4}:){1,5}(?::[0-9A-Fa-f]{1,4}){1,2}|(?:[0-9A-Fa-f]{1,4}:){1,4}(?::[0-9A-Fa-f]{1,4}){1,3}|(?:[0-9A-Fa-f]{1,4}:){1,3}(?::[0-9A-Fa-f]{1,4}){1,4}|(?:[0-9A-Fa-f]{1,4}:){1,2}(?::[0-9A-Fa-f]{1,4}){1,5}|[0-9A-Fa-f]{1,4}:(?:(?::[0-9A-Fa-f]{1,4}){1,6})|:(?:(?::[0-9A-Fa-f]{1,4}){1,6}))$)",
+	    "x-description-append": "Any IPv4 or IPv6 address is valid.",
+	    "x-invalid-message": "Invalid IPv4 or IPv6 address",
+	    "examples": [ "198.51.100.45", "2001:db8::bead:cafe" ]
+        },
+
+        "IPv4": {
+	    "type": "string",
+	    "format": "ipv4",
+	    "x-description-append": "Any IPv4 address is valid.",
+	    "x-invalid-message": "Invalid IPv4 address.",
+	    "examples": [ "198.51.100.45", "192.0.2.68", "203.0.113.99" ]
+	},
+
+        "IPv6": {
+	    "type": "string",
+	    "format": "ipv6",
+	    "x-description-append": "Any IPv6 address is valid.",
+	    "x-invalid-message": "Invalid IPv6 address.",
+	    "examples": [ "2001:db8::beef:cafe", "3fff:0123:4567:89ab:cdef:0000:1b4d:c0de" ]
+	},
+
+	"IPv6FlowLabel": {
+	    "type": "integer",
+	    "minimum": 0,
+	    "maximum": 1048575,
+            "title": "Flow Label",
+            "description": "IPv6 flow label.",
+            "x-description-append": "Any 20-bit decimal number in [0.. 1048575] is valid."
+	},
+
+        "IPv6RFC2732": {
+            "#": "IPv6 address with optional port, formatted per RFC 2732",
+            "#": "Source: https://stackoverflow.com/a/17871737/180674",
+            "type": "string",
+            "pattern": "^\\[(([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|:((:[0-9a-fA-F]{1,4}){1,7}|:)|fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|::(ffff(:0{1,4}){0,1}:){0,1}((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])|([0-9a-fA-F]{1,4}:){1,4}:((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]))\\](:[0-9]+)?$"
+        },
+
+        "IPv4CIDR": {
+            "type": "string",
+            "#": "Source: http://blog.markhatton.co.uk/2011/03/15/regular-expressions-for-ip-addresses-cidr-ranges-and-hostnames",
+            "pattern": "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\\/([0-9]|[1-2][0-9]|3[0-2]))$"
+        },
+
+        "IPv6CIDR": {
+            "type": "string",
+            "#": "Source: http://www.regexpal.com/93988",
+            "pattern": "^s*((([0-9A-Fa-f]{1,4}:){7}([0-9A-Fa-f]{1,4}|:))|(([0-9A-Fa-f]{1,4}:){6}(:[0-9A-Fa-f]{1,4}|((25[0-5]|2[0-4]d|1dd|[1-9]?d)(.(25[0-5]|2[0-4]d|1dd|[1-9]?d)){3})|:))|(([0-9A-Fa-f]{1,4}:){5}(((:[0-9A-Fa-f]{1,4}){1,2})|:((25[0-5]|2[0-4]d|1dd|[1-9]?d)(.(25[0-5]|2[0-4]d|1dd|[1-9]?d)){3})|:))|(([0-9A-Fa-f]{1,4}:){4}(((:[0-9A-Fa-f]{1,4}){1,3})|((:[0-9A-Fa-f]{1,4})?:((25[0-5]|2[0-4]d|1dd|[1-9]?d)(.(25[0-5]|2[0-4]d|1dd|[1-9]?d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){3}(((:[0-9A-Fa-f]{1,4}){1,4})|((:[0-9A-Fa-f]{1,4}){0,2}:((25[0-5]|2[0-4]d|1dd|[1-9]?d)(.(25[0-5]|2[0-4]d|1dd|[1-9]?d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){2}(((:[0-9A-Fa-f]{1,4}){1,5})|((:[0-9A-Fa-f]{1,4}){0,3}:((25[0-5]|2[0-4]d|1dd|[1-9]?d)(.(25[0-5]|2[0-4]d|1dd|[1-9]?d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){1}(((:[0-9A-Fa-f]{1,4}){1,6})|((:[0-9A-Fa-f]{1,4}){0,4}:((25[0-5]|2[0-4]d|1dd|[1-9]?d)(.(25[0-5]|2[0-4]d|1dd|[1-9]?d)){3}))|:))|(:(((:[0-9A-Fa-f]{1,4}){1,7})|((:[0-9A-Fa-f]{1,4}){0,5}:((25[0-5]|2[0-4]d|1dd|[1-9]?d)(.(25[0-5]|2[0-4]d|1dd|[1-9]?d)){3}))|:)))(%.+)?s*(\\/([0-9]|[1-9][0-9]|1[0-1][0-9]|12[0-8]))$"
+        },
+
+        "IPCIDR": {
+            "#1526 WAS: oneOf": [
+                { "$ref": "#/pScheduler/IPv4CIDR" },
+                { "$ref": "#/pScheduler/IPv6CIDR" }
+            ],
+            "type": "string",
+            "pattern": "(^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\\/([0-9]|[1-2][0-9]|3[0-2]))$)|(^s*((([0-9A-Fa-f]{1,4}:){7}([0-9A-Fa-f]{1,4}|:))|(([0-9A-Fa-f]{1,4}:){6}(:[0-9A-Fa-f]{1,4}|((25[0-5]|2[0-4]d|1dd|[1-9]?d)(.(25[0-5]|2[0-4]d|1dd|[1-9]?d)){3})|:))|(([0-9A-Fa-f]{1,4}:){5}(((:[0-9A-Fa-f]{1,4}){1,2})|:((25[0-5]|2[0-4]d|1dd|[1-9]?d)(.(25[0-5]|2[0-4]d|1dd|[1-9]?d)){3})|:))|(([0-9A-Fa-f]{1,4}:){4}(((:[0-9A-Fa-f]{1,4}){1,3})|((:[0-9A-Fa-f]{1,4})?:((25[0-5]|2[0-4]d|1dd|[1-9]?d)(.(25[0-5]|2[0-4]d|1dd|[1-9]?d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){3}(((:[0-9A-Fa-f]{1,4}){1,4})|((:[0-9A-Fa-f]{1,4}){0,2}:((25[0-5]|2[0-4]d|1dd|[1-9]?d)(.(25[0-5]|2[0-4]d|1dd|[1-9]?d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){2}(((:[0-9A-Fa-f]{1,4}){1,5})|((:[0-9A-Fa-f]{1,4}){0,3}:((25[0-5]|2[0-4]d|1dd|[1-9]?d)(.(25[0-5]|2[0-4]d|1dd|[1-9]?d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){1}(((:[0-9A-Fa-f]{1,4}){1,6})|((:[0-9A-Fa-f]{1,4}){0,4}:((25[0-5]|2[0-4]d|1dd|[1-9]?d)(.(25[0-5]|2[0-4]d|1dd|[1-9]?d)){3}))|:))|(:(((:[0-9A-Fa-f]{1,4}){1,7})|((:[0-9A-Fa-f]{1,4}){0,5}:((25[0-5]|2[0-4]d|1dd|[1-9]?d)(.(25[0-5]|2[0-4]d|1dd|[1-9]?d)){3}))|:)))(%.+)?s*(\\/([0-9]|[1-9][0-9]|1[0-1][0-9]|12[0-8]))$)"
+        },
+
+        "IPCIDRList": {
+            "type": "array",
+            "items": { "$ref": "#/pScheduler/IPCIDR" }
+        },
+
+	"IPVersion": {
+            "type": "integer",
+            "enum": [ 4, 6 ],
+	    "examples": [ 4, 6 ],
+	    "title": "IP Version",
+	    "description": "IP protocol version.",
+	    "x-description-append": "Valid values are 4 and 6."
+        },
+
+        "Int8": {
+            "type": "integer",
+            "minimum": -128,
+            "maximum": 127
+        },
+
+        "UInt8": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 255
+        },
+
+        "Int16": {
+            "type": "integer",
+            "minimum": -32768,
+            "maximum": 32767
+        },
+
+        "UInt16": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 65535
+        },
+
+        "Int32": {
+            "type": "integer",
+            "minimum": -2147483648,
+            "maximum": 2147483647
+        },
+
+        "UInt32": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 4294967295
+        },
+
+        "Int64": {
+            "type": "integer",
+            "minimum": -9223372036854775808,
+            "maximum": 9223372036854775807
+        },
+
+        "UInt64": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 184446744073709551615
+        },
+
+        "IPPort": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 65535
+        },
+
+        "IPPortRange": {
+            "type": "object",
+            "properties": {
+                "lower": { "$ref": "#/pScheduler/IPPort" },
+                "upper": { "$ref": "#/pScheduler/IPPort" }
+            },
+            "additionalProperties": false,
+            "required": [ "lower", "upper" ]
+        },
+
+        "IPTOS": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 255,
+	    "title": "TOS",
+	    "description": "IP type of service.",
+	    "examples": [ 0, 42 ],
+	    "x-description-append": "Any value in [0..255] is valid.",
+	    "x-info": [
+		{
+		    "title": "RFC 1349",
+		    "href": "https://datatracker.ietf.org/doc/html/rfc1349"
+		}
+	    ]
+        },
+
+        "JQTransformSpecification": {
+            "type": "object",
+            "properties": {
+                "script": {
+                    "anyOf": [
+                        { "$ref": "#/pScheduler/String" },
+                        { "$ref": "#/pScheduler/StringList" }
+                    ]
+                },
+                "output-raw": { "$ref": "#/pScheduler/Boolean" },
+                "args": { "$ref": "#/pScheduler/AnyJSON" }
+            },
+            "additionalProperties": false,
+            "required": [ "script" ]
+        },
+
+        "Number": {
+	    "type": "number",
+	    "x-description-append": "Any number is valid."
+	},
+
+        "POSIXCronSpecification": {
+            "type": "string",
+            "#": "POSIX-standard spec.  This was generated by",
+            "#": "scripts/posix-cron-regex; see that for commentary.",
+            "pattern": "^(\\*|((([0-5]?\\d)|(([0-5]?\\d)-([0-5]?\\d)))(,(([0-5]?\\d)|(([0-5]?\\d)-([0-5]?\\d))))*))\\s+(\\*|(((([01]?\\d)|2[0-3])|((([01]?\\d)|2[0-3])-(([01]?\\d)|2[0-3])))(,((([01]?\\d)|2[0-3])|((([01]?\\d)|2[0-3])-(([01]?\\d)|2[0-3]))))*))\\s+(\\*|((((0?[1-9])|([12]\\d)|(3[01]))|(((0?[1-9])|([12]\\d)|(3[01]))-((0?[1-9])|([12]\\d)|(3[01]))))(,(((0?[1-9])|([12]\\d)|(3[01]))|(((0?[1-9])|([12]\\d)|(3[01]))-((0?[1-9])|([12]\\d)|(3[01])))))*))\\s+(\\*|((((0?[1-9])|(1[0-2]))|(((0?[1-9])|(1[0-2]))-((0?[1-9])|(1[0-2]))))(,(((0?[1-9])|(1[0-2]))|(((0?[1-9])|(1[0-2]))-((0?[1-9])|(1[0-2])))))*))\\s+(\\*|(([0-6]|([0-6]-[0-6]))(,([0-6]|([0-6]-[0-6])))*))$",
+            "x-invalid-message": "Invalid cron specification.",
+	    "x-description-append": "Any POSIX crontab specification is valid.",
+	    "x-info": [
+		{
+		    "title": "Cron",
+		    "href": "https://en.wikipedia.org/wiki/Cron#Overview"
+		}
+	    ]
+        },
+
+        "Probability": {
+            "type": "number",
+            "minimum": 0.0,
+            "maximum": 1.0,
+	    "x-invalid-message": "Value must be in [0.0..1.0].",
+	    "x-description-append": "Any value in [0.0..1.0] is valid."
+        },
+
+        "RetryPolicy": {
+            "type": "array",
+            "items": {"$ref": "#/pScheduler/RetryPolicyEntry" }
+        },
+
+        "RetryPolicyEntry": {
+            "type": "object",
+            "properties": {
+                "attempts": {
+		    "$ref": "#/pScheduler/Cardinal",
+		    "title": "Attempts",
+		    "description": "How many times to try.",
+		    "examples": [ "5" ]
+		}, 
+                "wait": {
+		    "$ref": "#/pScheduler/Duration",
+		    "title": "Wait",
+		    "description": "How long to wait between tries."
+		}
+            },
+            "additionalProperties": false,
+            "required": [ "attempts", "wait" ]
+        },
+
+	"Schema": {
+	    "type": "integer",
+	    "minimum": 1,
+	    "title": "Schema",
+	    "description": "Schema version.",
+	    "x-description-append": "This can be any positive integer.",
+	    "x-invalid-message": "Invalid schema number."
+	},
+
+        "String": {
+	    "type": "string",
+	    "x-description-append": "Any string is valid.",
+	    "examples": [ "xyzzy", "foo", "bar", "baz" ]
+	},
+
+        "StringList": {
+            "type": "array",
+            "items": { "$ref": "#/pScheduler/String" }
+        },
+
+        "StringMatch": {
+            "type": "object",
+            "properties": {
+                "style": {
+                    "type": "string",
+                    "enum": [
+                        "exact",
+                        "contains",
+                        "regex"
+                    ]
+                },
+                "match": { "$ref": "#/pScheduler/String" },
+                "case-insensitive": { "$ref": "#/pScheduler/Boolean" },
+                "invert": { "$ref": "#/pScheduler/Boolean" }
+            },
+            "additionalProperties": false,
+            "required": [ "style", "match" ]
+        },
+
+        "StringNull": {
+            "anyOf": [
+                { "$ref": "#/pScheduler/String" },
+                { "type": "null" }
+            ]
+        },
+
+        "Timestamp": {
+            "type": "string",
+            "#": "ISO 8601.  Source: https://gist.github.com/philipashlock/8830168",
+            "pattern": "^([\\+-]?\\d{4}(?!\\d{2}\\b))((-?)((0[1-9]|1[0-2])(\\3([12]\\d|0[1-9]|3[01]))?|W([0-4]\\d|5[0-2])(-?[1-7])?|(00[1-9]|0[1-9]\\d|[12]\\d{2}|3([0-5]\\d|6[1-6])))([T\\s]((([01]\\d|2[0-3])((:?)[0-5]\\d)?|24\\:?00)([\\.,]\\d+(?!:))?)?(\\17[0-5]\\d([\\.,]\\d+)?)?([zZ]|([\\+-])([01]\\d|2[0-3]):?([0-5]\\d)?)?)?)?$",
+	    "x-description-append": "Any ISO 8601 timestamp is valid.",
+	    "examples": [ "2050-05-04T12:34:56-05:00" ]
+        },
+
+        "TimestampAbsoluteRelative": {
+            "#1526 WAS: oneOf" : [
+                { "$ref": "#/pScheduler/Timestamp" },
+                { "$ref": "#/pScheduler/Duration" },
+                {
+                    "type": "string",
+                    "#": "Same pattern as iso8601-duration, with '@' prepended",		    
+                    "pattern": "^@(R\\d*/)?P(?:\\d+(?:\\.\\d+)?Y)?(?:\\d+(?:\\.\\d+)?M)?(?:\\d+(?:\\.\\d+)?W)?(?:\\d+(?:\\.\\d+)?D)?(?:T(?:\\d+(?:\\.\\d+)?H)?(?:\\d+(?:\\.\\d+)?M)?(?:\\d+(?:\\.\\d+)?S)?)?$"
+                }
+            ],
+
+            "type": "string",
+            "pattern": "(^([\\+-]?\\d{4}(?!\\d{2}\\b))((-?)((0[1-9]|1[0-2])(\\4([12]\\d|0[1-9]|3[01]))?|W([0-4]\\d|5[0-2])(-?[1-7])?|(00[1-9]|0[1-9]\\d|[12]\\d{2}|3([0-5]\\d|6[1-6])))([T\\s]((([01]\\d|2[0-3])((:?)[0-5]\\d)?|24\\:?00)([\\.,]\\d+(?!:))?)?(\\18[0-5]\\d([\\.,]\\d+)?)?([zZ]|([\\+-])([01]\\d|2[0-3]):?([0-5]\\d)?)?)?)?$)|(^[\\+-@]?P(?:\\d+(?:\\.\\d+)?W)?(?:\\d+(?:\\.\\d+)?D)?(?:T(?:\\d+(?:\\.\\d+)?H)?(?:\\d+(?:\\.\\d+)?M)?(?:\\d+(?:\\.\\d+)?S)?)?$)",
+	    "x-description-append": "Any absolute timestamp (\"2050-05-04T12:34:56-05:00\") or relative duration (\"-PT3H\") is valid.",
+	    "x-invalid-message": "Invalid absolute or relative timestamp"
+        },
+
+        "URL": {
+	    "type": "string",
+	    "format": "uri",
+	    "x-description-append": "Any uniform resource identifier (URI) is valid.",
+	    "examples": [ "https://www.example.org" ],
+	    "x-invalid-message": "Invalid URI.",
+	    "x-info": [
+		{
+		    "title": "Uniform Resource Identifiers",
+		    "href": "https://datatracker.ietf.org/doc/html/rfc3986"
+		}
+
+	    ]
+	},
+
+        "URLHostPort": {
+            "#": "Any valid host/port pair as found in a URI per RFC 2396",
+            "#1526 WAS: anyOf": [
+                { "$ref": "#/pScheduler/HostNamePort" },
+                { "$ref": "#/pScheduler/IPv6RFC2732" }
+            ],
+            "type": "string",
+            "pattern": "(^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\\-]*[a-zA-Z0-9])\\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\\-]*[A-Za-z0-9])(:[0-9]+)?$)|(^\\[(([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|:((:[0-9a-fA-F]{1,4}){1,7}|:)|fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|::(ffff(:0{1,4}){0,1}:){0,1}((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])|([0-9a-fA-F]{1,4}:){1,4}:((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]))\\](:[0-9]+)?$)",
+	    "x-description-append": "Any host:port is valid.",
+	    "examples": [ "www.example.org:20165" ],
+	    "x-invalid-message": "Invalid host:port.",
+	    "x-info": [
+		{
+		    "title": "RFC 3896 - Authority",
+		    "href": "https://datatracker.ietf.org/doc/html/rfc3986#section-3.2"
+		}
+
+	    ]
+        },
+
+        "UUID": {
+            "type": "string",
+            "pattern": "^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}$",
+	    "x-description-append": "Any UUID is valid.",
+	    "x-invalid-message": "Invalid UUID.",
+	    "examples": [ "01234567-89ab-cdef-0123-456789abcdef" ],
+	    "x-info": [
+		{
+		    "title": "Universally-Unique Identifiers",
+		    "href": "https://datatracker.ietf.org/doc/html/rfc9562"
+		}
+	    ]
+        },
+
+        "Version": {
+            "type": "string",
+            "pattern": "^[0-9]+(\\.[0-9]+)*[A-Za-z0-9-+]*$",
+	    "x-description-append": "Any dotted version number plus arbitrary alphanumerics, hyphens or plusses is valid.",
+            "x-invalid-message": "Invalid version number.",
+            "examples": [ "1.2.3", "1.2", "1.7beta", "2.8-a7" ]
+        },
+
+        "#": "Compound Types",
+
+        "ArchiveSpecification_V1": {
+            "type": "object",
+            "properties": {
+                "schema": { "type": "integer", "const": 1 },
+                "archiver": { "type": "string" },
+                "data": { "$ref": "#/pScheduler/AnyJSON" },
+                "transform": { "$ref": "#/pScheduler/JQTransformSpecification" },
+                "ttl": { "$ref": "#/pScheduler/Duration" }
+            },
+            "additionalProperties": false,
+            "required": [
+                "archiver",
+                "data"
+            ]
+        },
+
+        "ArchiveSpecification_V2": {
+            "type": "object",
+            "properties": {
+                "schema": { "type": "integer", "const": 2 },
+                "runs": {
+                    "type": "string",
+                    "enum": [
+                        "all",
+                        "succeeded",
+                        "failed"
+                    ]
+                },
+                "archiver": { "type": "string" },
+                "data": { "$ref": "#/pScheduler/AnyJSON" },
+                "transform": { "$ref": "#/pScheduler/JQTransformSpecification" },
+                "ttl": { "$ref": "#/pScheduler/Duration" },
+                "uri-host": { "$ref": "#/pScheduler/URLHostPort" }
+            },
+            "additionalProperties": false,
+            "required": [
+                "schema",
+                "archiver",
+                "data"
+            ]
+        },
+
+        "ArchiveSpecification_V3": {
+            "type": "object",
+            "properties": {
+                "schema": { "type": "integer", "const": 3 },
+                "runs": {
+                    "type": "string",
+                    "enum": [
+                        "all",
+                        "succeeded",
+                        "failed"
+                    ]
+                },
+                "label": { "type": "string" },
+                "archiver": { "type": "string" },
+                "data": { "$ref": "#/pScheduler/AnyJSON" },
+                "transform": { "$ref": "#/pScheduler/JQTransformSpecification" },
+                "ttl": { "$ref": "#/pScheduler/Duration" },
+                "uri-host": { "$ref": "#/pScheduler/URLHostPort" }
+            },
+            "additionalProperties": false,
+            "required": [
+                "schema",
+                "archiver",
+                "data"
+            ]
+        },
+
+        "ArchiveSpecification": {
+            "oneOf": [
+                { "$ref": "#/pScheduler/ArchiveSpecification_V1" },
+                { "$ref": "#/pScheduler/ArchiveSpecification_V2" },
+                { "$ref": "#/pScheduler/ArchiveSpecification_V3" }
+            ]
+        },
+
+        "ContextSpecificationSingle": {
+            "type": "object",
+            "properties": {
+                "context": { "type": "string" },
+                "data": { "$ref": "#/pScheduler/AnyJSON" }
+            },
+            "additionalProperties": false,
+            "required": [
+                "context",
+                "data"
+            ]
+        },
+
+        "ContextSpecificationList": {
+            "type": "array",
+            "items": { "$ref": "#/pScheduler/ContextSpecificationSingle" }
+        },
+
+        "ContextSpecificationListList": {
+            "type": "array",
+            "items": { "$ref": "#/pScheduler/ContextSpecificationList" }
+        },
+
+        "ContextSpecification": {
+            "type": "object",
+            "properties": {
+                "schema":   { "type": "integer", "const": 1 },
+                "contexts": { "$ref": "#/pScheduler/ContextSpecificationListList" }
+            },
+            "additionalProperties": false,
+            "required": [
+                "contexts"
+            ]
+        },
+
+        "Maintainer": {
+            "type": "object",
+            "properties": {
+                "name":  { "type": "string" },
+                "email": { "$ref": "#/pScheduler/Email" },
+                "href":  { "$ref": "#/pScheduler/URL" }
+            },
+            "additionalProperties": false,
+            "required": [
+                "name"
+            ]
+        },
+
+        "NameVersion": {
+            "type": "object",
+            "properties": {
+                "name":    { "type": "string" },
+                "version": { "$ref": "#/pScheduler/Version" }
+            },
+            "additionalProperties": false,
+            "required": [
+                "name",
+                "version"
+            ]
+        },
+
+        "ParticipantResult": {
+            "type": "object",
+            "properties": {
+                "schema": { "$ref": "#/pScheduler/Cardinal" },
+                "diags": { "$ref": "#/pScheduler/StringNull" },
+                "error": { "$ref": "#/pScheduler/StringNull" },
+                "succeeded": { "$ref": "#/pScheduler/Boolean" },
+                "result":      { "$ref": "#/pScheduler/AnyJSON" }
+            },
+            "additionalProperties": false,
+            "required": [
+                "succeeded",
+                "result"
+            ]
+        },
+
+        "ScheduleSpecification_V1": {
+            "type": "object",
+            "properties": {
+                "schema":   { "type": "integer", "const": 1 },
+                "start":    { "$ref": "#/pScheduler/TimestampAbsoluteRelative" },
+                "slip":     { "$ref": "#/pScheduler/Duration" },
+                "sliprand": { "$ref": "#/pScheduler/Boolean" },
+                "repeat":   { "$ref": "#/pScheduler/Duration" },
+                "until":    { "$ref": "#/pScheduler/TimestampAbsoluteRelative" },
+                "max-runs": { "$ref": "#/pScheduler/Cardinal" }
+            },
+            "additionalProperties": false
+        },
+
+        "ScheduleSpecification_V2": {
+            "type": "object",
+            "properties": {
+                "schema": { "type": "integer", "const": 2 },
+                "start":    { "$ref": "#/pScheduler/TimestampAbsoluteRelative" },
+                "slip":     { "$ref": "#/pScheduler/Duration" },
+                "sliprand": { "$ref": "#/pScheduler/Boolean" },
+                "repeat":   { "$ref": "#/pScheduler/Duration" },
+                "repeat-cron": { "$ref": "#/pScheduler/POSIXCronSpecification" },
+                "until":    { "$ref": "#/pScheduler/TimestampAbsoluteRelative" },
+                "max-runs": { "$ref": "#/pScheduler/Cardinal" }
+            },
+            "required": [ "schema" ],
+            "additionalProperties": false
+        },
+
+        "ScheduleSpecification": {
+            "anyOf": [
+                { "$ref": "#/pScheduler/ScheduleSpecification_V1" },
+                { "$ref": "#/pScheduler/ScheduleSpecification_V2" }
+            ]
+        },
+
+        "#": "TODO: There are still some data types undefined, mainly because we cannot",
+        "#": "find agents that will return such data types yet",
+        "SNMPNumericOID": {
+            "type": "string",
+            "pattern": "^((\\.\\d)|\\d)+(\\.\\d+)*$"
+        },
+
+        "#": "must contain at least one letter to be considered alphanumeric",
+        "SNMPAlphaNumOID": {
+            "type": "string",
+            "pattern": "[a-z][A-Z]*"
+        },
+
+        "SNMPOID": {
+            "#1526: WAS: anyOf": [
+                { "$ref": "#/pScheduler/SNMPNumericOID" },
+                { "$ref": "#/pScheduler/SNMPAlphaNumOID"}
+            ],
+            "type": "string",
+            "pattern": "^(((\\.\\d)|\\d)+(\\.\\d+)*)|([a-z][A-Z]*)$"
+        },
+
+        "SNMPInteger": {
+            "type": "object",
+            "properties": {
+                "type": {
+                    "type": "string",
+                    "pattern": "^Integer$"
+                },
+                "value": { "$ref": "#/pScheduler/Integer" }
+            },
+            "additionalProperties": true,
+            "required": [
+                "type",
+                "value"
+            ]
+        },
+
+        "SNMPUnsigned32": {
+            "type": "object",
+            "properties": {
+                "type": {
+                    "type": "string",
+                    "pattern": "^Unsigned32$"
+                },
+                "value": { "$ref": "#/pScheduler/UInt32"}
+            },
+            "additionalProperties": true,
+            "required": [
+                "type",
+                "value"
+            ]
+        },
+
+        "SNMPString": {
+            "type": "object",
+            "properties": {
+                "type": {
+                    "type": "string",
+                    "pattern": "^String$"
+                },
+                "value": { "$ref": "#/pScheduler/String"}
+            },
+            "additionalProperties": true,
+            "required": [
+                "type",
+                "value"
+            ]
+        },
+
+        "SNMPOpaque": {
+            "type": "object",
+            "properties": {
+                "type": {
+                    "type": "string",
+                    "pattern": "^Opaque$"
+                },
+                "value": { "$ref": "#/pScheduler/String"}
+            },
+            "additionalProperties": true,
+            "required": [
+                "type",
+                "value"
+            ]
+        },
+
+        "SNMPIPAddress": {
+            "type": "object",
+            "properties": {
+                "type": {
+                    "type": "string",
+                    "pattern": "^IpAddress$"
+                },
+                "value": { "$ref": "#/pScheduler/IPAddress"}
+            },
+            "additionalProperties": true,
+            "required": [
+                "type",
+                "value"
+            ]
+        },
+
+        "SNMPCounter32": {
+            "type": "object",
+            "properties": {
+                "type": {
+                    "type": "string",
+                    "pattern": "^Counter32$"
+                },
+                "value": { "$ref": "#/pScheduler/UInt32"}
+            },
+            "additionalProperties": true,
+            "required": [
+                "type",
+                "value"
+            ]
+        },
+
+        "SNMPCounter64": {
+            "type": "object",
+            "properties": {
+                "type": {
+                    "type": "string",
+                    "pattern": "^Counter64$"
+                },
+                "value": { "$ref": "#/pScheduler/UInt64"}
+            },
+            "additionalProperties": true,
+            "required": [
+                "type",
+                "value"
+            ]
+        },
+
+        "SNMPGauge32": {
+            "type": "object",
+            "properties": {
+                "type": {
+                    "type": "string",
+                    "pattern": "^Gauge32$"
+                },
+                "value": { "$ref": "#/pScheduler/UInt32"}
+            },
+            "additionalProperties": true,
+            "required": [
+                "type",
+                "value"
+            ]
+        },
+
+        "SNMPTimeticks": {
+            "type": "object",
+            "properties": {
+                "type": {
+                    "type": "string",
+                    "pattern": "^TimeTicks$"
+                },
+                "value": { "$ref": "#/pScheduler/Integer" }
+            },
+            "additionalProperties": true,
+            "required": [
+                "type",
+                "value"
+            ]
+        },
+
+        "SNMPBits": {
+            "type": "object",
+            "properties": {
+                "type": {
+                    "type": "string",
+                    "pattern": "^Bits$"
+                },
+                "value": { "$ref": "#/pScheduler/String"}
+            },
+            "additionalProperties": true,
+            "required": [
+                "type",
+                "value"
+            ]
+        },
+
+        "SNMPOther": {
+            "type": "object",
+            "properties": {
+                "type": { "$ref": "#/pScheduler/AnyJSON" },
+                "value": { "$ref": "#/pScheduler/AnyJSON" }
+            },
+            "additionalProperties": true,
+            "required": [
+                "value"
+            ]
+        },
+
+        "SNMPResult": {
+            "anyOf": [
+                { "$ref": "#/pScheduler/SNMPOID" },
+                { "$ref": "#/pScheduler/SNMPInteger" },
+                { "$ref": "#/pScheduler/SNMPUnsigned32" },
+                { "$ref": "#/pScheduler/SNMPString" },
+                { "$ref": "#/pScheduler/SNMPOpaque" },
+                { "$ref": "#/pScheduler/SNMPIPAddress" },
+                { "$ref": "#/pScheduler/SNMPCounter32" },
+                { "$ref": "#/pScheduler/SNMPCounter64" },
+                { "$ref": "#/pScheduler/SNMPGauge32" },
+                { "$ref": "#/pScheduler/SNMPTimeticks" },
+                { "$ref": "#/pScheduler/SNMPBits" },
+                { "$ref": "#/pScheduler/SNMPOther" }
+            ]
+        },
+
+        "SNMPResultList": {
+            "type": "array",
+            "items": { "$ref": "#/pScheduler/SNMPResult" }
+        },
+
+        "TaskSpecification_V1": {
+
+            "type": "object",
+            "properties": {
+                "schema":   { "type": "integer", "const": 1 },
+                "lead-bind":{ "$ref": "#/pScheduler/Host" },
+                "test":     { "$ref": "#/pScheduler/TestSpecification" },
+                "tool":     { "$ref": "#/pScheduler/String" },
+                "tools":    { "$ref": "#/pScheduler/StringList" },
+                "schedule": { "$ref": "#/pScheduler/ScheduleSpecification" },
+                "archives": {
+                    "type": "array",
+                    "items": { "$ref": "#/pScheduler/ArchiveSpecification" }
+                },
+                "reference": { "$ref": "#/pScheduler/AnyJSON" },
+                "_key": { "$ref": "#/pScheduler/String" }
+            },
+            "additionalProperties": false,
+            "required": [
+                "test"
+            ]
+        },
+
+        "TaskSpecification_V2": {
+            "type": "object",
+            "properties": {
+                "schema": { "type": "integer", "const": 2 },
+                "lead-bind":{ "$ref": "#/pScheduler/Host" },
+                "test":     { "$ref": "#/pScheduler/TestSpecification" },
+                "tool":     { "$ref": "#/pScheduler/String" },
+                "tools":    { "$ref": "#/pScheduler/StringList" },
+                "schedule": { "$ref": "#/pScheduler/ScheduleSpecification" },
+                "archives": {
+                    "type": "array",
+                    "items": { "$ref": "#/pScheduler/ArchiveSpecification" }
+                },
+                "contexts": { "$ref": "#/pScheduler/ContextSpecification" },
+                "reference": { "$ref": "#/pScheduler/AnyJSON" },
+                "_key": { "$ref": "#/pScheduler/String" }
+            },
+            "additionalProperties": false,
+            "required": [
+                "schema",
+                "test"
+            ]
+        },
+
+        "TaskSpecification_V3": {
+            "type": "object",
+            "properties": {
+                "schema": { "type": "integer", "const": 3 },
+                "lead-bind":{ "$ref": "#/pScheduler/Host" },
+                "test":     { "$ref": "#/pScheduler/TestSpecification" },
+                "tool":     { "$ref": "#/pScheduler/String" },
+                "tools":    { "$ref": "#/pScheduler/StringList" },
+                "schedule": { "$ref": "#/pScheduler/ScheduleSpecification" },
+                "priority": { "$ref": "#/pScheduler/Integer" },
+                "archives": {
+                    "type": "array",
+                    "items": { "$ref": "#/pScheduler/ArchiveSpecification" }
+                },
+                "contexts": { "$ref": "#/pScheduler/ContextSpecification" },
+                "reference": { "$ref": "#/pScheduler/AnyJSON" },
+                "_key": { "$ref": "#/pScheduler/String" }
+            },
+            "additionalProperties": false,
+            "required": [
+                "schema",
+                "test"
+            ]
+        },
+
+        "TaskSpecification_V4": {
+            "type": "object",
+            "properties": {
+                "schema": { "type": "integer", "const": 4 },
+                "lead-bind":{ "$ref": "#/pScheduler/Host" },
+                "test":     { "$ref": "#/pScheduler/TestSpecification" },
+                "tool":     { "$ref": "#/pScheduler/String" },
+                "tools":    { "$ref": "#/pScheduler/StringList" },
+                "schedule": { "$ref": "#/pScheduler/ScheduleSpecification" },
+                "priority": { "$ref": "#/pScheduler/Integer" },
+                "archives": {
+                    "type": "array",
+                    "items": { "$ref": "#/pScheduler/ArchiveSpecification" }
+                },
+                "contexts": { "$ref": "#/pScheduler/ContextSpecification" },
+                "reference": { "$ref": "#/pScheduler/AnyJSON" },
+                "_key": { "$ref": "#/pScheduler/String" },
+                "debug": { "$ref": "#/pScheduler/Boolean" }
+            },
+            "additionalProperties": false,
+            "required": [
+                "schema",
+                "test"
+            ]
+        },
+
+        "TaskSpecification_V5": {
+            "type": "object",
+            "properties": {
+                "schema": { "type": "integer", "const": 5 },
+                "lead-bind":{ "$ref": "#/pScheduler/Host" },
+                "test":     { "$ref": "#/pScheduler/TestSpecification" },
+                "tool":     { "$ref": "#/pScheduler/String" },
+                "tools":    { "$ref": "#/pScheduler/StringList" },
+                "schedule": { "$ref": "#/pScheduler/ScheduleSpecification" },
+                "priority": { "$ref": "#/pScheduler/Integer" },
+                "archives": {
+                    "type": "array",
+                    "items": { "$ref": "#/pScheduler/ArchiveSpecification" }
+                },
+                "keep-after-archive": { "$ref": "#/pScheduler/Duration" },
+                "contexts": { "$ref": "#/pScheduler/ContextSpecification" },
+                "reference": { "$ref": "#/pScheduler/AnyJSON" },
+                "_key": { "$ref": "#/pScheduler/String" },
+                "debug": { "$ref": "#/pScheduler/Boolean" }
+            },
+            "additionalProperties": false,
+            "required": [
+                "schema",
+                "test"
+            ]
+        },
+
+        "TaskSpecification": {
+            "anyOf": [
+                { "$ref": "#/pScheduler/TaskSpecification_V1" },
+                { "$ref": "#/pScheduler/TaskSpecification_V2" },
+                { "$ref": "#/pScheduler/TaskSpecification_V3" },
+                { "$ref": "#/pScheduler/TaskSpecification_V4" },
+                { "$ref": "#/pScheduler/TaskSpecification_V5" }
+            ]
+        },
+
+        "TestSpecification": {
+            "type": "object",
+            "properties": {
+                "type": { "$ref": "#/pScheduler/String" },
+                "spec": { "$ref": "#/pScheduler/AnyJSON" }
+            },
+            "additionalProperties": false,
+            "required": [
+                "type",
+                "spec"
+            ]
+        },
+
+        "#": "Standard Values",
+
+        "#": "Note that these are lowercase with hyphens, matching the style",
+        "#": "of the names used.",
+
+        "icmp-error": {
+            "type": "string",
+            "enum": [
+                "net-unreachable",
+                "host-unreachable",
+                "protocol-unreachable",
+                "port-unreachable",
+                "fragmentation-needed-and-df-set",
+                "source-route-failed",
+                "destination-network-unknown",
+                "destination-host-unknown",
+                "source-host-isolated",
+                "destination-network-administratively-prohibited",
+                "destination-host-administratively-prohibited",
+                "network-unreachable-for-type-of-service",
+                "icmp-destination-host-unreachable-tos",
+                "communication-administratively-prohibited",
+                "host-precedence-violation",
+                "precedence-cutoff-in-effect"
+            ]
+        },
+
+        "#": "Standard Plugin Enumeration Types",
+
+        "PluginEnumeration": {
+
+	    "local": {
+
+		"SpecJSONSchemaVersions": {
+		    "#": "TODO: Need to use prefixItems to make sure the first is null",
+		    "type": "array",
+		    "#": "TODO: Validate JSONSchema here, not just anything.",
+		    "items": {
+			"anyOf": [
+			    { "type": "object" },
+			    { "type": "null" }
+			]
+		    },
+		    "minItems": 2
+		},
+
+		"SpecJSONSchema": {
+		    "type": "object",
+		    "properties": {
+			"versions": { "$ref": "#/pScheduler/PluginEnumeration/local/SpecJSONSchemaVersions" }
+		    },
+		    "additionalProperties": false,
+		    "required": [
+			"versions"
+		    ]		    
+		},
+
+		"SpecUISchemaVersions": {
+		    "#": "TODO: Need to use prefixItems to make sure the first is null",
+		    "type": "array",
+		    "#": "TODO: Validate UISchema here, not just anything.",
+		    "items": {
+			"anyOf": [
+			    { "type": "object" },
+			    { "type": "null" }
+			]
+		    },
+		    "minItems": 2
+		},
+
+		"SpecUISchema": {
+		    "type": "object",
+		    "properties": {
+			"versions": { "$ref": "#/pScheduler/PluginEnumeration/local/SpecUISchemaVersions" }
+		    },
+		    "additionalProperties": false,
+		    "required": [
+			"versions"
+		    ]		    
+		},
+
+		"Spec": {
+		    "type": "object",
+		    "properties": {
+			"jsonschema": { "$ref": "#/pScheduler/PluginEnumeration/local/SpecJSONSchema" },
+			"uischema": { "$ref": "#/pScheduler/PluginEnumeration/local/SpecUISchema" }
+		    },
+		    "additionalProperties": false,
+		    "required": [
+			"jsonschema",
+			"uischema"
+		    ]
+		},
+
+		"ResultSpec": {
+		    "type": "object",
+		    "properties": {
+			"jsonschema": { "$ref": "#/pScheduler/PluginEnumeration/local/SpecJSONSchema" }
+		    },
+		    "additionalProperties": false,
+		    "required": [
+			"jsonschema"
+		    ]
+		}
+	    },
+
+            "Test": {
+                "type": "object",
+                "properties": {
+                    "schema":       { "type": "integer", "const": 2 },
+                    "name":         { "$ref": "#/pScheduler/String" },
+                    "label":         { "$ref": "#/pScheduler/String" },
+                    "description":  { "$ref": "#/pScheduler/String" },
+                    "version":      { "$ref": "#/pScheduler/Version" },
+                    "maintainer":   { "$ref": "#/pScheduler/Maintainer" },
+                    "json-forms-compatible":   { "$ref": "#/pScheduler/Boolean" },
+                    "scheduling-class": {
+                        "type": "string",
+                        "enum": [
+                            "background",
+                            "background-multi",
+                            "exclusive",
+                            "normal"
+                        ]
+                    },
+		    "spec":         { "$ref": "#/pScheduler/PluginEnumeration/local/Spec" },
+		    "result":       { "$ref": "#/pScheduler/PluginEnumeration/local/ResultSpec" }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "name",
+		    "label",
+                    "description",
+                    "version",
+                    "maintainer",
+		    "json-forms-compatible",
+                    "scheduling-class",
+		    "spec"
+                ]
+            },
+
+            "Tool": {
+                "type": "object",
+                "properties": {
+		    "schema":       { "type": "integer", "const": 1 },
+                    "name":         { "$ref": "#/pScheduler/String" },
+		    "label":        { "$ref": "#/pScheduler/String" },
+                    "description":  { "$ref": "#/pScheduler/String" },
+                    "version":      { "$ref": "#/pScheduler/Version" },
+                    "tests":        { "$ref": "#/pScheduler/StringList" },
+                    "preference":        { "$ref": "#/pScheduler/Integer" },
+                    "maintainer":   { "$ref": "#/pScheduler/Maintainer" },
+                    "scheduling-class": {
+                        "type": "string",
+                        "enum": [
+                            "background",
+                            "background-multi",
+                            "exclusive",
+                            "normal"
+                        ]
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "name",
+		    "label",
+                    "description",
+                    "version",
+                    "tests",
+                    "preference",
+                    "maintainer"
+                ]
+            },
+
+            "Archiver": {
+                "type": "object",
+                "properties": {
+		    "schema":       { "type": "integer", "minimum": 1 },
+                    "name":         { "$ref": "#/pScheduler/String" },
+                    "label":        { "$ref": "#/pScheduler/String" },
+                    "description":  { "$ref": "#/pScheduler/String" },
+                    "version":      { "$ref": "#/pScheduler/Version" },
+                    "maintainer":   { "$ref": "#/pScheduler/Maintainer" },
+		    "json-forms-compatible":   { "$ref": "#/pScheduler/Boolean" },
+		    "spec":         { "$ref": "#/pScheduler/PluginEnumeration/local/Spec" }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "name",
+		    "label",
+                    "description",
+                    "version",
+                    "maintainer",
+                    "spec"
+                ]
+            },
+
+            "Context": {
+                "type": "object",
+                "properties": {
+		    "schema":       { "type": "integer", "const": 2 },
+                    "name":         { "$ref": "#/pScheduler/String" },
+                    "label":        { "$ref": "#/pScheduler/String" },
+                    "description":  { "$ref": "#/pScheduler/String" },
+                    "version":      { "$ref": "#/pScheduler/Version" },
+                    "maintainer":   { "$ref": "#/pScheduler/Maintainer" },
+		    "json-forms-compatible":   { "$ref": "#/pScheduler/Boolean" },
+		    "spec":         { "$ref": "#/pScheduler/PluginEnumeration/local/Spec" }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "name",
+		    "label",
+                    "description",
+                    "version",
+                    "maintainer",
+		    "json-forms-compatible",
+		    "spec"
+                ]
+            }
+        }
+    }
+}

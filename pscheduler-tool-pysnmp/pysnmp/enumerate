@@ -3,6 +3,7 @@
     "schema": 1,
 
     "name": "pysnmp",
+    "label": "Py SNMP",
     "description": "Make an SNMP get query to a destination",
     "version": "1.0.0.3",
     "tests": [ "snmpget", "snmpgetbgm" ],

@@ -4,45 +4,31 @@
 
 import pscheduler
 
-from validate import spec_is_valid
-from validate import spec_max_schema
-from validate import SPEC_SCHEMA
+from validate import check_spec_semantics
 
-#load spec JSON
-spec = pscheduler.json_load(exit_on_error=True, max_schema=spec_max_schema())
-if not isinstance(spec, dict):
-    pscheduler.fail("Invalid JSON for this operation")
+spec = pscheduler.plugin_spec_is_valid('test', return_if_valid=True, semantic=check_spec_semantics)
 
-#validate spec
-valid, message = spec_is_valid(spec)
-if not valid:
-    pscheduler.fail(message)
-
-#get properties from schema
-spec_version = spec.get('schema', 1)
-try:
-    # It's safe to assume that the schema version is valid because it
-    # passed validation above.
-    schema_props = SPEC_SCHEMA['versions'][str(spec_version)]['properties']
-except KeyError:
-    pscheduler.fail("Error retrieving schema properties")
 
 #build command-line from schema
 result = []
-for prop in schema_props:
-    if prop in spec:
-        if prop == "schema":
-            continue
-        elif prop == 'data-ports':
-            result.append("--%s" % prop)
-            result.append("%d-%d" %
-                          (spec[prop]['lower'], spec[prop]['upper']))
-        elif schema_props[prop].get('type', '') == "boolean" or schema_props[prop].get('$ref', '') == '#/pScheduler/Boolean':
-            result.append("--%s" % prop)
-        else:
-            result.append("--%s" % prop)
-            result.append("%s" % spec[prop])
+for key, value in spec.items():
+
+    if key == "schema":
+        continue
+
+    option = "--%s" % key
+
+    if isinstance(value, bool):
+        if value:
+            result.append(option)
+        continue
+
+    result.append(option)
+
+    if key == 'data-ports':
+        result.append("%d-%d" % (value['lower'], value['upper']))
+        continue
+    
+    result.append(value)
 
 pscheduler.succeed_json(result)
-
-

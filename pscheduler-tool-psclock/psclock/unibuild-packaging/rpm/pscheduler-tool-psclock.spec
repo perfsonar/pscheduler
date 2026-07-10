@@ -26,6 +26,7 @@ Requires:	pscheduler-test-clock
 Requires:	rpm-post-wrapper
 
 BuildRequires:	pscheduler-rpm
+BuildRequires:	pscheduler-plugin-makefiles
 
 
 %description

@@ -1,0 +1,46 @@
+{
+    "#": "The zeroth element of this is always null since there is no version 0.",
+    "versions": [
+        null,
+        {
+            "type": "VerticalLayout",
+            "elements": [
+                {
+                    "type": "Control",
+                    "scope": "#/properties/duration",
+                    "customComponent": "ps-input-text"
+                },
+                {
+                    "type": "HorizontalLayout",
+                    "elements": [
+                        {
+                            "type": "Control",
+                            "scope": "#/properties/host",
+                            "customComponent": "ps-input-text"
+                        },
+                        {
+                            "type": "Control",
+                            "scope": "#/properties/host-node",
+                            "customComponent": "ps-input-text"
+                        }
+                    ]
+                },
+                {
+                    "type": "Control",
+                    "scope": "#/properties/interval",
+                    "customComponent": "ps-input-text"
+                },
+                {
+                    "type": "Control",
+                    "scope": "#/properties/parting-comment",
+                    "customComponent": "ps-input-text"
+                },
+                {
+                    "type": "Control",
+                    "scope": "#/properties/starting-comment",
+                    "customComponent": "ps-input-text"
+                }
+            ]
+        }
+    ]
+}

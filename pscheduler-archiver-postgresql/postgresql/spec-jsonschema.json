@@ -1,0 +1,62 @@
+{
+    "#": "This gets merged into every version as #/local.",
+    "local": {
+
+	"#": "Source:  https://www.postgresql.org/docs/current/sql-syntax-lexical.html#SQL-SYNTAX-IDENTIFIERS",
+	"#": "PostgreSQL supports non-ASCII characters; JSON doesn't.",
+        "PostgreSQLIdentifier": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 63,
+            "pattern": "^[A-Za-z_][A-Za-z0-9_\\$]*$"
+        }
+
+    },
+
+    "#": "The zeroth element of this is always null since there is no version 0.",
+    "versions": [
+        null,
+
+        {
+	    "type": "object",
+
+            "properties": {
+                "schema": {
+		    "$ref": "#/pScheduler/Schema",
+		    "const": 1
+		},
+                "_dsn": {
+		    "title": "DSN",
+		    "description": "PostgreSQL data source name.",
+		    "$ref": "#/pScheduler/String"
+		},
+                "table": {
+		    "title": "Table",
+		    "description": "Table into which the result should be inserted.",
+		    "$ref": "#/local/PostgreSQLIdentifier"
+		},
+                "column": {
+		    "title": "Column",
+		    "description": "Column in the table into which the result should be inserted.",
+		    "$ref": "#/local/PostgreSQLIdentifier"
+		},
+                "connection-expires": {
+		    "title": "Connection Expires",
+		    "description": "How long the connection to PostgreSQL should remain open before it is closed and a new one is created.",
+		    "$ref": "#/pScheduler/Duration"
+		},
+		"retry-policy": {
+                    "title": "Retry Policy",
+                    "description": "Policy for retrying failed archivings.",
+                    "$ref": "#/pScheduler/RetryPolicy"
+                }
+            },
+            "required": [
+                "_dsn",
+                "table",
+                "column"
+            ],
+            "additionalProperties": false
+        }        
+    ]
+}

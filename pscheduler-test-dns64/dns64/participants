@@ -22,16 +22,7 @@
 import pscheduler
 import sys
 
-from validate import spec_is_valid
-
-# Validate the input
-
-json = pscheduler.json_load(exit_on_error=True)
-
-valid, message = spec_is_valid(json)
-if not valid:
-    pscheduler.fail(message)
-
+json = pscheduler.plugin_spec_is_valid('test', return_if_valid=True)
 
 # Determine the list of participants
 

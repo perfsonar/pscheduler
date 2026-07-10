@@ -3,6 +3,7 @@
     "schema": 1,
 
     "name": "owping",
+    "label": "OWPing",
     "description": "Determine one-way latency with OWAMP",
     "version": "1.0",
     "tests": [ "latency" ],

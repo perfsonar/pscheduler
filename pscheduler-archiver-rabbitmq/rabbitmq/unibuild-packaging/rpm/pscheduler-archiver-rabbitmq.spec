@@ -27,6 +27,7 @@ Requires:	%{_pscheduler_python}-vine >= 5.0.0
 Requires:	rpm-post-wrapper
 
 BuildRequires:	pscheduler-rpm
+BuildRequires:	pscheduler-plugin-makefiles
 BuildRequires:	%{_pscheduler_python}-nose2
 
 

@@ -3,6 +3,7 @@
     "schema": 1,
 
     "name": "twping",
+    "label": "TWPING",
     "description": "Determine latency with TWAMP",
     "version": "1.0",
     "tests": [ "latency", "rtt" ],

@@ -77,12 +77,16 @@ cat > $RPM_BUILD_ROOT/%{macro_prefix}%{name} <<EOF
 # pScheduler
 #
 
+%%_pscheduler_datadir %%{_datarootdir}/pscheduler
 %%_pscheduler_libexecdir %%{_libexecdir}/pscheduler
 %%_pscheduler_sysconfdir %%{_sysconfdir}/pscheduler
 %%_pscheduler_sudoersdir %%{_sysconfdir}/sudoers.d
 %%_pscheduler_docdir %%{_defaultdocdir}/pscheduler
 %%_pscheduler_datadir %%{_datadir}/pscheduler
 %%_pscheduler_vardir %%{_var}/lib/pscheduler
+
+# Make templates
+%%_pscheduler_includedir %%{_includedir}/pscheduler
 
 # Where RPM Macros live
 %%_pscheduler_rpmmacrodir %{macro_dir}

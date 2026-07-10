@@ -25,6 +25,7 @@ Requires:	%{_pscheduler_python}-pscheduler >= 1.3.7.1
 Requires:	rpm-post-wrapper
 
 BuildRequires:	pscheduler-rpm
+BuildRequires:	pscheduler-plugin-makefiles
 BuildRequires:	%{_pscheduler_python}-nose2
 
 
@@ -59,4 +60,4 @@ pscheduler internal warmboot
 %defattr(-,root,root,-)
 %license LICENSE
 %{dest}
-%{_pscheduler_archiver_doc}/*
+

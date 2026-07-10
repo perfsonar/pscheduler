@@ -3,6 +3,7 @@
     "schema": 1,
 
     "name": "iperf3",
+    "label": "Iperf3",
     "description": "Measure network throughput with iperf3",
     "version": "1.0",
     "tests": [ "throughput" ],

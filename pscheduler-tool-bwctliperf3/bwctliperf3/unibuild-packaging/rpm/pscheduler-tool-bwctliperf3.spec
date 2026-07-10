@@ -25,6 +25,7 @@ Requires:	pscheduler-test-throughput
 Requires:	rpm-post-wrapper
 
 BuildRequires:	pscheduler-rpm
+BuildRequires:	pscheduler-plugin-makefiles
 
 
 %description

@@ -1,0 +1,16 @@
+{
+    "schema": 2,
+
+    "name": "rabbitmq",
+    "label": "RabbitMQ",
+    "description": "Send a JSON result to RabbitMQ",
+    "version": "1.0",
+
+    "maintainer": {
+        "name": "perfSONAR Development Team",
+	"email": "perfsonar-developer@internet2.edu",
+	"href": "http://www.perfsonar.net"
+    },
+
+    "json-forms-compatible": false
+}

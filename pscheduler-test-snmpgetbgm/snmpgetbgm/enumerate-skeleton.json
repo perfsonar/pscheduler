@@ -1,0 +1,14 @@
+{
+    "schema": 2,
+    "name": "snmpgetbgm",
+    "label": "SNMP Get Background-Multi",
+    "description": "Make an/multiple SNMP get query(ies) to a destination and (optionally) calculate the delta between each poll.",
+    "version": "1.0.0.3",
+    "maintainer": {
+        "name": "perfSONAR Development Team",
+	"email": "perfsonar-developer@internet2.edu",
+	"href": "http://www.perfsonar.net"
+    },
+    "scheduling-class": "background-multi",
+    "json-forms-compatible": false
+}

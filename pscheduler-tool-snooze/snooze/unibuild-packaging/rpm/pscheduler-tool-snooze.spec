@@ -26,6 +26,7 @@ Requires:	pscheduler-test-idle
 Requires:	rpm-post-wrapper
 
 BuildRequires:	pscheduler-rpm
+BuildRequires:	pscheduler-plugin-makefiles
 
 
 %description

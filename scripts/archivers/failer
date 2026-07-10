@@ -1,0 +1,10 @@
+{
+    "archiver": "failer",
+    "data": {
+    	"schema": 2,
+        "fail": 1.0,
+        "retry": 0.99,
+	"badly": true
+    },
+    "ttl": "PT1M"
+}

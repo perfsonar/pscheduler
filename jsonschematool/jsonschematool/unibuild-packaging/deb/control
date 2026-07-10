@@ -1,0 +1,13 @@
+Source: jsonschematool
+Section: misc
+Priority: optional
+Maintainer: perfSONAR Developers <perfsonar-developer@internet2.edu>
+Build-Depends: debhelper (>= 10)
+Standards-Version: 3.9.8
+Vcs-Git: git://github.com/perfsonar/pscheduler
+Vcs-Browser: https://github.com/perfsonar/pscheduler
+
+Package: jsonschematool
+Architecture: all
+Depends: ${misc:Depends}, python3
+Description: Tool for merging and dereferencing JSONSchema files

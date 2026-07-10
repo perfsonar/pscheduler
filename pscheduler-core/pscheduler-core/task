@@ -585,8 +585,13 @@ elif status != 200:
 
 json_to_merge = raw_spec
 assert 'spec' in task['test']
-final_schema = max(task['test']['spec'].get('schema', 1),
-                   json_to_merge.get("schema", 1))
+test_schema = task['test']['spec'].get('schema', 1)
+
+# Bools come up as ints when isinstance'd.
+if isinstance(test_schema, bool) or not isinstance(test_schema, int):
+    pscheduler.fail(f'''Invalid schema '{test_schema}' in specified or imported task.''')
+
+final_schema = max(test_schema, json_to_merge.get("schema", 1))
 task['test']['spec'].update(json_to_merge)
 if final_schema > 1:
     task['test']['spec']['schema'] = final_schema
@@ -674,12 +679,14 @@ status, participants = pscheduler.url_get(
     bind=assist_bind,
     throw=False )
 
-if status not in [ 200, 404 ]:
+if status != 200:
     pscheduler.fail("Unable to determine the lead participant: %s" % participants)
-if status == 200:
-    log.debug("Got participants: %s", participants)
-    lead = participants["participants"][0]
-    null_reason = participants.get("null-reason")
+
+log.debug("Got participants: %s", participants)
+if not participants.get('valid', True):
+    pscheduler.fail(f'''Unable to determine the lead participant: {participants.get('error', 'No error provided.')}''')
+lead = participants["participants"][0]
+null_reason = participants.get("null-reason")
 
 if null_reason is None:
     null_reason = "No reason provided."

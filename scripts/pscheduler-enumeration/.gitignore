@@ -1,0 +1,7 @@
+# Build by-products
+/*.json
+/*.tar
+/data.py
+/enumerator-build
+/enumerator.zip
+/enumerator

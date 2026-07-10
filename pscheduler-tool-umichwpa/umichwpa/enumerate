@@ -14,6 +14,7 @@
     "schema": 1,
 
     "name": "umichwpa",
+    "label": "UMich WPA",
     "description": "uses wpa supplicant to do 802.1x authentication",
     "version": "1.0",
     "tests": [ "dot1x" ],

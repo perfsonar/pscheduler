@@ -4,7 +4,8 @@
     "schema": 1,
 
     "name": "ethr",
-    "description": "Measure network throughput with ethr",
+    "label": "Ethr",
+    "description": "Measure network throughput with Ethr",
     "version": "1.0",
     "tests": [ "throughput" ],
 

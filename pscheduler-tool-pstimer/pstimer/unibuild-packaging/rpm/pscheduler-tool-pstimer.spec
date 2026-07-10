@@ -33,6 +33,7 @@ Requires:	%{_pscheduler_python}-pycurl
 Requires:	rpm-post-wrapper
 
 BuildRequires:	pscheduler-rpm
+BuildRequires:	pscheduler-plugin-makefiles
 
 %description
 pstimer tool class for pScheduler

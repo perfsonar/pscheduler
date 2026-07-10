@@ -3,6 +3,7 @@
     "schema": 1,
 
     "name": "sleep",
+    "label": "Sleep",
     "description": "Sleep for periods longer than 15 seconds",
     "version": "1.0",
     "tests": [ "idle", "idleex" ],

@@ -45,7 +45,7 @@ class TestJsonval(PschedTestBase):
                 "when": {"$ref": "#/pScheduler/Timestamp"},
                 "howlong": {"$ref": "#/pScheduler/Duration"},
                 "sendto": {"$ref": "#/pScheduler/Email"},
-                "ipv": {"$ref": "#/pScheduler/ip-version"},
+                "ipv": {"$ref": "#/pScheduler/IPVersion"},
                 "ip": {"$ref": "#/pScheduler/IPAddress"},
                 "protocol": {"$ref": "#/local/protocol"},
                 "x-factor": {"type": "number"},

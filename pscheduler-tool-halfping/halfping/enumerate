@@ -14,6 +14,7 @@
     "schema": 1,
 
     "name": "halfping",
+    "label": "Half Ping",
     "description": "halfping tool for approximate latency",
     "version": "1.0",
     "tests": [ "latency" ],

@@ -5,9 +5,6 @@
 
 import pscheduler
 
-from validate import spec_max_schema
-from validate import spec_is_valid
-
 TEMPLATE='''
 {% if _mime_type == 'text/plain' %}
 
@@ -67,4 +64,4 @@ Flip Mode ............ {{ unspec(flip) }}
 {% endif %}
 '''
 
-pscheduler.spec_format_method(TEMPLATE, max_schema=spec_max_schema(), validator=spec_is_valid)
+pscheduler.spec_format_method(TEMPLATE)

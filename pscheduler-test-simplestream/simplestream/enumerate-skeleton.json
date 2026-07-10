@@ -1,0 +1,15 @@
+{
+    "schema": 2,
+
+    "name": "simplestream",
+    "label": "Simple Stream",
+    "description": "Test communication between two hosts using TCP",
+    "version": "1.0",
+    "maintainer": {
+        "name": "perfSONAR Development Team",
+	"email": "perfsonar-developer@internet2.edu",
+	"href": "http://www.perfsonar.net"
+    },
+    "scheduling-class": "background",
+    "json-forms-compatible": true
+}

@@ -3,6 +3,7 @@
     "schema": 1,
 
     "name": "sleepbgm",
+    "label": "Sleep Background-Multi",
     "description": "Consume time in the background multiple times",
     "version": "1.0",
     "tests": [ "idlebgm" ],

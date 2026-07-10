@@ -2,6 +2,7 @@
 {
     "schema": 1,
     "name": "bwctlping",
+    "label": "BWCTL Ping",
     "description": "Measure the round-trip time to another host with BWCTL - NON-FUNCTIONING",
     "version": "1.0",
     "tests": [ ],

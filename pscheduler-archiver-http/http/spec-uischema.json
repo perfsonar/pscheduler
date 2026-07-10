@@ -1,0 +1,210 @@
+{
+    "#": "The zeroth element of this is always null since there is no version 0.",
+    "versions": [
+        null,
+        {
+            "type": "VerticalLayout",
+            "elements": [
+                {
+                    "type": "Control",
+                    "scope": "#/properties/op",
+                    "customComponent": "ps-select"
+                },
+                {
+                    "type": "Control",
+                    "scope": "#/properties/_url",
+                    "customComponent": "ps-input-text"
+                },
+                {
+                    "type": "Control",
+                    "scope": "#/properties/bind",
+                    "customComponent": "ps-input-text"
+                },
+                {
+                    "type": "Control",
+                    "scope": "#/properties/retry-policy",
+                    "options": {
+                        "detail": {
+                            "type": "HorizontalLayout",
+                            "elements": [
+                                {
+                                    "type": "Control",
+                                    "scope": "#/properties/wait",
+                                    "customComponent": "ps-input-text"
+                                },
+                                {
+                                    "type": "Control",
+                                    "scope": "#/properties/attempts",
+                                    "customComponent": "ps-input-number"
+                                }
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "type": "VerticalLayout",
+            "elements": [
+                {
+                    "type": "Control",
+                    "scope": "#/properties/op",
+                    "customComponent": "ps-select"
+                },
+                {
+                    "type": "Control",
+                    "scope": "#/properties/_url",
+                    "customComponent": "ps-input-text"
+                },
+                {
+                    "type": "Control",
+                    "scope": "#/properties/bind",
+                    "customComponent": "ps-input-text"
+                },
+                {
+                    "type": "Control",
+                    "scope": "#/properties/_headers",
+                    "customComponent": "ps-input-text"
+                },
+                {
+                    "type": "Control",
+                    "scope": "#/properties/retry-policy",
+                    "options": {
+                        "detail": {
+                            "type": "HorizontalLayout",
+                            "elements": [
+                                {
+                                    "type": "Control",
+                                    "scope": "#/properties/wait",
+                                    "customComponent": "ps-input-text"
+                                },
+                                {
+                                    "type": "Control",
+                                    "scope": "#/properties/attempts",
+                                    "customComponent": "ps-input-number"
+                                }
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "type": "VerticalLayout",
+            "elements": [
+                {
+                    "type": "Control",
+                    "scope": "#/properties/op",
+                    "customComponent": "ps-select"
+                },
+                {
+                    "type": "Control",
+                    "scope": "#/properties/_url",
+                    "customComponent": "ps-input-text"
+                },
+                {
+                    "type": "Control",
+                    "scope": "#/properties/bind",
+                    "customComponent": "ps-input-text"
+                },
+                {
+                    "type": "HorizontalLayout",
+                    "elements": [
+                        {
+                            "type": "Control",
+                            "scope": "#/properties/_headers",
+                            "customComponent": "ps-input-text"
+                        },
+                        {
+                            "type": "Control",
+                            "scope": "#/properties/verify-ssl",
+                            "customComponent": "ps-input-checkbox"
+                        }
+                    ]
+                },
+                {
+                    "type": "Control",
+                    "scope": "#/properties/retry-policy",
+                    "options": {
+                        "detail": {
+                            "type": "HorizontalLayout",
+                            "elements": [
+                                {
+                                    "type": "Control",
+                                    "scope": "#/properties/wait",
+                                    "customComponent": "ps-input-text"
+                                },
+                                {
+                                    "type": "Control",
+                                    "scope": "#/properties/attempts",
+                                    "customComponent": "ps-input-number"
+                                }
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "type": "VerticalLayout",
+            "elements": [
+                {
+                    "type": "Control",
+                    "scope": "#/properties/op",
+                    "customComponent": "ps-select"
+                },
+                {
+                    "type": "Control",
+                    "scope": "#/properties/_url",
+                    "customComponent": "ps-input-text"
+                },
+                {
+                    "type": "Control",
+                    "scope": "#/properties/bind",
+                    "customComponent": "ps-input-text"
+                },
+                {
+                    "type": "Control",
+                    "scope": "#/properties/timeout",
+                    "customComponent": "ps-input-text"
+                },
+                {
+                    "type": "HorizontalLayout",
+                    "elements": [
+                        {
+                            "type": "Control",
+                            "scope": "#/properties/_headers",
+                            "customComponent": "ps-input-text"
+                        },
+                        {
+                            "type": "Control",
+                            "scope": "#/properties/verify-ssl",
+                            "customComponent": "ps-input-checkbox"
+                        }
+                    ]
+                },
+                {
+                    "type": "Control",
+                    "scope": "#/properties/retry-policy",
+                    "options": {
+                        "detail": {
+                            "type": "HorizontalLayout",
+                            "elements": [
+                                {
+                                    "type": "Control",
+                                    "scope": "#/properties/wait",
+                                    "customComponent": "ps-input-text"
+                                },
+                                {
+                                    "type": "Control",
+                                    "scope": "#/properties/attempts",
+                                    "customComponent": "ps-input-number"
+                                }
+                            ]
+                        }
+                    }
+                }
+            ]
+        }
+    ]
+}

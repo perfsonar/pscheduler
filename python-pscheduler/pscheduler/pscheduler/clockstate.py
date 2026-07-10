@@ -8,8 +8,8 @@ import datetime
 import shutil
 import ntplib
 import psutil
-from dateutil import tz
 
+from dateutil import tz
 
 # The ntp_adjtime code is the only bit of BWCTL (actually BWCTL2) that
 # survived into pScheduler.

@@ -1,0 +1,53 @@
+{
+    "#": "This gets merged into every version as #/local.",
+    "local": {},
+
+    "#": "The zeroth element of this is always null since there is no version 0.",
+    "versions": [
+	null,
+
+	{
+            "type": "object",
+            "properties": {
+		"schema": {
+		    "$ref": "#/pScheduler/Schema",
+		    "const": 1
+		},
+		"query": {
+		    "$ref": "#/pScheduler/URL",
+		    "title": "Query",
+		    "description": "Hostname to look up."
+		},
+		"nameserver": {
+		    "$ref": "#/pScheduler/Host",
+		    "title": "Name Server",
+		    "description": "Name server to query."
+		},
+		"host": {
+		    "$ref": "#/pScheduler/Host",
+		    "title": "Host",
+		    "description": "Host to run the test."
+		},
+		"host-node": {
+		    "$ref": "#/pScheduler/Host",
+		    "title": "Host Node",
+		    "description": "pScheduler to contact for the host."
+		},
+		"translation-prefix": {
+		    "$ref": "#/pScheduler/IPv6CIDR",
+		    "title": "Translation Prefix",
+		    "description": "Prefix to expect for converted results.  Usually defaults to 64:ff9b::/96."
+		},
+		"timeout": {
+		    "$ref": "#/pScheduler/Duration",
+		    "title": "Timeout",
+		    "description": "Timeout for each query attempt."
+		}
+            },
+            "required": [
+		"query"
+            ],
+            "additionalProperties": false
+	}
+    ]
+}

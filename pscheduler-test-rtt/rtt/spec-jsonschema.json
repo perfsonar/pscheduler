@@ -1,0 +1,205 @@
+{
+    "#": "This gets merged into every version as #/local.",
+    "local": {
+        "protocol": {
+            "type": "string",
+            "enum": ["icmp", "twamp"]
+        }
+    },
+
+    "#": "The zeroth element of this is always null since there is no version 0.",
+    "versions": [
+        null,
+
+        {
+            "type": "object",
+            "properties": {
+                "schema": {
+		    "$ref": "#/pScheduler/Schema",
+		    "const": 1
+		},
+                "count": {
+		    "$ref": "#/pScheduler/Cardinal",
+		    "title": "Count",
+		    "description/": "Number of round-trip tests to do."
+		},
+                "dest": {
+		    "$ref": "#/pScheduler/Host",
+		    "title": "Destination",
+		    "description": "Destination host"
+		    
+		},
+		"#": "There is no dest-node because this is a one-participant test.",
+                "flow-label": {		    
+		    "$ref": "#/pScheduler/IPv6FlowLabel"
+		},
+                "hostnames": {
+		    "$ref": "#/pScheduler/Boolean",
+		    "title": "Hostnames",
+		    "description": "Resolve host names."
+		},
+                "interval": {
+		    "$ref": "#/pScheduler/Duration",
+		    "title": "Interval",
+		    "description": "How long to wait between tests."
+		},
+                "ip-version": {
+		    "$ref": "#/pScheduler/IPVersion",
+		    "title": "IP Version",
+		    "description": "IP version."
+		},
+                "source": {
+		    "$ref": "#/pScheduler/Host",
+		    "title": "Source",
+		    "description": "Source host."
+		},
+                "source-node": {
+		    "$ref": "#/pScheduler/URLHostPort",
+		    "title": "Source Node",
+		    "description": "pScheduler to contact about being the source of this measurement."
+		},
+                "suppress-loopback": {
+		    "$ref": "#/pScheduler/Boolean",
+		    "title": "Suress Loopback",
+		    "description": "Suppress multicast loopback."
+		},
+                "ip-tos": {
+		    "$ref": "#/pScheduler/IPTOS"
+		},
+                "length": {
+		    "$ref": "#/pScheduler/Cardinal",
+		    "title": "Length",
+		    "description": "Packet length."
+		},
+                "ttl": {
+		    "$ref": "#/pScheduler/Cardinal",
+		    "title": "TTL",
+		    "description": "IP time to live."
+		},
+                "deadline": {
+		    "$ref": "#/pScheduler/Duration",
+		    "title": "Deadline",
+		    "description": "Deadline for all measurements to complete."
+		},
+                "timeout": {
+		    "$ref": "#/pScheduler/Duration",
+		    "title": "Timeout",
+		    "description": "Timeout for each round trip."
+		}
+	    },
+            "required": [
+                "dest"
+            ],
+            "additionalProperties": false
+        },
+
+        {
+            "type": "object",
+            "properties": {
+                "schema": {
+		    "$ref": "#/pScheduler/Schema",
+		    "const": 2
+		},
+                "count": null,
+                "dest": null,
+                "#": "There is no dest-node because this is a one-participant test.",
+                "flow-label": null,
+                "hostnames": null,
+                "interval": null,
+                "ip-version": null,
+                "source": null,
+                "source-node": null,
+                "suppress-loopback": null,
+                "ip-tos": null,
+                "length": null,
+                "ttl": null,
+                "deadline": null,
+                "timeout": null,
+                "protocol": {
+		    "$ref": "#/local/protocol",
+		    "title": "Protocol",
+		    "description": "Protocol used to measure round trip time.",
+		    "x-description-append": "Valid values are 'icmp' and 'twamp'."
+		}
+            },
+            "required": [
+                "schema",
+                "dest"
+            ],
+            "additionalProperties": false
+        },
+
+        {
+            "type": "object",
+            "properties": {
+                "schema": {
+		    "$ref": "#/pScheduler/Schema",
+		    "const": 3
+		},
+                "count": null,
+                "dest": null,
+                "#": "There is no dest-node because this is a one-participant test.",
+                "flow-label": null,
+                "fragment": {
+		    "$ref": "#/pScheduler/Boolean",
+		    "title": "Fragment",
+		    "description": "Allow packet fragmentation."
+		},
+                "hostnames": null,
+                "interval": null,
+                "ip-version": null,
+                "source": null,
+                "source-node": null,
+                "suppress-loopback": null,
+                "ip-tos": null,
+                "length": null,
+                "ttl": null,
+                "deadline": null,
+                "timeout": null,
+                "protocol": null
+	    },
+            "required": [
+                "schema",
+                "dest"
+            ],
+            "additionalProperties": false
+	},
+
+	{
+            "type": "object",
+            "properties": {
+                "schema": {
+		    "$ref": "#/pScheduler/Schema",
+		    "const": 4
+		},
+                "count": null,
+                "dest": null,
+                "#": "There is no dest-node because this is a one-participant test.",
+                "flow-label": null,
+                "fragment": null,
+                "hostnames": null,
+                "interval": null,
+                "ip-version": null,
+                "source": null,
+                "source-node": null,
+                "suppress-loopback": null,
+                "ip-tos": null,
+                "length": null,
+                "ttl": null,
+                "deadline": null,
+                "timeout": null,
+                "port": {
+		    "$ref": "#/pScheduler/IPPort",
+		    "title": "Port",
+		    "description": "Port, for protocols that use one."		    
+		},
+                "protocol": null
+            },
+            "required": [
+                "schema",
+                "dest"
+            ],
+            "additionalProperties": false
+        }
+    ]
+}

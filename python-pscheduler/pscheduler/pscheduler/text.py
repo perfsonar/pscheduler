@@ -12,6 +12,7 @@ import textwrap
 from .exitstatus import fail
 from .exitstatus import succeed
 from .iso8601 import iso8601_as_timedelta
+from .plugins import enumerated_spec_is_valid
 from .psjson import json_load
 from .psjson import json_strip_hyphens
 from .pstime import timedelta_as_seconds
@@ -174,8 +175,8 @@ def jinja2_format(template, info, strip=True):
 
 
 def _format_method(template,
+                   jsonschema_part,
                    mime_type=None,
-                   max_schema=None,
                    pick=None,
                    validator=None
                    ):
@@ -183,8 +184,8 @@ def _format_method(template,
     plugin methods do:
 
      - Load a JSON file from standard input
-     - Check it against a maximum schema value in max_schema
-     - Validate the structure of the JSON using a validator function
+     - Validate the structure of the JSON against the plugin's enumerator
+     - Validate the semantics of the JSON using a validator function
      - Format it with a Jinja2 template
      - Print the result to standard output and exit successfully
      - Fail with a message to standard error if any step along the way fails
@@ -197,9 +198,6 @@ def _format_method(template,
     mime_type - Passed to the template as the variable _mime_type,
     used in making decisions about formatting.  If None, it will be
     taken from sys.argv[1] or defaulted to 'text/plain'.
-
-    max_schema - The maximum value for the input's 'schema' pair or
-    None (the default) to skip checking.
 
     pick - A function to pick out the desired part of the input for
     validation.  For result-format methods, the usual value would be
@@ -229,20 +227,28 @@ def _format_method(template,
         except IndexError:
             mime_type = 'text/plain'
 
-    json_in = json_load(exit_on_error=True, max_schema=max_schema)
+    json_in = json_load(exit_on_error=True)
 
-    if validator is not None:
-        assert callable(validator)
-
-        if pick is not None:
-            assert callable(pick)
+    # Pick out what gets validated
+    if pick is not None:
+        assert callable(pick)
+        try:
             json_val = pick(json_in)
-        else:
-            json_val = json_in
+        except Exception as ex:
+            fail(f'INTERNAL ERROR: Pick failed: {str(ex)}')
+    else:
+        json_val = json_in
 
-        valid, message = validator(json_val)
-        if not valid:
-            fail(message)
+    # Do schematic and semantic validation
+
+    valid, message = enumerated_spec_is_valid(json_val,
+                                              'test',
+                                              jsonschema_part,
+                                              semantic=validator)
+    if not valid:
+        fail(message)
+
+    # Prep the JSON for Jinja2 and run the template
 
     json_stripped = json_strip_hyphens(json_in)
     json_stripped['_mime_type'] = mime_type
@@ -256,20 +262,25 @@ def _format_method(template,
 
 
 
-def spec_format_method(template, max_schema=None, validator=None):
+
+def spec_format_method(template, validator=None):
+    """
+    Implement a spec-format method.  See _format_method() for more information.
+    """
+    return _format_method(template,
+                          'spec',
+                          validator=validator)
+
+
+
+
+
+def result_format_method(template, validator=None):
     """
     Implement a result-format method.  See _format_method() for more information.
     """
-    return _format_method(template,
-                         max_schema=max_schema,
-                         validator=validator)
 
-
-def result_format_method(template, max_schema=None, validator=None):
-    """
-    Implement a result-format method.  See _format_method() for more information.
-    """
     return _format_method(template,
-                         max_schema=max_schema,
-                         pick=lambda v: v['result'],
-                         validator=validator)
+                          'result',
+                          pick=lambda v: v['result'],
+                          validator=validator)

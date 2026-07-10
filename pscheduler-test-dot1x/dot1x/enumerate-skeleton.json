@@ -1,0 +1,14 @@
+{
+    "schema": 2,
+    "name": "dot1x",
+    "label": "Dot 1x",
+    "description": "802.1x authentication using wpa_supplicant and a wpa_supplicant config file",
+    "version": "1.0",
+    "maintainer": {
+        "name": "perfSONAR Development Team",
+	"email": "perfsonar-developer@internet2.edu",
+	"href": "http://www.perfsonar.net"
+    },
+    "scheduling-class": "background",
+    "json-forms-compatible": true
+}

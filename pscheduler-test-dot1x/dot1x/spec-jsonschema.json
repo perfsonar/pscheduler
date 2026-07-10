@@ -1,0 +1,73 @@
+{
+    "#": "This gets merged into every version as #/local.",
+    "local": {},
+
+    "#": "The zeroth element of this is always null since there is no version 0.",
+    "versions": [
+	null,
+    
+	{
+            "type": "object",
+            "properties": {
+		"schema": {
+		    "$ref": "#/pScheduler/Schema",
+		    "const": 1
+		},
+		"host": {
+		    "$ref": "#/pScheduler/Host",
+		    "title": "Host",
+		    "description": "Host to run the test."
+		},
+		"host-node": {
+		    "$ref": "#/pScheduler/Host",
+		    "title": "Host Node",
+		    "description": "pScheduler to contact for running the test."
+		},
+		"timeout": {
+		    "$ref": "#/pScheduler/Duration",
+		    "title": "Timeout",
+		    "description": "Timeout for each query attempt"
+		},
+		"interface": {
+		    "$ref": "#/pScheduler/String",
+		    "title": "Interface",
+		    "description": "Interface to use for the scan."
+		},
+		"driver": {
+		    "$ref": "#/pScheduler/String",
+		    "title": "Driver",
+		    "description": "Wireless driver to use.  Usually defaults to 'system'."
+		},
+		"_username": {
+		    "$ref": "#/pScheduler/String",
+		    "title": "Username",
+		    "description": "Network login user name."
+		},
+		"_password": {
+		    "$ref": "#/pScheduler/String",
+		    "title": "Password",
+		    "description": "Network login password."
+		},
+		"ssid": {
+		    "$ref": "#/pScheduler/String",
+		    "title": "SSID",
+		    "description": "Service set identifier is using wireless."
+		},
+		"bssid": {
+		    "$ref": "#/pScheduler/String",
+		    "title": "BSSID",
+		    "description": "Basic service set identifier if using wireless."
+		},
+		"key-management": {
+		    "$ref": "#/pScheduler/String",
+		    "title": "Key Management",
+		    "description": "WPA supplicant key managmenent (use 'NONE' for no password)."
+		}
+            },
+            "required": [
+		"interface"
+            ],
+            "additionalProperties": false
+	}
+    ]
+}

@@ -3,6 +3,7 @@
     "schema": 1,
 
     "name": "ping",
+    "label": "Ping",
     "description": "Measure the round-trip time to another host with ping",
     "version": "1.0",
     "tests": [ "rtt" ],

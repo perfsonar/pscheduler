@@ -1,0 +1,24 @@
+{
+  "archiver": "snmptrap",
+  "data": {
+    "version": "2c",
+    "_community": "public",
+    "dest": "localhost",
+    "trap-oid": "1.3.6.1.2.1.2.2.2",
+    "instance-index": 123,
+    "trap-varbinds": [
+      {
+        "oid": "1.3.6.1.2.1.2.2.1",
+        "value": 123
+      },
+      {
+        "oid": "1.3.6.1.2.1.2.2.7",
+        "value": 1
+      },
+      {
+        "oid": "1.3.6.1.2.1.2.2.8",
+        "value": 1
+      }
+    ]
+  }
+}

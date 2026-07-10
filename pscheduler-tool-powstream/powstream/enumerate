@@ -3,6 +3,7 @@
     "schema": 1,
 
     "name": "powstream",
+    "label": "Powstream",
     "description": "Repeatedly measure latency with OWAMP's powstream",
     "version": "1.0",
     "tests": [ "latencybg" ],

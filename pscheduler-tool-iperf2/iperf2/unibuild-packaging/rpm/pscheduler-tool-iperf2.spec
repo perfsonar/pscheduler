@@ -29,6 +29,7 @@ Requires:	kernel-modules-extra
 Requires:	rpm-post-wrapper
 
 BuildRequires:	pscheduler-rpm
+BuildRequires:	pscheduler-plugin-makefiles
 
 
 %description

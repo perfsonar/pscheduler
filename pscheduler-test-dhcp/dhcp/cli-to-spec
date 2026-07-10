@@ -51,17 +51,17 @@ opt_parser = pscheduler.FailingOptionParser(epilog=
 
 
 opt_parser.add_option("--host",
-                      help="Host to run the test.",
+                      help="Host that will run the test.",
                       action="store", type="string",
                       dest="host")
 
 opt_parser.add_option("--host-node",
-                      help="Host to run the test.",
+                      help="pScheduler node to contact for the host.",
                       action="store", type="string",
                       dest="host_node")
 
 opt_parser.add_option("--timeout",
-                      help="Timeout for each query attempt",
+                      help="Timeout for each query attempt.",
                       action="store", type="string",
                       dest="timeout")
 

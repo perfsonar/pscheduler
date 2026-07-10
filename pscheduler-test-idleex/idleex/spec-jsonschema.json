@@ -1,0 +1,47 @@
+{
+    "#": "This gets merged into every version as #/local.",
+    "local": {},
+
+    "#": "The zeroth element of this is always null since there is no version 0.",
+    "versions": [
+	null,
+
+	{
+            "type": "object",
+            "properties": {
+		"schema": {
+		    "$ref": "#/pScheduler/Schema",
+		    "const": 1
+		},
+		"duration": {
+		    "$ref": "#/pScheduler/Duration",
+		    "title": "Duration",
+		    "description": "How long to be idle."
+		},
+		"host": {
+		    "$ref": "#/pScheduler/Host",
+		    "title": "Host",
+		    "description": "The host that will be idle."
+		},
+		"host-node": {
+		    "$ref": "#/pScheduler/URLHostPort",
+		    "title": "Host Node",
+		    "description": "The pScheduler node to contact for the host."
+		},
+		"parting-comment": {
+		    "$ref": "#/pScheduler/String",
+		    "title": "Parting Comment",
+		    "description": "Commentary for after idling is done."
+		},
+		"starting-comment": {
+		    "$ref": "#/pScheduler/String",
+		    "title": "Starting Comment",
+		    "description": "Commentary for before idling starts."
+		}
+            },
+            "required": [
+		"duration"
+            ]
+	}
+    ]
+}

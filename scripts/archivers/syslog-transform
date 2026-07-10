@@ -1,0 +1,53 @@
+{
+    "archiver": "syslog",
+    "data": {
+        "ident": "well-hello-there",
+	"facility": "local4",
+	"priority": "info"
+    },
+
+    "#": "This drops the result on the floor",
+    "transform": {
+        "#script": ".",
+        "script": "null"
+    },
+
+    "#": "Plain string with a statement about what happened",
+    "#transform": {
+	"script": "\"Ran \\(.test.type) with \\(.tool.name)\"",
+	"output-raw": true
+    },
+
+    "#": "Generate some JSON",
+    "#transform": {
+	"script": "{ \"foo\": 123456, \"type\": .test.type, \"tool\": .tool.name }"
+    },
+
+    "#": "Generate custom JSON for idle tests, drop everyting else",
+    "#transform": {
+	"script": "if (.test.type == \"idle\") then null else { \"foo\": 123456, \"type\": .test.type, \"tool\": .tool.name } end"
+    },
+
+    "#": "Generate full JSON for trace tests, drop everyting else",
+    "#transform": {
+	"script": "if (.test.type == \"trace\") then . else null end"
+    },
+
+    "#": "Generate full JSON for trace tests, generate a note about enything else.",
+    "#transform": {
+	"script": "if (.test.type == \"trace\") then . else \"Discarded unwanted \\(.test.type) test.\" end"
+    },
+
+    "#": "Generate a custom string for traces, drop anything else.",
+    "#transform": {
+	"script": "if (.test.type == \"trace\") then \"Trace to \\(.test.spec.dest), \\(.result.paths[0] | length) hops\" else null end"
+    },
+
+    "#": "Generate a custom JSON for traces, drop anything else.",
+    "#transform": {
+	"script": "if (.test.type == \"trace\") then { \"test\": .test.type, \"from\": .participants[0], \"to\": .test.spec.dest,  \"id\": .id, \"start\": .schedule.start, \"ips\": [ .result.paths[0] | .[].ip ] } else null end"
+    },
+
+
+    "ttl": "PT5M"
+}

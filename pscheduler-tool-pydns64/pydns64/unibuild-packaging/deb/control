@@ -2,7 +2,7 @@ Source: pscheduler-tool-pydns64
 Section: net
 Priority: optional
 Maintainer: perfSONAR developers <debian@perfsonar.net>
-Build-Depends: debhelper (>= 10)
+Build-Depends: debhelper (>= 10), pscheduler-plugin-makefiles
 Standards-Version: 3.9.8
 Homepage: https://github.com/perfsonar/pscheduler
 Vcs-Git: git://github.com/perfsonar/pscheduler

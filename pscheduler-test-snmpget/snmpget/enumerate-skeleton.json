@@ -1,0 +1,14 @@
+{
+    "schema": 2,
+    "name": "snmpget",
+    "label": "SNMP Get",
+    "description": "Make an/multiple SNMP get query(ies) to a destination and (optionally) calculate delta values between polls.",
+    "version": "1.0.0.3",
+    "maintainer": {
+        "name": "perfSONAR Development Team",
+	"email": "perfsonar-developer@internet2.edu",
+	"href": "http://www.perfsonar.net"
+    },
+    "scheduling-class": "background",
+    "json-forms-compatible": false
+}

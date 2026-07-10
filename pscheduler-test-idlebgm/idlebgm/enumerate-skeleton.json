@@ -1,0 +1,16 @@
+{
+    "schema": 2,
+
+    "name": "idlebgm",
+    "label": "Idle Background-Multi",
+    "description": "Consume time in the background - NOT FOR PRODUCTION",
+    "version": "1.0",
+    "maintainer": {
+        "name": "perfSONAR Development Team",
+	"email": "perfsonar-developer@internet2.edu",
+	"href": "http://www.perfsonar.net"
+    },
+
+    "scheduling-class": "background-multi",
+    "json-forms-compatible": true
+}

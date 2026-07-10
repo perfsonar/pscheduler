@@ -1,0 +1,22 @@
+#!/bin/sh -e
+#
+# Dump the JSON dictionary in JSON or Python pickled form
+#
+
+EXT=json
+
+while echo "$1" | grep -q -E '^--'
+do
+    case "$1" in
+	--pickled)
+	    EXT=pickled
+	    ;;
+	*)
+	    echo "$1: Unknown argument" 1>&2
+	    exit 1
+    esac
+    shift
+done
+
+# NOTE:  Path is filled in during build.
+exec cat "__DATADIR__/json-dictionary.${EXT}"

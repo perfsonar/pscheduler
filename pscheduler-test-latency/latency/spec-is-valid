@@ -5,33 +5,6 @@
 
 import pscheduler
 
-from validate import spec_is_valid, MAX_SCHEMA
+from validate import check_spec_semantics
 
-
-try:
-    json = pscheduler.json_load(max_schema=MAX_SCHEMA)
-except ValueError as ex:
-    pscheduler.succeed_json({
-        "valid": False,
-        "error": str(ex)
-    })
-
-valid, message = spec_is_valid(json)
-
-result = {
-    "valid": valid
-}
-
-if not valid:
-    result["error"] = message
-    pscheduler.succeed_json(result)
-
-# Verify flip is not set if source not included.
-# TODO:  It would be nice if this could be done in the jsonschema.
-if 'source' not in json and json.get('flip', False):
-    pscheduler.succeed_json({
-        "valid": False,
-        "error": "Flipped testing requires source and dest"
-    })
-
-pscheduler.succeed_json(result)
+pscheduler.plugin_spec_is_valid('test', semantic=check_spec_semantics)

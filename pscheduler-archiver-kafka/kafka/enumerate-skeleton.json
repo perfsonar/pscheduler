@@ -1,0 +1,15 @@
+{
+    "schema": 2,
+    "name": "kafka",
+    "label": "Kafka",
+    "description": "Archives data to an Apache Kafka message bus",
+    "version": "1.2",
+
+    "maintainer": {
+        "name": "perfSONAR Development Team",
+        "email": "perfsonar-developer@internet2.edu",
+	"href": "http://www.perfsonar.net"
+    },
+
+    "json-forms-compatible": false
+}

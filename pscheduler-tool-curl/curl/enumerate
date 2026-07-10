@@ -14,6 +14,7 @@
     "schema": 1,
 
     "name": "curl",
+    "label": "cURL",
     "description": "cURL-based tool for HTTP tests",
     "version": "1.0",
     "tests": [ "http" ],
