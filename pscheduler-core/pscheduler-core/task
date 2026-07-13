@@ -329,14 +329,6 @@ verbose = (not options.quiet) \
 log = pscheduler.Log(verbose=verbose, debug=options.debug, quiet=True, propagate=True)
 
 
-# Decide who assists and where to bind for it.
-
-last_ditch_assist = pscheduler.api_local_host()
-assist = options.assist or os.getenv('PSCHEDULER_ASSIST') or last_ditch_assist
-assist_bind = options.assist_bind or os.getenv('PSCHEDULER_ASSIST_BIND')
-log.debug("Assistance is from %s bound from %s", assist, assist_bind)
-
-
 #
 # If we were asked to read in some JSON, do that.  Anything the
 # options add will override it.
@@ -530,6 +522,22 @@ if options.context:
 if 'contexts' in task:
     task_schema.set(2)
 
+
+# If the assist begins with a dot, treat the rest as a comma-separated
+# list of test command-line switches (first) or imported test
+# parameters (second).  See the source for pscheduler.assist().
+
+# Decide who assists and where to bind for it.
+
+last_ditch_assist = pscheduler.api_local_host()
+assist_try = options.assist or os.getenv('PSCHEDULER_ASSIST') or last_ditch_assist
+
+try:
+    assist = pscheduler.assist(assist_try, remaining_args, task['test']['spec'])
+except ValueError as ex:
+    pscheduler.fail(str(ex))
+assist_bind = options.assist_bind or os.getenv('PSCHEDULER_ASSIST_BIND')
+log.debug("Assistance is from %s bound from %s", assist, assist_bind)
 
 
 # Make sure whoever we're using for assistance is running pScheduler

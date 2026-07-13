@@ -3,6 +3,7 @@
 #
 
 from .api import *
+from .assist import *
 from .clockstate import *
 from .db import *
 from .debuggable import *
