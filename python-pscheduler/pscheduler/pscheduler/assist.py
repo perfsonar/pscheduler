@@ -37,7 +37,7 @@ def assist(option, args=[], parameters={}):
         raise ValueError('Invalid assist string.')
 
     if option == 'auto':
-        option = '.source-node,source,host-node,host'
+        option = '.host-node,source-node,host,source'
 
     if option[0] != '.':
         return option
