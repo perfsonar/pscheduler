@@ -19,7 +19,7 @@ except ValueError as ex:
 valid, message = spec_is_valid(json)
 
 if not valid:
-    pscheduler.succeed.json({
+    pscheduler.succeed_json({
         "valid": False,
         "error": message
     })
