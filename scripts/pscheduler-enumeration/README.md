@@ -72,3 +72,9 @@ is safe to assume its value is `1`.  Essentially, you'll pull
 For the UI, using the latest schema version is recommended.  The fixup
 mechanism (which we'll cover later) can knock the schema number down
 to the lowest-required value.
+
+
+## Notes
+
+How to build a standalone Flask app:
+https://stackoverflow.com/questions/53240082/how-to-bundle-python-flask-application-into-a-standalone-executable
