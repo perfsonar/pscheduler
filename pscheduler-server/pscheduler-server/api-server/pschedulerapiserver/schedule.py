@@ -218,7 +218,7 @@ def schedule():
                 return error("Failed to plot schedule; see system logs. %s" % (err))
 
             filetype = "image/" + out_format
-            return send_file(image_path, mimetype=filetype, cache_timeout=1)
+            return send_file(image_path, mimetype=filetype)
 
 
         except Exception as ex:
