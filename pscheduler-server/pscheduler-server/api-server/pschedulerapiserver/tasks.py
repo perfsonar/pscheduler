@@ -383,6 +383,45 @@ def tasks():
         # TODO: The participants must be unique.  This should be
         # verified by fetching the host name from each one.
 
+        # Validate the contexts.  This needs to happen after we've
+        # figured out how many participants there are.  The structure
+        # will have been validated ahead of this.
+
+        try:
+            contexts = task['contexts']['contexts']
+        except KeyError:
+            contexts = []
+
+        if ('contexts' in task) and (len(contexts) != nparticipants):
+            return error(f'''Not enough items in context list for all participants: '''
+                         f''' Expected {nparticipants}, got {len(contexts)}.''')
+
+        for participant_number, participant in enumerate(contexts):
+
+            # Each participant is a list of context specs
+
+            for spec_number, spec in enumerate(participant):
+
+                location = f'participant {participant_number+1}, item {spec_number+1}'
+
+                try:
+                    returncode, stdout, stderr = pscheduler.plugin_invoke(
+                        'context', spec['context'], 'data-is-valid',
+                        stdin=pscheduler.json_dump(spec['data']),
+                    )
+                    if returncode != 0:
+                        return error(f'Unable to validate context spec at {location}: {stderr}')
+                except Exception as ex:
+                    return error(f'Unable to validate context spec at {location}: {str(ex)}')
+
+                try:
+                    returned_json = pscheduler.json_load(stdout)
+                    if not returned_json['valid']:
+                        return bad_request(f'''Invalid context data at {location}: {returned_json['error']}''')
+                except Exception as ex:
+                    return error(f'Internal problem validating archiver data at {location}: {str(ex)}')
+
+
         #
         # TOOL SELECTION
         #
