@@ -153,7 +153,7 @@ def plugin_spec_is_valid(plugin_type,
     }
 
     if not valid:
-        result["error"] = message
+        result["error"] = f'''Invalid test specification: {message}'''
     else:
         if return_if_valid:
             return proposed

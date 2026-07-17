@@ -159,4 +159,10 @@ def tests_name_participants(name):
 
     # If this fails because of bad JSON, an exception will be thrown,
     # caught and logged.
+    returned = pscheduler.json_load(stdout, max_schema=1)
+
+    # This only ever comes back false if there was an error in the spec.
+    if not returned.get('valid', True):
+        return bad_request(returned.get('error', 'No error provided.'))
+
     return ok_json(pscheduler.json_load(stdout, max_schema=1), sanitize=False)
