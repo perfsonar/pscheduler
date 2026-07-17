@@ -21,7 +21,7 @@
                 "count": {
 		    "$ref": "#/pScheduler/Cardinal",
 		    "title": "Count",
-		    "description/": "Number of round-trip tests to do."
+		    "description": "Number of round-trip tests to do."
 		},
                 "dest": {
 		    "$ref": "#/pScheduler/Host",
