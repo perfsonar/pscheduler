@@ -122,13 +122,16 @@ def json_validate(json, skeleton, max_schema=None):
         )
     except jsonschema.exceptions.ValidationError as ex:
 
-        try:
-            message = ex.schema["x-invalid-message"].replace("%s", ex.instance)
-        except (KeyError, TypeError):
-            message = ex.message
-
+        message = ex.schema.get('x-invalid-message', ex.message).replace("%s", str(ex.instance))
+        examples = [ str(item) for item in ex.schema.get('examples',[]) ]
+        if examples:
+            message += '  Try something like '
+            if len(examples) > 1:
+                message += f'''{', '.join(examples[:-1])} or {examples[-1]}.'''
+            else:
+                message += f'''{examples[0]}.'''
         path = "/".join([str(x) for x in ex.absolute_path])
-        return (False, "At /%s: %s" % (path, message))
+        return (False, f'At /{path}: {message}')
 
     return (True, 'OK')
 

@@ -56,7 +56,7 @@
             "minimum": 1,
 	    "x-description-append": "Any positive integer is valid.",
 	    "examples": [ 5, 2, 19 ],
-	    "x-invalid-message": "'%s' is not a positive integer."
+	    "x-invalid-message": "Not a positive integer."
         },
 
         "CardinalList": {
