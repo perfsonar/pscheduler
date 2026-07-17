@@ -691,9 +691,14 @@ if status != 200:
     pscheduler.fail("Unable to determine the lead participant: %s" % participants)
 
 log.debug("Got participants: %s", participants)
+
+# The 'valid' property is only ever explicitly returned as false.
 if not participants.get('valid', True):
     pscheduler.fail(f'''Unable to determine the lead participant: {participants.get('error', 'No error provided.')}''')
-lead = participants["participants"][0]
+try:
+    lead = participants["participants"][0]
+except (KeyError, IndexError, TypeError):
+    pscheduler.fail('Unable to determine the lead participant: Server returned nothing useful.')
 null_reason = participants.get("null-reason")
 
 if null_reason is None:
