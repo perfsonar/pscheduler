@@ -107,10 +107,11 @@ def mtu_traceroute(host,
     size_matcher = re.compile(r'traceroute to\s.*\s([0-9]+)\s+byte packets')
     hop_matcher = re.compile(r'^\s+[0-9]+\s')
     mtu_matcher = re.compile(r'(?<=F=)[0-9]+')
-    
-    packet_size = None
+
+    packet_size = 65000
+    min_mtu = packet_size
     all_mtus = []
-    min_mtu = None
+
     hops = 0
     lines =  stdout.split('\n')
 
@@ -142,29 +143,24 @@ def mtu_traceroute(host,
 
     # If no MTUs were reported, do a best guess
 
+    if not all_mtus:
+        all_mtus = [ min_mtu ]
+
     dest_ip = extract_ip(lines[0])
 
     if  hops > 0:
         #last_hop = lines[-2]
         last_hop = find_last_hop(lines[0:-1])
         if check_host_in_hop(last_hop, dest_ip) is True:
-            return (min_mtu, all_mtus, hops, 'OK')
+            return (min_mtu, all_mtus, hops,
+                    'OK' if min_mtu < packet_size else 'Path appears local.')
         else:
             try:
                 (last_num, last_addr) = last_hop.split()[:2]
                 hop_message = f'last hop was #{last_num} at {last_addr}'
             except ValueError:
                 hop_mssage = 'last hop unclear'
-
             return(None, None, hops, f'Destination {dest_ip} not reached; {hop_message}.')
-
-    if min_mtu is None:
-        if packet_size is not None and hops == 1:
-            # One hop, likely local
-            return (packet_size, [packet_size], hops, 'Path looks local.')
-        else:
-            # No clue at all about MTU.  Punt
-            return (None, None, hops, 'Found no MTU for path.')
 
     return (min_mtu, all_mtus, hops, 'OK')
 
