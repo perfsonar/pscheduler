@@ -51,9 +51,6 @@ except KeyError:
     ip_version = 4
 
 
-if 'flow-label' in spec and ip_version != 6:
-    errors.append("Cannot apply flow labels except with IPv6")
-
 if 'protocol' in spec and spec['protocol'] != 'icmp':
     errors.append("Only icmp protocol is supported")
 

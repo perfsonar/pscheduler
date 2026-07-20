@@ -97,13 +97,12 @@ argv.append(str(count))
 
 
 # Flow Label  (IPv6 Only)
-
+# PORT: Linux-only
 try:
     flowlabel = spec['flow-label']
     if ipversion == 6:
         argv.append('-F')
-        argv.append(str(flowlabel))
-    # TODO: Raise an exception if V4?  Can-run should have vetoed running this.
+        argv.append(f'0x{flowlabel:x}')
 except KeyError:
     pass  # Nothing's just fine.
 
