@@ -1,3 +1,9 @@
+pscheduler-bundle-full (5.2.6) perfsonar-5.2; urgency=low
+
+  * New upstream version.
+
+ -- perfSONAR developers <debian@perfsonar.net>  Tue, 21 Jul 2026 10:21:48 -0400
+
 pscheduler-bundle-full (5.2.5) perfsonar-5.2; urgency=low
 
   * New upstream version.
