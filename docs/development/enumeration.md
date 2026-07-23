@@ -111,7 +111,7 @@ way.
    plugin.  This is `false` for older plugins that have incompatible
    data structures and are bing phased out.
 
-This is a fully-formed example for the `mtu` test plugin::
+This is a fully-formed example for the `mtu` test plugin:
 
 ```
 {
