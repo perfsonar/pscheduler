@@ -3,10 +3,6 @@
 The JSON dictionary is a compendium of commonly-used types and
 structures in [JSON Schema](https://json-schema.org).
 
-As they are built, all JSON Schema-based validators have the contents 
-
-`{ "$ref": "#/pScheduler/Duration" }`
-
 The dictionary can be retrieved from the command line of a system with
 pScheduler installed by executing `pscheduler internal
 json-dictionary`.
