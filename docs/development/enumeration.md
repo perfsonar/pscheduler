@@ -231,6 +231,7 @@ Here is a fully-formed example of the `versions` property:
          "required": [ "schema", "x-factor" ]
     }
 ]
+```
 
 
 ### spec-uischema.json
