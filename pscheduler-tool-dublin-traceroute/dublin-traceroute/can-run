@@ -5,6 +5,7 @@
 
 import datetime
 import pscheduler
+import socket
 import sys
 
 MAX_SCHEMA = 2
