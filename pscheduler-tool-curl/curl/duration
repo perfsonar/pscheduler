@@ -12,15 +12,11 @@ import pscheduler
 
 json = pscheduler.json_load(exit_on_error=True)['spec']
 
-#%#%#%#%#%#%#%#%#
-# Default Duration
-duration = "PT10S"
-
-timeout_iso = json.get("timeout", duration)
+timeout_iso = json.get("timeout", 'PT10S')
 timeout = pscheduler.iso8601_as_timedelta(timeout_iso)
+
+timeout += datetime.timedelta(seconds=1)
 
 pscheduler.succeed_json({
     "duration": pscheduler.timedelta_as_iso8601( timeout )
     })
-
-#?
