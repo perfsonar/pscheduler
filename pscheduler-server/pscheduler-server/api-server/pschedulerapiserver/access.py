@@ -32,3 +32,10 @@ def access_write_task(original_requester, key=None):
     request_key = arg_string("key")
 
     return (request_key is not None) and (request_key == key)
+
+
+def address_is_local(address):
+    """
+    Determine if an address is bound to a local interface.
+    """
+    return address in local_ips

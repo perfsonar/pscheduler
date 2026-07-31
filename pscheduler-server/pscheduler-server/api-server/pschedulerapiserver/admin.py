@@ -63,8 +63,8 @@ def exception_handler(ex):
 def exception():
     """Throw an exception"""
     # Allow only from localhost
-    if not remote_address() in ['127.0.0.1', '::1']:
-        return not_allowed()
+    if not address_is_local(remote_address()):
+        return forbidden()
 
     raise Exception("Forced exception.")
 

@@ -17,10 +17,12 @@ from pschedulerapiserver import application
 from flask import request
 from flask import Response
 
+from .access import *
 from .address import *
 from .args import *
 from .util import *
 
+# TODO: Why aren't the functions in response.py used here?
 
 module = sys.modules[__name__]
 
@@ -47,8 +49,8 @@ def debug_state():
 def debug():
 
     # Allow only from localhost
-    if not remote_address() in ['127.0.0.1', '::1']:
-        return Response("Forbidden", status=403)
+    if not address_is_local(remote_address()):
+        return Response('Forbidden\n', status=403)
 
     if request.method == 'GET':
         text = pscheduler.json_dump(debug_state())
