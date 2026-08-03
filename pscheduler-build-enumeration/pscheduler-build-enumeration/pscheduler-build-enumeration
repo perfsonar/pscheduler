@@ -225,7 +225,7 @@ validator()
 
     # Dereferenced validator
     VALIDATOR_DEREF="${TMPBASE}/validator-deref"
-    jsonschematool --debug --pretty --dereference --annotations "${PS_LOCAL_DICT}" "${VALIDATOR}" > "${VALIDATOR_DEREF}" \
+    jsonschematool --pretty --dereference --annotations "${PS_LOCAL_DICT}" "${VALIDATOR}" > "${VALIDATOR_DEREF}" \
 	|| die "Unable to process ${INPUT}"
 
     # Ibid, turned into an array
