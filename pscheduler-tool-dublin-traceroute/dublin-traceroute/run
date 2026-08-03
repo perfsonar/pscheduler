@@ -18,7 +18,7 @@ input = pscheduler.json_load(exit_on_error=True);
 participant = input['participant']
 
 if participant != 0:
-    pscheduler.fail("Invalid participant.")
+    pscheduler.fail('Invalid participant.')
 
 spec = input['test']['spec']
 schedule = input['schedule']
@@ -45,7 +45,7 @@ if dest_ip_addr is None:
     pscheduler.succeed_json( {
             'succeeded': False,
             'diags': None,
-            'error': "Unable to resolve destination '%s'" % dest,
+            'error': 'Unable to resolve destination "%s"' % dest,
             'result': None
             } )
 
@@ -108,11 +108,11 @@ argv.append(str(dest_ip_addr))
 run_string = ' '.join(argv)
 diags = [ run_string ]
 
-log.debug("Running %s", run_string)
+log.debug('Running %s', run_string)
 
 # Add some run slop
 run_timeout += datetime.timedelta(seconds=5)
-log.debug("Timeout is %s", run_timeout)
+log.debug('Timeout is %s', run_timeout)
 
 run_timeout_secs = pscheduler.timedelta_as_seconds(run_timeout)
 
@@ -121,11 +121,11 @@ argv = [str(x) for x in argv]
 
 try:
     start_at = input['schedule']['start']
-    log.debug("Sleeping until %s", start_at)
+    log.debug('Sleeping until %s', start_at)
     pscheduler.sleep_until(start_at)
-    log.debug("Starting")
+    log.debug('Starting')
 except KeyError:
-    pscheduler.fail("Unable to find start time in input")
+    pscheduler.fail('Unable to find start time in input')
 
 
 # Dublin-traceroute writes its JSON results into a file called
@@ -136,36 +136,36 @@ old_cwd = os.getcwd()
 with tempfile.TemporaryDirectory() as working:
     try:
         os.chdir(working)
-        log.debug("Working in %s", os.getcwd())
+        log.debug('Working in %s', os.getcwd())
         status, stdout, stderr \
             = pscheduler.run_program(argv, timeout=run_timeout_secs)
-        diags.append("%s" % (stdout))
-        log.debug("Exited %s", status)
+        diags.append('%s' % (stdout))
+        log.debug('Exited %s', status)
         if status == 0:
-            with open("trace.json") as json_file:
+            with open('trace.json') as json_file:
                 json_result = pscheduler.json_load(json_file)
             diags.append(pscheduler.json_dump(json_result))
         else:
             json_result = None
     except Exception as ex:
         status = 1
-        stderr = "Exception while running dublin-traceroute:\n%s" % (str(ex))
+        stderr = 'Exception while running dublin-traceroute:\n%s' % (str(ex))
         diags.append(stderr)
     finally:
         os.chdir(old_cwd)
-        log.debug("Returned to %s", os.getcwd())
+        log.debug('Returned to %s', os.getcwd())
 
 
 diags.append(stdout)
 
-log.debug("Dublin-traceroute exited %d: %s",
+log.debug('Dublin-traceroute exited %d: %s',
           status, stdout if status == 0 else stderr)
 
 
 if status != 0:
     pscheduler.succeed_json( {
             'succeeded': False,
-            'diags': "\n".join(diags),
+            'diags': '\n'.join(diags),
             'error': stderr,
             'result': None
             } )
@@ -180,18 +180,18 @@ assert json_result is not None
 ips = set()
 
 paths = []
-for flow_id, flow in json_result["flows"].items():
+for flow_id, flow in json_result['flows'].items():
     hops = []
     for hop in flow:
         # If rtt_usec is None, there was no response
         rtt_usec = hop.get('rtt_usec')
         if rtt_usec is not None:
-            hop_ip =  hop["received"]["ip"]["src"]
+            hop_ip =  hop['received']['ip']['src']
             hops.append({
-                "ip": hop_ip,
+                'ip': hop_ip,
                 # TODO: DTR comes up with weird RTTs.  See #1144 for commentary.
                 # TODO: Leaving this in for now.
-                "rtt": "PT%fS" % (rtt_usec / 1000000.0)
+                'rtt': 'PT%fS' % (rtt_usec / 1000000.0)
             })
             ips.add(hop_ip)
         else:
@@ -211,19 +211,19 @@ ases = pscheduler.as_bulk_resolve(ips, threads=len(ips)) if as_ else {}
 
 for path in paths:
     for hop in path:
-        ip = hop.get("ip", None)
+        ip = hop.get('ip', None)
         if ip is None:
             continue
 
         hostname = hosts.get(ip, None)
         if hostname is not None:
-            hop["hostname"] = hostname
+            hop['hostname'] = hostname
 
         asinfo = ases.get(ip, None)
         if asinfo is not None:
-            hop["as"] = {
-                "number": asinfo[0],
-                "owner": asinfo[1]
+            hop['as'] = {
+                'number': asinfo[0],
+                'owner': asinfo[1]
             }
 
 
