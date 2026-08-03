@@ -7,20 +7,21 @@ import pscheduler
 
 TEMPLATE = '''
 {% if _mime_type == 'text/plain' %}
-
 {% for path in result.paths %}
 {%- if (result.paths | length) > 1 %}
-Path {{ loop.index }}:
 
+Path {{ loop.index }}:
 {% endif -%}
 {% for hop in path -%}
 {% if hop.ip is defined %}
-{{ "%-8d%s (%s) %.1f ms" | format(
+{{ "%-8d%s (%s)" | format(
        loop.index,
        (hop.hostname or hop.ip),
-       hop.ip,
-       (iso8601_duration_seconds(hop.rtt) * 1000)
+       hop.ip
     ) }}
+{%- if hop.rtt is defined -%}
+{{ " %.1f ms" | format (iso8601_duration_seconds(hop.rtt) * 1000) }}
+{%- endif -%}
 {%- if hop.mtu is defined -%}
 {{ " mtu %d" | format (hop.mtu) }}
 {%- endif -%}
@@ -55,7 +56,7 @@ Path {{ loop.index }}:
   <td>{{ loop.index }}</td>
   <td>{{ hop.hostname or hop.ip }}</td>
   <td>{{ hop.ip }}</td>
-  <td>{{ "%.1f" | format(iso8601_duration_seconds(hop.rtt) * 1000) }}</td>
+  <td>{{ ("%.1f" | format(iso8601_duration_seconds(hop.rtt) * 1000)) if hop.rtt is defined else "&nbsp;" }}</td>
   <td>{{ hop.mtu if hop.mtu is defined else "&nbsp;" }}</td>
   {%- if hop.as is defined %}
   <td>{{ hop.as.number if hop.as.number is defined else "&nbsp;" }}</td>

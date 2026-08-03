@@ -33,28 +33,18 @@ except ValueError:
 hops = spec.get('hops', 30)
 
 ## TODO: This is a rough to-be-safe estimate
-total += datetime.timedelta(seconds=hops * 0.100)
+total += datetime.timedelta(seconds=hops * 0.5)
 
 
 delay = pscheduler.iso8601_as_timedelta(spec.get('sendwait', "P0D"))
-
 total += delay * hops
-
-
-#
-# No post-Run DNS resolution; dublin-traceroute does that.  Add some
-# slop.
-#
-
-total += hops * datetime.timedelta(seconds=0.10)
-
 
 #
 # AS Resolution
 #
 
 if spec.get('as', True):
-    total += datetime.timedelta(seconds=4)
+    total += datetime.timedelta(seconds=hops * 0.25)
 
 
 #

@@ -8,7 +8,7 @@
     "version": "1.0",
     "tests": [ "trace" ],
 
-    "preference": -5,
+    "preference": -20,
 
     "maintainer": {
         "name": "perfSONAR Development Team",
