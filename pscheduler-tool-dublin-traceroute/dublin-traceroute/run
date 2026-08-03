@@ -11,9 +11,7 @@ import os
 import pscheduler
 import tempfile
 
-# TODO: Fix this
-#log = pscheduler.Log(prefix='dublin-traceroute', quiet=True)
-log = pscheduler.Log(prefix='dublin-traceroute', quiet=True, debug=True)
+log = pscheduler.Log(prefix='dublin-traceroute', quiet=True)
 
 input = pscheduler.json_load(exit_on_error=True);
 
@@ -185,14 +183,15 @@ paths = []
 for flow_id, flow in json_result["flows"].items():
     hops = []
     for hop in flow:
-        # TODO: of rtt_usc is None, it was no response
-        rtt_usec = hop["rtt_usec"]
+        # If rtt_usec is None, there was no response
+        rtt_usec = hop.get('rtt_usec')
         if rtt_usec is not None:
             hop_ip =  hop["received"]["ip"]["src"]
             hops.append({
                 "ip": hop_ip,
                 # TODO: DTR comes up with weird RTTs.  See #1144 for commentary.
-                # "rtt": "PT%fS" % (rtt_usec / 1000000.0)
+                # TODO: Leaving this in for now.
+                "rtt": "PT%fS" % (rtt_usec / 1000000.0)
             })
             ips.add(hop_ip)
         else:
