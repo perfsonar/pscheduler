@@ -836,7 +836,7 @@ def main_program():
         for (channel, payload, count) in db.notifications():
             log.debug(f'Notified: {channel} {payload} {count}')
             if channel == 'run_ready':
-                log.debug(f'Run {payload} became ready')
+                log.debug(f'{payload}:  Run became ready')
                 runs_ready.append(int(payload))
             elif channel == 'configurables_changed':
                 log.debug('Configurables changed.')
