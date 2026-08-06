@@ -374,6 +374,19 @@ class RunWorker(pscheduler.GenericWorker):
             if debug:
                 self.log_debug("%d: Task requested debug", self.id)
 
+        # Put the run into the on-deck state.
+        try:
+            with self.dbpool(self.id) as db:
+                cursor = db.cursor()
+                cursor.execute('''UPDATE run SET state = run_state_on_deck() WHERE id = %s''',
+                               [self.id])
+                self.log_debug(f'{self.id}: Run is on deck.')
+        except Exception as ex:
+            self.log.exception()
+            self.log.error('%d: Failed to put run on deck: %s',
+                           self.id, str(ex))
+            return
+
         if lead_bind is not None:
             self.log_debug("%d: Lead bind for this run is %s", self.id, lead_bind)
 
