@@ -218,6 +218,15 @@ BEGIN
         t_version := t_version + 1;
     END IF;
 
+    -- Version 10 to version 11
+    -- Drop 'times_actual' column
+    IF t_version = 10
+    THEN
+        ALTER TABLE run DROP COLUMN times_actual;
+
+        t_version := t_version + 1;
+    END IF;
+
 
     --
     -- Cleanup
@@ -537,6 +546,12 @@ BEGIN
         THEN
 	    NEW.times = tstzrange(lower(OLD.times),
 	                          greatest(lower(OLD.times),normalized_now()), '[]');
+        END IF;
+
+	-- If the run took less than the scheduled time, return
+        -- the remainder to the timeline.
+	IF normalized_now() < upper(OLD.times) AND normalized_now() >= lower(OLD.times) THEN
+	    NEW.times = tstzrange(lower(OLD.times), normalized_now(), '[]');
         END IF;
 
 	-- If there's now a merged result, notify anyone watching for those.

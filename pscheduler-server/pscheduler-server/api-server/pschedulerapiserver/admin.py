@@ -148,27 +148,21 @@ def get_status():
     runs = {}
     # query database for last run information
     try:
-        cursor = dbcursor_query("SELECT times_actual FROM run WHERE state=run_state_finished()")
-        times = cursor.fetchall()
-        formatted = []
-        for val in times:
-            formatted.append(val[0].upper)
-        runs["last-finished"] = str(pscheduler.datetime_as_iso8601(max(formatted)))
+        cursor = dbcursor_query('SELECT max(upper(times)) FROM run WHERE state=run_state_finished()')
+        results = cursor.fetchall()
+        runs['last-finished'] = str(pscheduler.datetime_as_iso8601(results[0][0]))
     except Exception:
         # handles empty result and faulty query
-        runs["last-finished"] = None
+        runs['last-finished'] = None
 
     # query database for last scheduled information
     try:
-        cursor = dbcursor_query("SELECT added FROM run")
-        times = cursor.fetchall()
-        formatted = []
-        for val in times:
-            formatted.append(val[0])
-        runs["last-scheduled"] = str(pscheduler.datetime_as_iso8601(max(formatted)))
+        cursor = dbcursor_query('SELECT max(added) FROM run')
+        results = cursor.fetchall()
+        runs['last-scheduled'] = str(pscheduler.datetime_as_iso8601(results[0][0]))
     except Exception:
         # handles empty result and faulty query
-        runs["last-scheduled"] = None    
+        runs['last-scheduled'] = None
 
     response["runs"] = runs
 
