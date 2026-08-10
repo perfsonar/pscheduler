@@ -825,7 +825,7 @@ def main_program():
             log.debug("Purging completed thread %d", remove)
             del worker_threads[remove]
 
-        if not pscheduler.timedelta_is_zero(wait_time):
+        if wait_time:
 
             # Wait for a notification or the wait time to elapse.
 
@@ -835,7 +835,7 @@ def main_program():
 
             log.debug("Next run or check in %s", wait_time)
 
-            if not db.wait(pscheduler.timedelta_as_seconds(refresh)):
+            if not db.wait(pscheduler.timedelta_as_seconds(wait_time)):
                 log.debug("Timed out.")
 
         else:
@@ -844,13 +844,10 @@ def main_program():
 
         db.query("SELECT heartbeat('runner')")
 
-        runs_ready = []
-
         for (channel, payload, count) in db.notifications():
             log.debug(f'Notified: {channel} {payload} {count}')
             if channel == 'run_ready':
                 log.debug(f'{payload}:  Run became ready')
-                runs_ready.append(int(payload))
             elif channel == 'configurables_changed':
                 log.debug('Configurables changed.')
                 run_start_margin_set(db)
@@ -861,24 +858,6 @@ def main_program():
 
         RUNS_QUERY = """
             SELECT * FROM (
-
-            -- Runs we were explicity notified are ready and start
-            -- and start before the next time we run this query.
-            SELECT
-                run.id AS run,
-                lower(times) - normalized_wall_clock() AS start_in,
-                lower(times) AS start_at,
-                FALSE as background_multi
-            FROM
-                run
-                JOIN task ON task.id = run.task
-                JOIN test ON test.id = task.test
-            WHERE
-                lower(run.times) < (normalized_wall_clock() + %s + %s)
-                AND run.id in %s
-                AND test.scheduling_class <> scheduling_class_background_multi()
-
-            UNION
 
             -- Non-background runs that haven't started
             SELECT
@@ -891,7 +870,7 @@ def main_program():
                 JOIN task ON task.id = run.task
                 JOIN test ON test.id = task.test
             WHERE
-                lower(run.times) < (normalized_wall_clock() + %s + %s)
+                lower(run.times) <= (normalized_wall_clock() + %s + %s)
                 AND state = run_state_pending()
                 AND test.scheduling_class <> scheduling_class_background_multi()
 
@@ -917,17 +896,9 @@ def main_program():
             ORDER BY start_in
             """
 
-        wait_time = refresh
-
-        run_ids = []
         runs_started = False
 
         for row in db.query(RUNS_QUERY, [
-                refresh,
-                run_start_margin(),
-                # IN (x) has to have something, so use an array that will
-                # never match anything in the table.
-                tuple(runs_ready or [None]),
                 refresh,
                 run_start_margin()
         ]):
@@ -940,7 +911,7 @@ def main_program():
 
             log.debug("Run %d, starts at %s", run_id, start_at)
 
-            run_ids.append(run_id)
+            runs_started = True
 
             try:
 
@@ -969,9 +940,9 @@ def main_program():
                     """, ["Failed to start worker: %s" % (diags),
                           run_id])
 
-
                 log.error("Unable to set on-deck status: %s" % (str(ex)))
 
+        wait_time = datetime.timedelta() if runs_started else refresh
 
     # Not that this will ever be reached...
     db.close()
