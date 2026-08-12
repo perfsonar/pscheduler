@@ -37,7 +37,7 @@ opt_parser.add_option("--first-run-offset-multi",
 opt_parser.add_option("--first-run-offset-single",
                       help="Time offset for first runs in single-participant tests (ISO8601)",
                       action="store", type="string", dest="firstoffsetsingle",
-                      default="PT5S")
+                      default="PT10S")
 opt_parser.add_option("-m", "--max-parallel",
                       help="Maximum concurrent archivings",
                       action="store", type="int", dest="max_parallel",

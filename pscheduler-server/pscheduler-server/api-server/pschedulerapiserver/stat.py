@@ -124,7 +124,6 @@ def stat_runs_pending():
     return single_run_query("""SELECT COUNT(*) FROM run 
                                WHERE STATE = run_state_pending()""")
 
-
 @application.route("/stat/runs/on-deck", methods=['GET'])
 def stat_runs_on_deck():
     return single_run_query("""SELECT COUNT(*) FROM run 
@@ -154,6 +153,15 @@ def stat_runs_overdue():
 def stat_runs_missed():
     return single_run_query("""SELECT COUNT(*) FROM run 
                                    WHERE STATE = run_state_missed()""")
+
+@application.route("/stat/runs/missed-tight", methods=['GET'])
+def stat_runs_missed_tight():
+    '''
+    Number of missed runs that were scheduled very close to their start times
+    '''
+    return single_run_query('''SELECT COUNT(*) FROM run
+                               WHERE state = run_state_missed()
+                               AND lower(times) - added) < 'PT5S'::INTERVAL''')
 
 @application.route("/stat/runs/failed", methods=['GET'])
 def stat_runs_failed():
