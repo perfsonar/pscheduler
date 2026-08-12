@@ -1,6 +1,21 @@
-#!/bin/sh
+#!/bin/sh -e
 
-set -e
+# PORT: The loopback interface name searched for works for Linux and macOS.
+LOOPBACK=$(ifconfig -a | grep -E "^lo(:[0-9]+)?" | head -1 | sed -e 's/:.*$//')
+if [ ! "${LOOPBACK}" ]
+then
+   echo "Didn't find a loopback interface."
+   exit 0
+fi
 
-pscheduler task --tool=fpingreach netreach --network 127.0.0.1/32
-test -f /proc/net/if_inet6 && pscheduler task --tool=fpingreach netreach --network ::1/128
+LOOPBACK_IPV4=$(ifconfig "${LOOPBACK}" | awk '$1 == "inet" { print $2 }')
+if [ "${LOOPBACK_IPV4}" ]
+then
+    pscheduler task --tool=fpingreach netreach --network "${LOOPBACK_IPV4}/32" --gateway 1
+fi
+
+LOOPBACK_IPV6=$(ifconfig "${LOOPBACK}" | awk '$1 == "inet6" { print $2 }')
+if [ "${LOOPBACK_IPV6}" ]
+then
+    pscheduler task --tool=fpingreach netreach --network "${LOOPBACK_IPV6}/128" --gateway 1
+fi
