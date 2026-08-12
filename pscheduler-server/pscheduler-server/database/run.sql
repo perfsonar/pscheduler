@@ -484,7 +484,7 @@ BEGIN
 	-- client library.
 	-- TODO: Remove this when support for OL8 is dropped.
 
-	IF NEW.state = run_state_pending() THEN
+	IF current_setting('server_version_num')::INTEGER < 110000 AND NEW.state = run_state_pending() THEN
 	        PERFORM pg_notify('run_ready', NEW.id::TEXT);
         END IF;
 
