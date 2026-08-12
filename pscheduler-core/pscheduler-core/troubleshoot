@@ -491,6 +491,23 @@ for host in hosts:
             failed('Not resolvable or timed out')
         ok(resolved)
 
+    resolved_ip = ipaddress.ip_address(resolved)
+    start(f'  Checking usefulness of {resolved}')
+    ip_warnings = [
+        item[0]
+        for item in [
+                ( 'Global',     lambda ip: ip.is_global),
+                ( 'Link Local', lambda ip: ip.is_link_local),
+                ( 'Loopback',   lambda ip: ip.is_loopback),
+                ( 'Private',    lambda ip: ip.is_private),
+                ( 'Reserved',   lambda ip: ip.is_reserved)
+        ]
+        if item[1](resolved_ip)
+    ]
+    if ip_warnings:
+        ok(', '.join(ip_warnings))
+    else:
+        ok()
 
     if not options.quick and not options.skip_single:
         check_mtu(host)
