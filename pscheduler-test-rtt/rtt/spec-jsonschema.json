@@ -3,7 +3,7 @@
     "local": {
         "protocol": {
             "type": "string",
-            "enum": ["icmp", "twamp"]
+            "enum": ["icmp", "tcp", "twamp"]
         }
     },
 

@@ -12,8 +12,6 @@
                 "error": { "$ref": "#/pScheduler/icmp-error" }
             },
             "required": [
-		"ip",
-		"rtt"
             ]
         }
     },
