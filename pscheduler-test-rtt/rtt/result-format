@@ -27,10 +27,13 @@ None
     {%- else -%}
       {{ trip.ip}} ({{ trip.ip }})
     {%- endif -%}
-    {{ "  %d Bytes  TTL %d  RTT %.4f ms"
-       | format( trip.length, trip.ttl,
-                 (iso8601_duration_seconds(trip.rtt) * 1000)
-       ) }}
+    {%- if trip.length is defined -%}
+      {{ "  %d Bytes" | format(trip.length) }}
+    {%- endif -%}
+    {%- if trip.ttl is defined -%}
+      {{ "  TTL %d" | format(trip.ttl) }}
+    {%- endif -%}
+    {{ "  RTT %.4f ms" | format(iso8601_duration_seconds(trip.rtt) * 1000) }}
   {%- else -%}
     No Response
   {%- endif %}
@@ -69,7 +72,11 @@ None
       <td>{{ trip.ip }}</td>
     {%- endif -%}
       <td>{{ trip.ip }}</td>
+    {%- if trip.length is defined -%}
       <td>{{ trip.length }}</td>
+    {%- else -%}
+      <td>&nbsp;</td>
+    {%- endif -%}
       <td>{{ trip.ttl }}</td>
       <td>{{ iso8601_duration_seconds(trip.rtt) * 1000 }}</td>
   {%- else -%}
