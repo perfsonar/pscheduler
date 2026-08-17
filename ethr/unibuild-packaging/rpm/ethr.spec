@@ -43,7 +43,11 @@ such as Windows, Linux and other Unix systems.
 
 %prep
 %setup -q
+%if 0%{?el8}%{?ol8}
 %patch0 -p1
+%else
+%patch 0 -p1
+%endif
 
 
 %build

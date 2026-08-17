@@ -37,8 +37,13 @@ A smarter traceroute
 
 %prep
 %setup -q -n %{short}-%{version}
+%if 0%{?el8}%{?ol8}
 %patch0 -p1
 %patch1 -p1
+%else
+%patch 0 -p1
+%patch 1 -p1
+%endif
 ./autogen.sh
 ./configure --prefix=%{_prefix}
 
