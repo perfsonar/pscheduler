@@ -205,7 +205,7 @@ pscheduler-tool-curl-d2d		--bundle extras
 pscheduler-tool-dnspy
 
 
-ifelse(FAMILY/eval(MAJOR < 9),RedHat/1,libtins)		# Dublin-traceroute needs this
+ifelse(FAMILY/eval(MAJOR != 9),RedHat/1,libtins)	# Dublin-traceroute needs this, only EL9 provides it.
 ifelse(FAMILY,Debian,,dublin-traceroute)		# Debian has this available.
 pscheduler-tool-dublin-traceroute
 
