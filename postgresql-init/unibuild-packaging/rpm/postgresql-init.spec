@@ -146,6 +146,8 @@ semodule -i "${WORK}/psql.pp"
 
 # Initialize PostgreSQL
 
+systemctl daemon-reload
+
 systemctl stop postgresql
 
 echo 'Initializing PostgreSQL.'
