@@ -61,6 +61,7 @@ BuildRequires:	%{_pscheduler_python}-attrs
 BuildRequires:	%{_pscheduler_python}-dateutil
 BuildRequires:	%{_pscheduler_python}-dns
 BuildRequires:	%{_pscheduler_python}-isodate
+BuildRequires:	%{_pscheduler_python}-jinja2
 BuildRequires:	%{_pscheduler_python}-jsonschema
 BuildRequires:	%{_pscheduler_python}-netaddr
 BuildRequires:	%{_pscheduler_python}-netifaces
