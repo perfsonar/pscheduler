@@ -11,6 +11,6 @@ Vcs-Browser: https://github.com/perfsonar/pscheduler
 Package: pscheduler-tool-dhclient
 Architecture: all
 Depends: ${misc:Depends}, python3, python3-pscheduler,
- pscheduler-server, pscheduler-test-dhcp
+ pscheduler-server, pscheduler-test-dhcp, isc-dhcp-client
 Description: pScheduler dhclient tool
  dhclient tool class for pScheduler
