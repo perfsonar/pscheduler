@@ -559,6 +559,22 @@ def tasks_uuid_runs_run(task, run):
         if not access_write_task(requester, key):
             return forbidden()
 
+        # Verify that the run exists and is deletable
+
+        cursor = dbcursor_query('''
+            SELECT run_state.delete_ok
+            FROM
+                run
+                JOIN run_state ON run_state.id = run.state
+            WHERE
+                run.uuid = %s
+        ''', [run])
+        if cursor.rowcount == 0:
+            # No row with this UUID was found
+            return not_found()
+        if not cursor.fetchone()[0]:
+            # Found a row, but it wasn't eligible for deletion
+            return forbidden()
 
         cursor = dbcursor_query("""
         DELETE FROM run

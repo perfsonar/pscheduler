@@ -105,6 +105,19 @@ BEGIN
     END IF;
 
 
+    -- Version 4 to version 5
+    IF t_version = 4
+    THEN
+
+        -- Indicates whether or not runs in this state can be deleted
+        -- via the API.
+	ALTER TABLE run_state ADD COLUMN
+        delete_ok BOOLEAN DEFAULT NULL;
+
+        t_version := t_version + 1;
+    END IF;
+
+
     --
     -- Cleanup
     --
@@ -315,26 +328,27 @@ ON run_state
 -- the table was previously populated.
 
 ALTER TABLE run_state DISABLE TRIGGER run_state_alter;
-INSERT INTO run_state (id, display, enum, finished, success)
+INSERT INTO run_state (id, display, enum, finished, success, delete_ok)
 VALUES
-    (run_state_scheduling(),'Scheduling',  'scheduling',FALSE, NULL),
-    (run_state_pending(),   'Pending',     'pending',   FALSE, NULL),
-    (run_state_on_deck(),   'On Deck',     'on-deck',   FALSE, NULL),
-    (run_state_running(),   'Running',     'running',   FALSE, NULL),
-    (run_state_cleanup(),   'Cleanup',     'cleanup',   TRUE,  NULL),
-    (run_state_finished(),  'Finished',    'finished',  TRUE,  TRUE),
-    (run_state_overdue(),   'Overdue',     'overdue',   TRUE,  FALSE),
-    (run_state_missed(),    'Missed',      'missed',    TRUE,  FALSE),
-    (run_state_failed(),    'Failed',      'failed',    TRUE,  FALSE),
-    (run_state_preempted(), 'Preempted',   'preempted', TRUE,  FALSE),
-    (run_state_nonstart(),  'Non-Starter', 'nonstart',  TRUE,  FALSE),
-    (run_state_canceled(),  'Canceled',    'canceled',  TRUE,  NULL)
+    (run_state_scheduling(),'Scheduling',  'scheduling',FALSE, NULL,  FALSE),
+    (run_state_pending(),   'Pending',     'pending',   FALSE, NULL,  TRUE),
+    (run_state_on_deck(),   'On Deck',     'on-deck',   FALSE, NULL,  FALSE),
+    (run_state_running(),   'Running',     'running',   FALSE, NULL,  FALSE),
+    (run_state_cleanup(),   'Cleanup',     'cleanup',   TRUE,  NULL,  FALSE),
+    (run_state_finished(),  'Finished',    'finished',  TRUE,  TRUE,  FALSE),
+    (run_state_overdue(),   'Overdue',     'overdue',   TRUE,  FALSE, FALSE),
+    (run_state_missed(),    'Missed',      'missed',    TRUE,  FALSE, FALSE),
+    (run_state_failed(),    'Failed',      'failed',    TRUE,  FALSE, FALSE),
+    (run_state_preempted(), 'Preempted',   'preempted', TRUE,  FALSE, FALSE),
+    (run_state_nonstart(),  'Non-Starter', 'nonstart',  TRUE,  FALSE, FALSE),
+    (run_state_canceled(),  'Canceled',    'canceled',  TRUE,  NULL,  FALSE)
 ON CONFLICT (id) DO UPDATE
 SET
     display = EXCLUDED.display,
     enum = EXCLUDED.enum,
     finished = EXCLUDED.finished,
-    success = EXCLUDED.success;
+    success = EXCLUDED.success,
+    delete_ok = EXCLUDED.delete_ok;
 ALTER TABLE run_state ENABLE TRIGGER run_state_alter;
 
 
