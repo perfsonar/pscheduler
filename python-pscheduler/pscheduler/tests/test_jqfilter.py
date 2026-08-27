@@ -9,6 +9,7 @@ import unittest
 from test_base import PschedTestBase
 
 from pscheduler.jqfilter import JQFilter
+from pscheduler.jqfilter import JQRuntimeError
 
 
 class TestJQFilter(PschedTestBase):
@@ -73,6 +74,13 @@ class TestJQFilter(PschedTestBase):
 
         with self.assertRaises(ValueError):
             f = JQFilter("this is bad")
+
+    def test_runtime_error(self):
+        '''Test a filter that raises an error'''
+
+        with self.assertRaises(JQRuntimeError):
+            f = JQFilter('error("This is an intentional error.")')
+            _ = f(None)
 
 if __name__ == '__main__':
     unittest.main()

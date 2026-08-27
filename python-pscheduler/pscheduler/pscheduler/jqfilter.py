@@ -2,13 +2,9 @@
 JQ JSON Filter Class
 """
 
-import json  # TODO: Part of the fix for #1059
+import jq
 import os
 import re
-
-import pyjq
-from  _pyjq import ScriptRuntimeError
-
 
 class JQRuntimeError(Exception):
     pass
@@ -117,25 +113,13 @@ class JQFilter(object):
         if strip_errors_to is not None and not isinstance(strip_errors_to, str):
             raise ValueError("Strip string must be a string")
 
-        # Passing an args hash into PyJQ causes a memory corruption
-        # problem.  As a temporary workaround, turn them into "as"
-        # statements.  (See #1059)
-        # TODO: Remove this and 'import json' once PyJQ is fixed.
-
-        if len(args):
-            arg_lines = "".join([
-                "%s as $%s | " % (json.dumps(value), name)
-                for name, value in args.items()
-            ])
-            filter_spec = arg_lines + filter_spec
-            args = {}
-
         if groom:
             filter_spec = _groom(filter_spec)
 
         value_error = None
         try:
-            self.script = pyjq.compile(filter_spec, args, library_paths=_library_path())
+            # TODO: Need support for library_paths=_library_path()
+            self.script = jq.compile(filter_spec, args=args)
         except ValueError as ex:
             # This is held and thrown seprately because Python will
             # produce a confusing nested exception message when it's
@@ -170,7 +154,7 @@ class JQFilter(object):
 
         try:
 
-            result = self.script.all(json)
+            result = self.script.input_value(json).all()
 
             if isinstance(result, list) and self.output_raw:
                 return "\n".join([str(item) for item in result])
@@ -181,7 +165,8 @@ class JQFilter(object):
             else:
                 raise ValueError("No idea what to do with %s result", type(result))
 
-        except ScriptRuntimeError as ex:
+        # This is what the python module raises if error() is called.
+        except ValueError as ex:
             raise JQRuntimeError(str(ex))
 
 

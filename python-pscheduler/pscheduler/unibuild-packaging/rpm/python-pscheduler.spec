@@ -42,7 +42,7 @@ Requires:	%{_pscheduler_python}-py-radix
 # The limit system uses this.
 Requires:	pscheduler-jq-library
 Requires:	%{_pscheduler_python}-pycurl
-Requires:	%{_pscheduler_python}-pyjq >= 2.2.0
+Requires:	%{_pscheduler_python}-jq
 Requires:	pscheduler-json-dictionary
 Requires:	rsyslog
 Requires:	logrotate
@@ -72,7 +72,7 @@ BuildRequires:	%{_pscheduler_python}-py-radix
 # The limit system uses this.
 BuildRequires:	pscheduler-jq-library
 BuildRequires:	%{_pscheduler_python}-pycurl
-BuildRequires:	%{_pscheduler_python}-pyjq >= 2.2.0
+BuildRequires:	%{_pscheduler_python}-jq
 BuildRequires:	pscheduler-json-dictionary
 BuildRequires:  numactl
 BuildRequires:  traceroute

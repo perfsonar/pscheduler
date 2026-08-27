@@ -17,6 +17,11 @@ Group:		Unspecified
 
 Provides:	%{name} = %{version}-%{release}
 
+%if 0%{?ol8}
+%define ol8_required_python_version 3.12
+Requires:	python%{ol8_required_python_version}
+%endif
+
 %description
 Macros for use by pScheduler RPM specs
 
@@ -46,11 +51,16 @@ cat > $RPM_BUILD_ROOT/%{macro_prefix}%{name} <<EOF
 %if 0%{?el7}
 %%error EL7 is no longer supported.  Try something newer.
 %endif
+%if 0%{?el8}
+%%error EL8 is no longer supported.  Try something newer.
+%endif
 
-%if 0%{?el8}%{?ol8}
-# EL8 standardized on just the major version, as did EPEL.
-%%_pscheduler_python python%%{_pscheduler_python_version_major}
-%%_pscheduler_python_epel python%%{_pscheduler_python_version_major}
+%if 0%{?ol8}
+# This version is specifically required because some packages require
+# something more-recent than the default 3.6.  The %post scriptlet
+will make this the default.
+%%_pscheduler_python python%{ol8_required_python_version}
+%%_pscheduler_python_epel python%{ol8_required_python_version}
 
 %else
 
@@ -125,6 +135,13 @@ cat > $RPM_BUILD_ROOT/%{macro_prefix}%{name} <<EOF
 %%_pscheduler_daemons %%{_pscheduler_libexecdir}/daemons
 
 EOF
+
+
+%post
+%if 0%{?ol8}
+alternatives --set python %{_bindir}/%{_pscheduler_python}
+false
+%endif
 
 
 %files

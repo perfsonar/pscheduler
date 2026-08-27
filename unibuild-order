@@ -63,6 +63,7 @@ ifelse(DISTRO/MAJOR,ol/8,oniguruma)
 ifelse(DISTRO/eval(MAJOR < 20),Ubuntu/1,oniguruma)		# Ubuntu 20 and up are good.
 jq
 
+
 # Python Modules
 
 ifelse(FAMILY/DISTRO/MAJOR,RedHat/ol/8,Cython)
@@ -78,6 +79,7 @@ ifelse(DISTRO/eval(MAJOR > 19),Ubuntu/1,,		# Ubuntu 20 has a newer version of th
        python-pyrsistent)
 python-nmap3
 ifelse(FAMILY/eval(MAJOR <= 8),RedHat/1,python-jsonschema)  # Only build on EL8 and lower
+python-jq
 python-kafka
 python-nmap3
 
