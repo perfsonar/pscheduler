@@ -11,7 +11,16 @@ AutoReqProv: no
 #BuildPrereq: autoconf, libtool, automake, flex, bison, python
 
 Group: Applications/System
-# Requires:
+
+Requires:	oniguruma
+
+BuildRequires:  autoconf
+BuildRequires:  bison > 3.0
+BuildRequires:  flex
+BuildRequires:  gcc
+BuildRequires:  libtool
+BuildRequires:  make
+BuildRequires:  oniguruma-devel
 
 # Disables debug packages and stripping of binaries:
 %global _enable_debug_package 0
