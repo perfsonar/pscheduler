@@ -58,11 +58,10 @@ postgresql-init
 postgresql-load
 
 # jq and friends
+### TODO: NEED TO BUILD JQ 1.8.
 ifelse(DISTRO/MAJOR,ol/8,oniguruma)
 ifelse(DISTRO/eval(MAJOR < 20),Ubuntu/1,oniguruma)		# Ubuntu 20 and up are good.
-ifelse(DISTRO/eval(MAJOR >= 24),Ubuntu/1,,
-       FAMILY/eval(MAJOR >= 10),RedHat/1,,
-       jq)
+jq
 
 # Python Modules
 
@@ -88,7 +87,7 @@ python-vine
 ifelse(DISTRO/eval(MAJOR > 21),Ubuntu/1,,		# Ubuntu 22 and up have a newer version of this.
        DISTRO/eval(MAJOR > 11),Debian/1,,       # As does Debian 12.
        python-py-amqp)
-python-pyjq
+python-jq
 python-vcversioner
 # TODO: We were building this; EL9 has a newer version.
 python-pyasn1						# EL8 has this, ours is newer

@@ -1,90 +1,74 @@
-#
-# RPM Spec for jq
-#
-# Partially adapted from the author's version at
-# https://github.com/stedolan/jq/blob/master/jq.spec
-#
+# This is spec file maintained by developers of JQ, not by a OS distro.
+# Your OS of choice will likely ignore this RPM spec file.
+Summary: Command-line JSON processor
+Name: jq
+Version: 1.8.2
+Release: 1%{?dist}
+Source0: jq-%{version}.tar.gz
+URL: https://jqlang.org
+License: MIT AND ICU AND CC-BY-3.0
+AutoReqProv: no
+#BuildPrereq: autoconf, libtool, automake, flex, bison, python
 
-Name:		jq
-Version:	1.7.1
-# There was no real difference between -2 and -3, but this bump will
-# force some older systems to upgrade properly.
-Release:	3%{?dist}
-Summary:	A filter program for JSON
-BuildArch:	%(uname -m)
-License:	BSD
-Group:		Applications/System
+Group: Applications/System
+# Requires:
 
-Provides:	%{name} = %{version}-%{release}
-Prefix:		%{_prefix}
+# Disables debug packages and stripping of binaries:
+%global _enable_debug_package 0
+%global debug_package %{nil}
+%global __os_install_post %{nil}
 
-Vendor:		Stephen Dolan <mu@netsoc.tcd.ie>
-URL:		https://jqlang.github.io
-
-Source:		%{name}-%{version}.tar.gz
-
-
-Requires:	oniguruma
-
-BuildRequires:  autoconf
-BuildRequires:  bison > 3.0
-BuildRequires:  flex
-BuildRequires:  gcc
-BuildRequires:  libtool
-BuildRequires:  make
-BuildRequires:  oniguruma-devel
-
+# Crank up the compression
+%define _binary_payload w7.lzdio
 
 %description
-jq is like sed for JSON data - you can use it to slice and filter and
-map and transform structured data with the same ease that sed, awk,
-grep and friends let you play with text.
-
-%package devel
-Summary:	Development files for %{name}
-Requires:	%{name} = %{version}-%{release}
-
-%description devel
-Development files for %{name}
-
-
-# Don't do automagic post-build things.
-%global		     debug_package %{nil}
-
+jq is a command-line JSON processor
 
 %prep
-%setup -q -n %{name}-%{version}
-
-# Replace the version generator with one that doesn't depend on git
-cat > scripts/version <<EOF
-#!/bin/sh
-echo "%{version}"
-EOF
-
+%setup
 
 %build
-autoreconf -fi
-%configure --disable-static --disable-maintainer-mode
-make DESTDIR=%{buildroot}
-
+echo "Building in: \"$(pwd)\""
+%if "%{devbuild}" == "yes"
+./configure --prefix=%{_prefix} --enable-devel
+%else
+./configure --prefix=%{_prefix}
+%endif
+make
 
 %install
-make DESTDIR=%{buildroot} install
-find %{buildroot} -name '*.la' -exec rm -f {} ';'
+echo "Installing to: \"%{buildroot}\""
+make install DESTDIR=%{buildroot}
+
+# Don't need this.  --MAF
+rm -f %{buildroot}/usr/lib/pkgconfig/libjq.pc
 
 
 %clean
-rm -rf $RPM_BUILD_ROOT
-
+rm -rf %{buildroot}
 
 %files
 %defattr(-,root,root)
-%{_bindir}/*
-%{_docdir}/*
-%{_mandir}/man1/*
-%{_libdir}/libjq.so.*
-%{_libdir}/pkgconfig/*
+%{_bindir}/jq
+%if "%{devbuild}" == "yes"
+%{_libexecdir}/%{name}/jq_test
+%{_libexecdir}/%{name}/testdata
+%endif
+%{_datadir}/doc/%{name}/AUTHORS
+%{_datadir}/doc/%{name}/COPYING
+%{_datadir}/doc/%{name}/NEWS.md
+%{_datadir}/doc/%{name}/README.md
+%{_datadir}/man/man1/jq.1
+%{_includedir}/jq.h
+%{_includedir}/jv.h
+%{_prefix}/lib/libjq.a
+%{_prefix}/lib/libjq.la
+%{_prefix}/lib/libjq.so
+%{_prefix}/lib/libjq.so.1
+%{_prefix}/lib/libjq.so.1.0.4
 
-%files devel
-%{_includedir}/*
-%{_libdir}/libjq.so
+%changelog
+
+%pre
+
+%post
