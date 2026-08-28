@@ -1,0 +1,213 @@
+diff -rupN jq.py-1.12.0-orig/README.rst jq.py-1.12.0/README.rst
+--- jq.py-1.12.0-orig/README.rst	2026-07-10 10:45:56.000000000 +0000
++++ jq.py-1.12.0/README.rst	2026-08-28 15:00:43.553848193 +0000
+@@ -186,6 +186,29 @@ Calling ``compile()`` with the ``args``
+     program = jq.compile("$a + $b + .", args={"a": 100, "b": 20})
+     assert program.input_value(3).first() == 123
+ 
++Library Search Path
++~~~~~~~~~~~~~~~~~~~
++
++Calling ``compile()`` or any other method that accepts a jq script
++with the ``library_paths`` argument configures the path jq will use in
++searching for files when processing the ``import`` and ``include``
++statements.
++
++The argument must be an array of strings, each naming a path to be
++searched with home directories as `Python's os.path.expanduser()
++<https://docs.python.org/3/library/os.path.html#os.path.expanduser>`_
++would expand them.
++
++If not provided, the search path is that described in the `Modules
++<https://jqlang.org/manual/#modules>`_ section of the jq manual.
++
++
++.. code-block:: python
++
++    program = jq.compile('import "siconvert" as si; si::as_integer(.)', library_paths=["/usr/lib/jqstuff"])
++    assert program.input_value("1234K").first() == 1234000
++
++
+ Convenience functions
+ ~~~~~~~~~~~~~~~~~~~~~
+ 
+diff -rupN jq.py-1.12.0-orig/jq.pyx jq.py-1.12.0/jq.pyx
+--- jq.py-1.12.0-orig/jq.pyx	2026-07-10 10:45:56.000000000 +0000
++++ jq.py-1.12.0/jq.pyx	2026-08-28 19:43:59.870624206 +0000
+@@ -1,5 +1,8 @@
+ import io
+ import json
++import os
++import os.path
++import platform
+ import threading
+ 
+ from cpython.bytes cimport PyBytes_AsString
+@@ -28,6 +31,7 @@ cdef extern from "jv.h":
+     void jv_free(jv)
+     jv jv_invalid_get_msg(jv)
+     int jv_invalid_has_msg(jv)
++    jv jv_string_sized(const char *, int)
+     char* jv_string_value(jv)
+     jv jv_dump_string(jv, int flags)
+     int jv_string_length_bytes(jv)
+@@ -61,6 +65,7 @@ cdef extern from "jq.h":
+     ctypedef void (*jq_err_cb)(void *, jv)
+ 
+     jq_state *jq_init()
++    void jq_set_attr(jq_state *, jv, jv)
+     void jq_teardown(jq_state **)
+     int jq_compile(jq_state *, const char* str)
+     int jq_compile_args(jq_state *, const char* str, jv)
+@@ -123,6 +128,20 @@ cdef object _jv_to_python(jv value):
+     jv_free(value)
+     return python_value
+ 
++cdef jv _python_to_jv(object obj):
++    """Convert a Python object to a JSON value"""
++    if isinstance(obj, str):
++        obj = obj.encode("utf-8")
++        return jv_string_sized(obj, len(obj))
++    elif isinstance(obj, (list, tuple)):
++        jvalue = jv_array()
++        for _, item in enumerate(obj):
++            jvalue = jv_array_append(jvalue, _python_to_jv(item))
++        return jvalue
++    else:
++        raise TypeError(f"Cannot convert {type(obj)} to JSON")
++
++
+ 
+ cdef int _is_integer(double value) noexcept:
+     cdef double integral_part
+@@ -131,15 +150,52 @@ cdef int _is_integer(double value) noexc
+     return fractional_part == 0
+ 
+ 
+-def compile(object program, args=None):
++def compile(object program, args=None, library_paths=None):        
+     cdef object program_bytes = program.encode("utf8")
+-    return _Program(program_bytes, args=args)
++    return _Program(program_bytes, args=args, library_paths=library_paths)
+ 
+ 
+ _compilation_lock = threading.Lock()
+ 
++cdef object _set_library_paths(jq_state *jq, object library_paths):
++    """
++    Configure the jq instance's library search path if there is one.
++    Returns None if OK or an Exception (not raised) if there was a problem.
++    """
++
++    if library_paths is not None:
++        # Use the provided list
++        if (not isinstance(library_paths, list)) \
++           or (list(filter(lambda value: not isinstance(value, str), library_paths))):
++            return ValueError('library_paths must be an array of strings')
++        paths = library_paths
++    else:
++        # Emulate the CLI's behavior.  This has to be re-implemented
++        # here because it's hard-wired into the CLI.
++        paths = [ "~/.jq" ]
++
++        try:
++            jq_program = "jq.exe" if platform.system() == "Windows" else "jq"
++            origin = list(filter(
++                lambda p: os.access(os.path.join(p, jq_program), os.X_OK),
++                os.environ["PATH"].split(os.pathsep)
++            ))[0]
++            paths.extend([
++                f"{origin}/{path}"
++                for path in ["../lib/jq", "lib"]
++            ])
++        except IndexError:
++            # If there's no jq binary, don't do anything relative to it.
++            pass
++
++    paths = [ os.path.expanduser(path) for path in paths ]
+ 
+-cdef jq_state* _compile(object program_bytes, object args) except NULL:
++    jq_set_attr(jq, _python_to_jv("JQ_LIBRARY_PATH"), _python_to_jv(paths))
++
++    return None
++
++
++cdef jq_state* _compile(object program_bytes, object args, library_paths=None) except NULL:
+     cdef jq_state *jq = jq_init()
+     cdef _ErrorStore error_store
+     cdef jv jv_args
+@@ -148,11 +204,16 @@ cdef jq_state* _compile(object program_b
+         if not jq:
+             raise Exception("jq_init failed")
+ 
++        exception = _set_library_paths(jq, library_paths)
++        if exception is not None:
++            raise exception
++
+         error_store = _ErrorStore()
+ 
+         with _compilation_lock:
+             jq_set_error_cb(jq, _store_error, <void*>error_store)
+ 
++
+             if args is None:
+                 compiled = jq_compile(jq, program_bytes)
+             else:
+@@ -225,10 +286,10 @@ cdef class _JqStatePool(object):
+     cdef object _args
+     cdef object _lock
+ 
+-    def __cinit__(self, program_bytes, args):
++    def __cinit__(self, program_bytes, args, library_paths=None):
+         self._program_bytes = program_bytes
+         self._args = args
+-        self._jq_state = _compile(self._program_bytes, args=self._args)
++        self._jq_state = _compile(self._program_bytes, args=self._args, library_paths=library_paths)
+         self._lock = threading.Lock()
+ 
+     def __dealloc__(self):
+@@ -255,9 +316,10 @@ cdef class _Program(object):
+     cdef object _program_bytes
+     cdef _JqStatePool _jq_state_pool
+ 
+-    def __cinit__(self, program_bytes, args):
++    def __cinit__(self, program_bytes, args, library_paths=None):
+         self._program_bytes = program_bytes
+-        self._jq_state_pool = _JqStatePool(program_bytes, args=args)
++        self._jq_state_pool = _JqStatePool(program_bytes, args=args, library_paths=library_paths)
++
+ 
+     def input(self, value=_NO_VALUE, text=_NO_VALUE):
+         if (value is _NO_VALUE) == (text is _NO_VALUE):
+@@ -409,23 +471,23 @@ cdef class _ResultIterator(object):
+             raise StopIteration()
+ 
+ 
+-def all(program, value=_NO_VALUE, text=_NO_VALUE):
+-    return compile(program).input(value, text=text).all()
++def all(program, value=_NO_VALUE, text=_NO_VALUE, library_paths=None):
++    return compile(program, library_paths=library_paths).input(value, text=text).all()
+ 
+ 
+-def first(program, value=_NO_VALUE, text=_NO_VALUE):
+-    return compile(program).input(value, text=text).first()
++def first(program, value=_NO_VALUE, text=_NO_VALUE, library_paths=None):
++    return compile(program, library_paths=library_paths).input(value, text=text).first()
+ 
+ 
+ _iter = iter
+ 
+ 
+-def iter(program, value=_NO_VALUE, text=_NO_VALUE):
+-    return _iter(compile(program).input(value, text=text))
++def iter(program, value=_NO_VALUE, text=_NO_VALUE, library_paths=None):
++    return _iter(compile(program, library_paths=library_paths).input(value, text=text))
+ 
+ 
+-def text(program, value=_NO_VALUE, text=_NO_VALUE):
+-    return compile(program).input(value, text=text).text()
++def text(program, value=_NO_VALUE, text=_NO_VALUE, library_paths=None):
++    return compile(program, library_paths=library_paths).input(value, text=text).text()
+ 
+ 
+ # Support the 0.1.x API for backwards compatibility

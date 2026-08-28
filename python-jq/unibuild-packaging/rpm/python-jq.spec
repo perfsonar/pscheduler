@@ -19,6 +19,10 @@ URL:		https://github.com/mwilliamson/jq.py
 
 Source:		%{short}-%{version}.tar.gz
 
+Patch0:		00-python-jq-library-paths.patch
+
+
+
 Requires:       %{_pscheduler_python} >= 3.9
 Requires:       expat >= 2.4.0
 Requires:       jq >= 1.8
@@ -54,7 +58,7 @@ Python bindings to JQ
 
 %prep
 %setup -q -n %{short}.py-%{version}
-
+%patch 0 -p1
 
 %build
 JQPY_USE_SYSTEM_LIBS=1 %{_pscheduler_python} setup.py build
