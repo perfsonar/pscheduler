@@ -3,7 +3,9 @@
 test for the JQFilter module.
 """
 
+import os
 import sys
+import tempfile
 import unittest
 
 from test_base import PschedTestBase
@@ -81,6 +83,23 @@ class TestJQFilter(PschedTestBase):
         with self.assertRaises(JQRuntimeError):
             f = JQFilter('error("This is an intentional error.")')
             _ = f(None)
+
+    def test_library_path(self):
+        '''Test the library search path'''
+
+        # Nonexistant module
+        with self.assertRaises(ValueError):
+            f = JQFilter('import "verybogus" as verybogus; null')
+
+        with tempfile.TemporaryDirectory() as dir:
+            module = f'{dir}/test.jq'
+            try:
+                with open(module, 'w') as module_file:
+                    print('def func:\n    12345\n;\n', file=module_file)
+                f = JQFilter('import "test" as test; test::func', library_paths=[dir])
+                self.assertEqual(f()[0], 12345)
+            finally:
+                os.unlink(module)
 
 if __name__ == '__main__':
     unittest.main()

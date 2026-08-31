@@ -72,7 +72,8 @@ class JQFilter(object):
             args={},
             output_raw=False,
             groom=False,
-            strip_errors_to=None
+            strip_errors_to=None,
+            library_paths=None
             ):
         """Construct a filter.  Arguments:
 
@@ -118,8 +119,8 @@ class JQFilter(object):
 
         value_error = None
         try:
-            # TODO: Need support for library_paths=_library_path()
-            self.script = jq.compile(filter_spec, args=args)
+            self.script = jq.compile(filter_spec, args=args,
+                                     library_paths=library_paths if library_paths else _library_path())
         except ValueError as ex:
             # This is held and thrown seprately because Python will
             # produce a confusing nested exception message when it's
