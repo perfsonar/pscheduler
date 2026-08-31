@@ -92,14 +92,10 @@ class TestJQFilter(PschedTestBase):
             f = JQFilter('import "verybogus" as verybogus; null')
 
         with tempfile.TemporaryDirectory() as dir:
-            module = f'{dir}/test.jq'
-            try:
-                with open(module, 'w') as module_file:
-                    print('def func:\n    12345\n;\n', file=module_file)
-                f = JQFilter('import "test" as test; test::func', library_paths=[dir])
-                self.assertEqual(f()[0], 12345)
-            finally:
-                os.unlink(module)
+            with open(f'{dir}/test.jq', 'w') as module_file:
+                print('def func:\n    12345\n;\n', file=module_file)
+            f = JQFilter('import "test" as test; test::func', library_paths=[dir])
+            self.assertEqual(f()[0], 12345)
 
 if __name__ == '__main__':
     unittest.main()
