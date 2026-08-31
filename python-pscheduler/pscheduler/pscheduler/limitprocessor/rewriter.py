@@ -4,7 +4,6 @@ Processor for Task Rewriting
 
 import copy
 import re
-import pyjq
 
 from ..jqfilter import *
 from ..psjson import *

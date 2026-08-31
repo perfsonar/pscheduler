@@ -4,7 +4,6 @@ Processor for Task Task Prioritization
 
 import copy
 import re
-import pyjq
 
 from ..jqfilter import *
 
