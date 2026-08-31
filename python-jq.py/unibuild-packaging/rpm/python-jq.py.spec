@@ -2,7 +2,7 @@
 # RPM Spec for Python Module
 #
 
-%define short	jq
+%define short	jq.py
 Name:		%{_pscheduler_python}-%{short}
 Version:	1.12.0
 Release:	1%{?dist}
@@ -19,7 +19,7 @@ URL:		https://github.com/mwilliamson/jq.py
 
 Source:		%{short}-%{version}.tar.gz
 
-Patch0:		00-python-jq-library-paths.patch
+Patch0:		00-python-jq.py-library-paths.patch
 
 
 
@@ -57,7 +57,7 @@ Python bindings to JQ
 %global              debug_package %{nil}
 
 %prep
-%setup -q -n %{short}.py-%{version}
+%setup -q -n %{short}-%{version}
 %patch 0 -p1
 
 %build
