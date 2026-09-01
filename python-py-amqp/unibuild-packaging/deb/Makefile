@@ -1,5 +1,5 @@
 #
-# Makefile for PyJQ Debian/Ubuntu Packaging
+# Makefile for Debian/Ubuntu Packaging
 #
 
 default: build
