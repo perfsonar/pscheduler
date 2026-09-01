@@ -22,7 +22,7 @@ setup(
         'requests >= 2.6.0',
         'psycopg2 >= 2.6.2',
         'jsonschema >= 2.5.1',
-        'pyjq >= 2.2.0',
+        'jq.py >= 1.12.0',
         'python-dateutil >= 2.5.3',
         'netifaces >= 0.5',
         'ipaddr >= 2.1.9',
