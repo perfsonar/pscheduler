@@ -1,4 +1,4 @@
-python-jq (1.12.0-1) perfsonar-5.3-staging; urgency=low
+jq.py (1.12.0-1) perfsonar-5.3-staging; urgency=low
 
   * New upstream version
 

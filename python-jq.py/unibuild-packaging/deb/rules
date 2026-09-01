@@ -1,0 +1,23 @@
+#!/usr/bin/make -f
+
+export PYBUILD_NAME = jq
+export JQPY_USE_SYSTEM_LIBS=1
+
+%:
+	dh $@ --with=python3 --system=pybuild
+
+
+override_dh_auto_build:
+	JQPY_USE_SYSTEM_LIBS=1 python3 setup.py build
+
+
+override_dh_auto_install:
+	JQPY_USE_SYSTEM_LIBS=1 python3 setup.py install \
+		-O1 \
+		--prefix=/usr \
+		--root=$(CURDIR)/debian/python3-jq.py \
+		--install-layout=deb \
+		--record=debian/installed-files.txt
+
+override_dh_auto_clean:
+	@true

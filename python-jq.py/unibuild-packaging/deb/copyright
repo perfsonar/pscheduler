@@ -1,10 +1,10 @@
 Format: http://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
-Upstream-Name: pyjq
-Source: https://pypi.python.org/pypi/pyjq
+Upstream-Name: jq.py
+Source: https://pypi.org/project/jq/
 
 Files: *
-Copyright: 2019 Omoto Kenji
-License: MIT
+Copyright: 2026 Michael Williamson
+License: BSD-2-Clause
 
 Files: debian/*
 Copyright: 2016-2021 perfSONAR project
