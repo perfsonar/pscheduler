@@ -20,9 +20,11 @@ URL:		https://github.com/tobgu/pyrsistent
 
 Source:		%{short}-%{version}.tar.gz
 
+Requires:       expat >= 2.4.0
 Requires:       %{_pscheduler_python}
 Requires:       %{_pscheduler_python}-six
 
+BuildRequires:  expat >= 2.4.0
 BuildRequires:  %{_pscheduler_python}-six
 BuildRequires:  %{_pscheduler_python}
 BuildRequires:  %{_pscheduler_python}-devel
