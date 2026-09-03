@@ -140,6 +140,7 @@ EOF
 %post
 %if 0%{?ol8}
 alternatives --set python %{_bindir}/%{_pscheduler_python}
+alternatives --set python3 %{_bindir}/%{_pscheduler_python}
 false
 %endif
 
