@@ -49,8 +49,6 @@ FILES=\
 
 FILES_TEARDOWN=\
 	database-drop
-
-
 SUPER=$(FILES_SUPERUSER:%=%.sql)
 BUILD_SUPER_SQL=database-build-super.sql
 
@@ -118,8 +116,12 @@ default: build
 
 
 build: check $(SQL) $(INTERNALS)
+	IS_ROOT := $(shell [ -w / ] && echo 1 || true)
+	HAS_SUDO := $(shell sudo -v 2>/dev/null && echo 1 || true)
 
-
+	ifneq ($(HAS_SUDO),)
+		SUDO := sudo
+	endif
 $(BUILD_SUPER_SQL): $(SUPER)
 	cat $^ > $@
 TO_CLEAN += $(BUILD_SUPER_SQL)
