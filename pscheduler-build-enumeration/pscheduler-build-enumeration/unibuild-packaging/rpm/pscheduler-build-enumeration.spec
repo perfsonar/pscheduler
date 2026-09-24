@@ -23,6 +23,8 @@ Provides:	%{name} = %{version}-%{release}
 
 Requires:	jq
 Requires:	jsonschematool
+Requires:	pscheduler-json-dictionary
+
 
 
 %description

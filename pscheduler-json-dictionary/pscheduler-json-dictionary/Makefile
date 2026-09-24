@@ -25,7 +25,7 @@ PICKLER := ./pickle-json
 %.pickled: %-compacted.json $(PICKLER)
 	$(PICKLER) < $< > $@
 
-json-dictionary: json-dictionary.raw
+pscheduler-json-dictionary: pscheduler-json-dictionary.raw
 ifndef DATADIR
 	@echo No DATADIR specified for build
 	@false
@@ -33,9 +33,8 @@ endif
 	sed -e "s|__DATADIR__|$(DATADIR)|g" < $< > $@
 TO_CLEAN += json-dictionary
 
-INTERNALS := \
-	json-dictionary \
-	json-validate
+BINS := \
+	pscheduler-json-dictionary
 
 
 
@@ -45,21 +44,21 @@ test: $(JSON) $(TESTS)
 	./run-tests --prefix pScheduler "$(JSON)" "$(TESTS)"
 
 
-build: test $(COMPACTED) $(PICKLED) $(INTERNALS)
+build: test $(COMPACTED) $(PICKLED) $(BINS)
 
 
 INSTALLED_DICTIONARY := $(INSTALLED_DATADIR)/$(JSON)
 install: build
-ifndef INTERNALSDIR
-	@echo No INTERNALSDIR specified for installation
+ifndef BINDIR
+	@echo No BINDIR specified for installation
 	@false
 endif
 ifndef INSTALLED_DATADIR
 	@echo No INSTALLED_DATADIR specified for installation
 	@false
 endif
-	mkdir -p $(INTERNALSDIR)
-	install -m 555 $(INTERNALS) $(INTERNALSDIR)
+	mkdir -p $(BINDIR)
+	install -m 555 $(BINS) $(BINDIR)
 	mkdir -p $(INSTALLED_DATADIR)
 	install -m 444 $(COMPACTED) "$(INSTALLED_DATADIR)/$(JSON)"
 	install -m 444 $(PICKLED) $(INSTALLED_DATADIR)

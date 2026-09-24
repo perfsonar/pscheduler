@@ -1,3 +1,4 @@
+
 Source: pscheduler-build-enumeration
 Section: misc
 Priority: optional
@@ -9,6 +10,6 @@ Vcs-Browser: https://github.com/perfsonar/pscheduler
 
 Package: pscheduler-build-enumeration
 Architecture: all
-Depends: ${misc:Depends}, jq, jsonschematool
+Depends: ${misc:Depends}, jq, jsonschematool, pscheduler-json-dictionary
 Description: Build a pScheduler enumeration script from JSON
 

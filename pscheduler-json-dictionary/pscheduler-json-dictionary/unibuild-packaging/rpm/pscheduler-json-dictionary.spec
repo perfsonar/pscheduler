@@ -24,6 +24,7 @@ Provides:	%{name} = %{version}-%{release}
 # Requires:	Nothing...
 
 BuildRequires:	pscheduler-rpm
+BuildRequires:	jq >= 1.7
 BuildRequires:	%{_pscheduler_python}-jsonschema
 
 %description
@@ -37,7 +38,7 @@ an internal command to retrieve it.
 
 %build
 make \
-     INTERNALSDIR=$RPM_BUILD_ROOT/%{_pscheduler_internals} \
+     BINDIR=$RPM_BUILD_ROOT/%{_bindir} \
      DATADIR=%{_pscheduler_datadir} \
      INSTALLED_DATADIR=$RPM_BUILD_ROOT/%{_pscheduler_datadir} \
      install
@@ -49,5 +50,5 @@ make clean
 
 %files
 %defattr(-,root,root)
-%{_pscheduler_internals}/*
+%{_bindir}/*
 %{_pscheduler_datadir}/*

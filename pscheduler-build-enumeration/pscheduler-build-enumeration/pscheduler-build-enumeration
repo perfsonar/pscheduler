@@ -78,7 +78,7 @@ check_input()
 
 # pScheduler's internal dictionary
 PS_DICT="${TMPBASE}/psdict"
-pscheduler internal json-dictionary > "${PS_DICT}"
+pscheduler-json-dictionary > "${PS_DICT}"
 
 
 # ----------------------------------------------------------------------
