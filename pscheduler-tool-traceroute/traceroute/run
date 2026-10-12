@@ -369,13 +369,21 @@ for line in stdout.split('\n'):
 
     # AS
 
-    if as_:
+    # The annotation is only present if it's bracketed; if it isn't,
+    # leave the element alone so the RTT is still parsed.
+    if as_ and len(elements) > 0 and elements[0].startswith('['):
         astext = elements.pop(0)[1:-1]
         log.debug("AS string %s", astext)
         single_as = astext.split('/')[-1]
-        # Should look like ASnnnn or *
-        if single_as != '*':
-            hop['as'] = int(single_as[2:])
+        # Should look like ASnnnn or *.  Anything else (e.g., an empty
+        # or truncated lookup result) is skipped for this hop rather
+        # than failing the whole run.
+        as_match = re.match(r'^AS(\d+)$', single_as)
+        if as_match is not None:
+            hop['as'] = int(as_match.group(1))
+        elif single_as != '*':
+            log.warning("Ignoring unexpected AS annotation '%s' in line: %s",
+                        astext, line)
 
 
     # RTT (ms)
