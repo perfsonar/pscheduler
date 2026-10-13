@@ -5,12 +5,13 @@
 #
 #
 
+# Note: validate-configurables is left out because it's not
+# production-ready.
 COMMANDS=\
 	backup \
 	limit-diags \
 	log \
-	restore \
-	validate-configurables
+	restore
 
 INTERNALS=\
 	notifications \
