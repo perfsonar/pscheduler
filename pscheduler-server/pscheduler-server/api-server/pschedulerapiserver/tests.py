@@ -56,7 +56,7 @@ def tests_name_spec(name):
     status, stdout, stderr = pscheduler.plugin_invoke(
         'test', name, 'cli-to-spec',
         stdin=pscheduler.json_dump(args),
-        timeout=5
+        timeout=15
         )
 
     if status != 0:

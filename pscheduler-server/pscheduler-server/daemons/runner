@@ -696,7 +696,7 @@ class RunWorker(pscheduler.GenericWorker):
 
             returncode, stdout, stderr = pscheduler.plugin_invoke(
                 "tool", tool, "merged-results",
-                stdin=merge_input_text, timeout=5)
+                stdin=merge_input_text, timeout=30)
 
             self.log_debug("%d: Merged results: %d %s %s", self.id, returncode, stdout, stderr)
 

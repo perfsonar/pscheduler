@@ -363,7 +363,7 @@ def tasks():
             returncode, stdout, stderr = pscheduler.plugin_invoke(
                 "test", task['test']['type'], "participants",
                 stdin=pscheduler.json_dump(task['test']['spec']),
-                timeout=5
+                timeout=15
                 )
 
             if returncode != 0:
