@@ -5,6 +5,6 @@
 
 import pscheduler
 
-from validate import check_spec_semanticcs
+from validate import check_spec_semantics
 
 pscheduler.plugin_spec_is_valid('test', semantic=check_spec_semantics)
