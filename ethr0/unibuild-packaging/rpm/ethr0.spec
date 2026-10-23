@@ -42,6 +42,7 @@ such as Windows, Linux and other Unix systems.
 %define gopath %{godir}:/usr/lib/golang/src/vendor:/usr/lib/golang/pkg/linux_amd64/vendor
 %define gobin %{godir}/bin
 %define gocache %{godir}/.cache
+%define gomodcache %{_builddir}/go-modcache
 
 %prep
 %setup -q -n %{short}-%{version}
@@ -56,19 +57,19 @@ such as Windows, Linux and other Unix systems.
 export GOPATH="%{gopath}"
 export GOBIN="%{gobin}"
 export GOCACHE="%{gocache}"
+export GOMODCACHE="%{gomodcache}"
 export GOFLAGS=-buildvcs=false
 
 
-mkdir -p "%{godir}" "%{gobin}"
+mkdir -p "%{godir}" "%{gobin}" "%{gomodcache}"
 
 # Go leaves a bunch of directories read-only, which makes cleaning out
 # the workspace difficult.  Make sure that's cleaned up no matter
 # what.
 
-mkdir -p "%{godir}"
 cleanup()
 {
-    find "%{godir}" -type d | xargs chmod +w
+    find "%{godir}" "%{gomodcache}" -type d | xargs chmod +w
 }
 trap cleanup EXIT
 
