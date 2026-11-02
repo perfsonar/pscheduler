@@ -163,8 +163,8 @@ case "$1" in
         if id syslog >/dev/null 2>/dev/null; then
             chown syslog /var/log/pscheduler
             chmod u+w /var/log/pscheduler
+            service rsyslog restart
         fi
-        service rsyslog restart
     ;;
 
     triggered)
