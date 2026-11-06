@@ -205,6 +205,56 @@ opt_parser.add_option("--loopback",
                       action="store_true",
                       dest="loopback")
 
+opt_parser.add_option('--tx-depth',
+                      help='Size of tx queue (rdma)',
+                      action='store', type='int',
+                      dest='tx_depth')
+
+opt_parser.add_option('--qp-timeout',
+                      help='QP (Queue Pair) timeout (rdma)',
+                      action='store', type='int',
+                      dest='qp_timeout')
+
+opt_parser.add_option('--mtu',
+                      help='MTU',
+                      action='store', type='int',
+                      dest='mtu')
+
+opt_parser.add_option('--size',
+                      help='Size of message to exchange (rdma)',
+                      action='store', type='int',
+                      dest='size')
+
+opt_parser.add_option('--cq-mod',
+                      help='Generate Cqe after N (rdma)',
+                      action='store', type='int',
+                      dest='cq_mod')
+
+opt_parser.add_option('--comm-rdma-cm',
+                      help='Communicate with rdma_cm module to exchange data - use regular QPs',
+                      action='store_true',
+                      dest='comm_rdma_cm')
+
+opt_parser.add_option('--ib-dev-client',
+                      help='Use IB device <dev> for client',
+                      action='store', type='string',
+                      dest='ib_dev_client')
+
+opt_parser.add_option('--ib-port-client',
+                      help='Use port <port> on IB device for client',
+                      action='store', type='int',
+                      dest='ib_port_client')
+
+opt_parser.add_option('--ib-dev-server',
+                      help='Use IB device <dev> for server',
+                      action='store', type='string',
+                      dest='ib_dev_server')
+
+opt_parser.add_option('--ib-port-server',
+                      help='Use port <port> on IB device for server',
+                      action='store', type='int',
+                      dest='ib_port_server')
+
 (options, remaining_args) = opt_parser.parse_args(args)
 
 if len(remaining_args) != 0:
@@ -365,7 +415,47 @@ if options.reverse_connections:
 if options.loopback:
    result["loopback"] = True
    schema.set(5)
-       
+
+if options.tx_depth:
+   result['tx-depth'] = options.tx_depth
+   schema.set(7)
+
+if options.qp_timeout:
+   result['qp-timeout'] = options.qp_timeout
+   schema.set(7)
+
+if options.mtu:
+   result['mtu'] = options.mtu
+   schema.set(7)
+
+if options.size:
+   result['size'] = options.size
+   schema.set(7)
+
+if options.cq_mod:
+   result['cq-mod'] = options.cq_mod
+   schema.set(7)
+
+if options.comm_rdma_cm:
+   result['comm-rdma-cm'] = True
+   schema.set(7)
+
+if options.ib_dev_client:
+   result['ib-dev-client'] = options.ib_dev_client
+   schema.set(7)
+
+if options.ib_port_client:
+   result['ib-port-client'] = options.ib_port_client
+   schema.set(7)
+
+if options.ib_dev_server:
+   result['ib-dev-server'] = options.ib_dev_server
+   schema.set(7)
+
+if options.ib_port_server:
+   result['ib-port-server'] = options.ib_port_server
+   schema.set(7)
+
 result["schema"] = schema.value()
 
 logger.debug("cli-to-spec -> %s" % result)

@@ -1,0 +1,71 @@
+#!/usr/bin/env python3
+
+import pscheduler
+
+logger = pscheduler.Log(prefix='tool-perftest', quiet=True)
+json = pscheduler.json_load(exit_on_error=True)
+logger.debug(f'can-run for {json}')
+
+
+try:
+    if json['type'] != 'throughput':
+        pscheduler.succeed_json({
+            'can-run': False,
+            'reasons': [ 'Unsupported test type' ]
+        })
+except KeyError:
+    pscheduler.succeed_json({
+        'can-run': False,
+        'reasons': [ 'Missing test type' ]
+    })
+
+try:
+    spec = json['spec']
+    pscheduler.json_check_schema(spec, 7)
+except KeyError:
+    pscheduler.succeed_json({
+        'can-run': False,
+        'reasons': [ 'Missing test specification' ]
+    })
+except ValueError as ex:
+    pscheduler.succeed_json({
+        'can-run': False,
+        'reasons': [ str(ex) ]
+    })
+
+errors = []
+
+supported_options = [
+    'schema',
+    'source',
+    'dest',
+    'link-rtt',
+    'tx-depth',  # -t, --tx-depth for ib_write_bw
+    'qp-timeout',  # -u, --qp-timeout for ib_write_bw
+    'duration',  # -D, --duration for ib_write_bw
+    'parallel',  # -q, --qp for ib_write_bw
+    'mtu',  # -m, --mtu for ib_write_bw
+    'size',  # -s, --size for ib_write_bw
+    'cq-mod',  # -Q, --cq-mod for ib_write_bw
+    'comm-rdma-cm',  # -z, --comm_rdma_cm for ib_write_bw
+    'local-address',  # --bind_source_ip for ib_write_bw
+    'ib-dev-client',  # -d, --ib-dev for ib_write_bw
+    'ib-port-client',  # -i, --ib-port for ib_write_bw
+    'ib-dev-server',  # -d, --ib-dev for ib_write_bw
+    'ib-port-server',  # -i, --ib-port for ib_write_bw
+]
+
+for option in spec:
+    if option not in supported_options:
+        logger.debug(f'perftest unsupported option {option}')
+        errors.append(f'perftest does not support {option} option')
+
+if len(errors) > 0:
+    pscheduler.succeed_json({
+        'can-run': False,
+        'reasons': errors
+    })
+
+logger.debug('can-run succeeded')
+
+pscheduler.succeed_json({'can-run': True})

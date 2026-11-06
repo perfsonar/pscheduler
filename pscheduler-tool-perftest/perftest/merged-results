@@ -1,0 +1,32 @@
+#!/usr/bin/env python3
+
+import pscheduler
+
+logger = pscheduler.Log(prefix='tool-perftest', quiet=True)
+
+input = pscheduler.json_load(exit_on_error=True)
+
+try:
+    result_list = input['results']
+except KeyError as ex:
+    logger.error(f'merged-result error {ex}')
+    pscheduler.fail(f'Missing required key in merged-result input: {ex}')
+
+result_len = len(result_list)
+if result_len != 2:
+    pscheduler.fail(f'Expected 2 results in merged-results, got {result_len}')
+
+if result_list[0] is not None:
+    result = result_list[0]
+else:
+    result = { 'succeeded': False }
+
+diags = []
+
+for participant in [0, 1]:
+    if result_list[participant].get('diags') is not None:
+        diags.append(f'''Participant {participant}:\n{result_list[participant]['diags']}\n''')
+
+result['diags'] = '\n'.join(diags)
+
+pscheduler.succeed_json(result)
