@@ -1,0 +1,15 @@
+#!/usr/bin/make -f
+
+export DH_OPTIONS
+
+export DEB_BUILD_MAINT_OPTIONS = hardening=+all
+
+override_dh_installchangelogs:
+	dh_installchangelogs RELNOTES.md
+
+%:
+	dh $@
+
+# Ubuntu dbgsym.ddeb are currently not supported by reprepro
+override_dh_strip:
+	dh_strip --no-automatic-dbgsym
