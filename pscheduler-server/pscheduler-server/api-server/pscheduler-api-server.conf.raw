@@ -14,7 +14,7 @@ WSGIDaemonProcess __USER_NAME__ \
 		  restart-interval=3600 \
 		  inactivity-timeout=600
 
-WSGIScriptAlias __API_ROOT__ __API_DIR__/__NAME__.wsgi
+WSGIScriptAlias __API_ROOT__ __API_DIR__/__NAME__.wsgi process-group=__USER_NAME__ application-group=%{GLOBAL}
 
 
 # Keep's python interpreter from being initialized in the apache
@@ -24,9 +24,6 @@ WSGIRestrictEmbedded On
 <Directory __API_DIR__>
 
     SSLRequireSSL
-
-    WSGIProcessGroup __USER_NAME__
-    WSGIApplicationGroup __USER_NAME__
 
     Require all granted
 
