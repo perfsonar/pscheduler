@@ -1,0 +1,17 @@
+#!/bin/sed -e 1d
+{
+    "schema": 1,
+
+    "name": "perftest",
+    "description": "Use ib_write_bw from perftest to measure throughput",
+    "version": "1.0",
+    "tests": [ "throughput" ],
+
+    "preference": 0,
+
+    "maintainer": {
+        "name": "perfSONAR Development Team",
+	"email": "perfsonar-developer@internet2.edu",
+	"href": "http://www.perfsonar.net"
+    }
+}

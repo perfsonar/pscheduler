@@ -1,0 +1,16 @@
+Source: pscheduler-tool-perftest
+Section: net
+Priority: optional
+Maintainer: perfSONAR developers <debian@perfsonar.net>
+Build-Depends: debhelper (>= 10)
+Standards-Version: 3.9.8
+Homepage: https://github.com/perfsonar/pscheduler
+Vcs-Git: git://github.com/perfsonar/pscheduler
+Vcs-Browser: https://github.com/perfsonar/pscheduler/tree/master
+
+Package: pscheduler-tool-perftest
+Architecture: all
+Depends: ${misc:Depends}, python3, python3-pscheduler (>= 4.4.0~), python3-packaging,
+ pscheduler-server (>= 4.4.0~), pscheduler-test-throughput, perftest (>= 24.01.0)
+Description: pScheduler perftest tool
+ perftest tool class for pScheduler

@@ -438,7 +438,17 @@
                 "single-ended-port": null,
                 "reverse": null,
                 "reverse-connections": null,
-                "loopback": null
+                "loopback": null,
+                "ib-dev-server": { "$ref": "#/pScheduler/String" },
+                "ib-port-server": { "$ref": "#/pScheduler/Integer" },
+                "ib-dev-client": { "$ref": "#/pScheduler/String" },
+                "ib-port-client": { "$ref": "#/pScheduler/Integer" },
+                "tx-depth": { "$ref": "#/pScheduler/Integer" },
+                "qp-timeout": { "$ref": "#/pScheduler/Integer" },
+                "mtu": { "$ref": "#/pScheduler/Integer" },
+                "size": { "$ref": "#/pScheduler/Integer" },
+                "cq-mod": { "$ref": "#/pScheduler/Integer" },
+                "comm-rdma-cm": { "$ref": "#/pScheduler/Boolean" }
             },
             "additionalProperties": false,
             "required": [

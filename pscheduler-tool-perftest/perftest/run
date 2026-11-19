@@ -1,0 +1,280 @@
+#!/usr/bin/env python3
+
+import datetime
+import os
+import pscheduler
+import sys
+import time
+import perftest_parser
+import perftest_utils
+from perftest_defaults import *
+
+# track when this run starts
+start_time = datetime.datetime.now()
+
+logger = pscheduler.Log(prefix='tool-perftest', quiet=True)
+logger.debug('starting perftest tool')
+
+# parse JSON input
+input = pscheduler.json_load(exit_on_error=True)
+
+logger.debug(f'Input is {input}')
+
+try:
+    participant = input['participant']
+    participant_data = input['participant-data']
+    test_spec = input['test']['spec']    
+except KeyError as ex:
+    pscheduler.fail(f'Missing required key in run input: {ex}')
+except Exception:
+    pscheduler.fail(f'Error parsing run input: {sys.exc_info()[0]}')
+
+participants = len(participant_data)
+if participants != 2:
+    pscheduler.fail(f'perftest requires exactly 2 participants, got {participants}')
+
+config = perftest_utils.get_config()
+
+server_port = participant_data[1]['server_port']
+
+
+# look up our local ib_write_bw command path
+ib_write_bw_cmd  = config['ib_write_bw_cmd']
+
+# convert from ISO to seconds for test duration
+test_duration = test_spec.get('duration')
+if test_duration:
+    delta = pscheduler.iso8601_as_timedelta(test_duration)
+    test_duration = int(pscheduler.timedelta_as_seconds(delta))
+else:
+    test_duration = DEFAULT_DURATION
+
+ib_write_bw_first_args = [ ib_write_bw_cmd ]
+
+RESULT_FILE = '/tmp/perftest-result.json'
+
+def run_client():
+
+    diags = []
+
+    global ib_write_bw_first_args
+    ib_write_bw_args = ib_write_bw_first_args.copy()
+
+    ib_write_bw_args.append('--port')
+    ib_write_bw_args.append(server_port)
+
+    if test_spec.get('tx-depth') is not None:
+        ib_write_bw_args.append('--tx-depth')
+        ib_write_bw_args.append(test_spec['tx-depth'])
+
+    if test_spec.get('qp-timeout') is not None:
+        ib_write_bw_args.append('--qp-timeout')
+        ib_write_bw_args.append(test_spec['qp-timeout'])
+    
+    ib_write_bw_args.append('--duration')
+    ib_write_bw_args.append(test_duration)
+
+    if test_spec.get('parallel') is not None:
+        ib_write_bw_args.append('--qp')
+        ib_write_bw_args.append(test_spec['parallel'])
+    
+    if test_spec.get('mtu') is not None:
+        ib_write_bw_args.append('--mtu')
+        ib_write_bw_args.append(test_spec['mtu'])
+ 
+    if test_spec.get('size') is not None:
+        ib_write_bw_args.append('--size')
+        ib_write_bw_args.append(test_spec['size'])
+ 
+    if test_spec.get('cq-mod') is not None:
+        ib_write_bw_args.append('--cq-mod')
+        ib_write_bw_args.append(test_spec['cq-mod'])
+    
+    if test_spec.get('comm-rdma-cm', False):
+        ib_write_bw_args.append('--comm_rdma_cm')
+ 
+    if test_spec.get('ib-dev-client') is not None:
+        ib_write_bw_args.append('--ib-dev')
+        ib_write_bw_args.append(test_spec['ib-dev-client'])
+
+    if test_spec.get('ib-port-client') is not None:
+        ib_write_bw_args.append('--ib-port')
+        ib_write_bw_args.append(test_spec['ib-port-client'])
+ 
+    if test_spec.get('local-address') is not None:
+        ib_write_bw_args.append('--bind_source_ip')
+        ib_write_bw_args.append(test_spec['local-address'])
+ 
+    ib_write_bw_args.append('--report_gbits')
+
+    ib_write_bw_args.append('--out_json')
+
+    ib_write_bw_args.append('--out_json_file')
+    ib_write_bw_args.append(RESULT_FILE)
+
+    ib_write_bw_args.append(test_spec.get('dest'))
+
+    ib_write_bw_args = [str(x) for x in ib_write_bw_args]
+
+    cmd_line = ' '.join(ib_write_bw_args)
+    logger.debug(f'Client: Running command: {cmd_line}')
+
+    ib_write_bw_timeout = test_duration
+    ib_write_bw_timeout += perftest_utils.setup_time(test_spec.get('link-rtt'))
+
+    logger.debug(f'Client: timeout for ib_write_bw is {ib_write_bw_timeout}')
+    diags.append(cmd_line)
+
+    try:
+        start_at = input['schedule']['start']
+        logger.debug(f'Client: Sleeping until {start_at}')
+        pscheduler.sleep_until(start_at)
+        logger.debug('Client: Starting')
+    except KeyError:
+        pscheduler.fail('Unable to find start time in input')
+
+    logger.debug(f'Client: Waiting {DEFAULT_WAIT_SLEEP} sec for server on other side to start')
+    time.sleep(DEFAULT_WAIT_SLEEP) #wait for server to start on other side
+
+    try:
+        status, stdout, stderr = pscheduler.run_program(ib_write_bw_args, timeout = ib_write_bw_timeout)
+    except Exception as ex:
+        logger.error(f'ib_write_bw failed to complete execution: {ex}')
+        return {
+            'succeeded': False,
+            'diags': '\n'.join(diags),
+            'error': f'The ib_write_bw command failed during execution: {ex}'
+        }
+
+    return _make_result('\n'.join(diags), status, stdout, stderr)
+
+    
+
+def run_server():
+
+    diags = []
+
+    global ib_write_bw_first_args
+    ib_write_bw_args = ib_write_bw_first_args.copy()
+
+    ib_write_bw_args.append('--port')
+    ib_write_bw_args.append(server_port)
+
+    if test_spec.get('tx-depth') is not None:
+        ib_write_bw_args.append('--tx-depth')
+        ib_write_bw_args.append(test_spec['tx-depth'])
+
+    if test_spec.get('qp-timeout') is not None:
+        ib_write_bw_args.append('--qp-timeout')
+        ib_write_bw_args.append(test_spec['qp-timeout'])
+    
+    ib_write_bw_args.append('--duration')
+    ib_write_bw_args.append(test_duration)
+
+    if test_spec.get('parallel') is not None:
+        ib_write_bw_args.append('--qp')
+        ib_write_bw_args.append(test_spec['parallel'])
+    
+    if test_spec.get('mtu') is not None:
+        ib_write_bw_args.append('--mtu')
+        ib_write_bw_args.append(test_spec['mtu'])
+ 
+    if test_spec.get('size') is not None:
+        ib_write_bw_args.append('--size')
+        ib_write_bw_args.append(test_spec['size'])
+ 
+    if test_spec.get('cq-mod') is not None:
+        ib_write_bw_args.append('--cq-mod')
+        ib_write_bw_args.append(test_spec['cq-mod'])
+    
+    if test_spec.get('comm-rdma-cm', False):
+        ib_write_bw_args.append('--comm_rdma_cm')
+ 
+    if test_spec.get('ib-dev-server') is not None:
+        ib_write_bw_args.append('--ib-dev')
+        ib_write_bw_args.append(test_spec['ib-dev-server'])
+
+    if test_spec.get('ib-port-server') is not None:
+        ib_write_bw_args.append('--ib-port')
+        ib_write_bw_args.append(test_spec['ib-port-server'])
+ 
+    ib_write_bw_args.append('--report_gbits')
+
+    ib_write_bw_args.append('--out_json')
+
+    ib_write_bw_args.append('--out_json_file')
+    ib_write_bw_args.append(RESULT_FILE)
+
+    ib_write_bw_args = [str(x) for x in ib_write_bw_args]
+
+    cmd_line = ' '.join(ib_write_bw_args)
+    logger.debug(f'Server: Running command: {cmd_line}')
+
+    ib_write_bw_timeout = test_duration
+    ib_write_bw_timeout += perftest_utils.setup_time(test_spec.get('link-rtt'))
+    ib_write_bw_timeout += DEFAULT_WAIT_SLEEP  # grace period for server to start
+
+    logger.debug(f'Server: timeout for ib_write_bw is {ib_write_bw_timeout}')
+    diags.append(cmd_line)
+
+    try:
+        start_at = input['schedule']['start']
+        logger.debug(f'Server: Sleeping until {start_at}')
+        pscheduler.sleep_until(start_at)
+        logger.debug('Server: Starting')
+    except KeyError:
+        pscheduler.fail('Unable to find start time in input')
+
+    try:
+        status, stdout, stderr = pscheduler.run_program(ib_write_bw_args, timeout = ib_write_bw_timeout)
+    except Exception as ex:
+        logger.error(f'ib_write_bw failed to complete execution: {ex}')
+        return {
+            'succeeded': False,
+            'diags': '\n'.join(diags),
+            'error': f'The ib_write_bw command failed during execution: {ex}'
+        }
+
+    return _make_result('\n'.join(diags), status, stdout, stderr)
+
+    
+
+def _make_result(diags, status, stdout, stderr):
+    if status:
+        error_text = f'STDOUT: {stdout}\n\nSTDERR: {stderr}\n'
+        return {
+            'succeeded': False,
+            'diags': diags,
+            'error': f'ib_write_bw returned an error: {error_text}'
+        }
+    results = perftest_parser.parse_output(RESULT_FILE, test_duration)
+    results['diags'] = f'{diags}\n\nSTDOUT: {stdout}\n\nSTDERR: {stderr}'
+    return results
+
+
+def _remove_result_file():
+    if os.path.exists(RESULT_FILE):
+        os.remove(RESULT_FILE)
+
+results = {}
+
+try:
+    _remove_result_file()  # in case of a straggler from previous run
+
+    if participant == 0:
+        logger.debug('Running perftest ib_write_bw client')
+        results = run_client()
+    elif participant == 1:
+        logger.debug('Running perftest ib_write_bw server')
+        results = run_server()
+    else:
+        pscheduler.fail('Invalid participant.')
+    
+except Exception as ex:
+    pscheduler.fail(f'Error running perftest ib_write_bw: {ex}')
+finally:
+    _remove_result_file()  # clean up
+
+logger.debug(f'Results: {results}')
+
+pscheduler.succeed_json(results)
