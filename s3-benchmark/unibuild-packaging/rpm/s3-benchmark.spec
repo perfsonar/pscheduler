@@ -33,6 +33,7 @@ S3 benchmark tool for pScheduler
 %define gopath %{godir}:/usr/lib/golang/src/vendor:/usr/lib/golang/pkg/linux_amd64/vendor
 %define gobin %{godir}/bin
 %define gocache %{godir}/.cache
+%define gomodcache %{_builddir}/go-modcache
 
 %prep
 
@@ -41,19 +42,19 @@ rm -rf %{name}-%{version}-beta
 
 
 %build -n %{directory}
-mkdir -p "%{godir}" "%{gobin}"
+mkdir -p "%{godir}" "%{gobin}" "%{gomodcache}"
 export GOPATH="%{gopath}"
 export GOBIN="%{gobin}"
-export GOCACHE"=%{gocache}"
+export GOCACHE="%{gocache}"
+export GOMODCACHE="%{gomodcache}"
 
 # Go leaves a bunch of directories read-only, which makes cleaning out
 # the workspace difficult.  Make sure that's cleaned up no matter
 # what.
 
-mkdir -p "%{godir}"
 cleanup()
 {
-    find "%{godir}" -type d | xargs chmod +w
+    find "%{godir}" "%{gomodcache}" -type d | xargs chmod +w
 }
 trap cleanup EXIT
 
