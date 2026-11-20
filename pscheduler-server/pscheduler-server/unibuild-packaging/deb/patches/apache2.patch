@@ -1,10 +1,10 @@
 Index: b/api-server/pscheduler-api-server.conf.raw
 ===================================================================
---- a/api-server/pscheduler-api-server.conf.raw	2026-07-21 10:21:32.594969671 -0400
-+++ b/api-server/pscheduler-api-server.conf.raw	2026-07-21 10:21:37.719197534 -0400
-@@ -28,7 +28,13 @@
-     WSGIProcessGroup __USER_NAME__
-     WSGIApplicationGroup __USER_NAME__
+--- a/api-server/pscheduler-api-server.conf.raw	2026-11-19 15:42:29.688684761 +0100
++++ b/api-server/pscheduler-api-server.conf.raw	2026-11-20 13:02:18.828517346 +0100
+@@ -25,7 +25,13 @@
+ 
+     SSLRequireSSL
  
 -    Require all granted
 +    <IfVersion >= 2.4>
