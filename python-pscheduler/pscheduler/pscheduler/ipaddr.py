@@ -133,20 +133,65 @@ def ip_addr_version(addr,
 #
 # Find common IP version between two addresses
 
+def _is_link_local(ip):
+    """
+    Determine if an address (possibly with a %scope suffix) is link-local
+    """
+    try:
+        return netaddr.IPAddress(ip.split('%')[0]).is_link_local()
+    except (netaddr.AddrFormatError, ValueError):
+        return False
+
+
 def _get_ip_v4v6(addr):
-    # get ip addresses regardless of addr being hostname of ip
+    """
+    Return the first IPv4 and the first IPv6 address that getaddrinfo()
+    gives for addr, regardless of addr being a hostname or an IP.
+
+    getaddrinfo() returns addresses in order of preference (RFC 6724),
+    so the first address of each family is the one a client would use.
+    When a name resolves to several addresses of the same family, for
+    example a host's own name answered by systemd-resolved with every
+    local address including a Docker bridge, the last one is not
+    meaningful and may not be reachable from the other end.
+
+    This is the same choice dns_resolve() makes, which takes the first
+    result.
+
+    When addr is a name, link-local addresses are handled as follows:
+
+    - IPv4 link-local (169.254/16) is used only if the name has no
+      other IPv4 address.  It works without a scope, e.g. for hosts
+      cabled back to back.
+
+    - IPv6 link-local (fe80::/10) is not used.  getaddrinfo() does not
+      include the scope in the address string, so such an address
+      cannot be used as a source, bind or destination address, and
+      choosing it would also make IPv6 preferred over a usable IPv4
+      address.
+
+    A literal address is returned as given.
+    """
     ip_v4 = None
     ip_v6 = None
+    ll_v4 = None
+    is_name = not is_ip(addr.split('%')[0])
     try:
         addrinfo = socket.getaddrinfo(addr, None)
         for ai in addrinfo:
+            ip = ai[4][0]
+            link_local = is_name and _is_link_local(ip)
             if ai[0] == socket.AF_INET:
-                ip_v4 = ai[4][0]
+                if link_local:
+                    ll_v4 = ll_v4 or ip
+                elif ip_v4 is None:
+                    ip_v4 = ip
             elif ai[0] == socket.AF_INET6:
-                ip_v6 = ai[4][0]
+                if not link_local and ip_v6 is None:
+                    ip_v6 = ip
     except:
         pass
-    return ip_v4, ip_v6
+    return ip_v4 or ll_v4, ip_v6
 
 
 def ip_normalize_version(src, dest, ip_version=None):
